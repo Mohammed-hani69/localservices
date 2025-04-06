@@ -1,0 +1,103 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}تعديل بيانات الحساب{% endblock %}
+
+{% block content %}
+<div class="mobile-container">
+    <div class="mobile-header">
+        <a href="{{ url_for('mobile_dashboard') }}" class="back-button">
+            <i class="fas fa-arrow-right"></i>
+        </a>
+        <h1 class="mobile-title">تعديل بيانات الحساب</h1>
+    </div>
+
+    <div class="mobile-content">
+        <div class="mobile-card">
+            <form method="POST" action="{{ url_for('edit_user_profile') }}">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.username.label(class="form-label") }}
+                    {{ form.username(class="form-control", placeholder="أدخل اسم المستخدم") }}
+                    {% for error in form.username.errors %}
+                        <div class="form-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.email.label(class="form-label") }}
+                    {{ form.email(class="form-control", placeholder="أدخل البريد الإلكتروني") }}
+                    {% for error in form.email.errors %}
+                        <div class="form-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.phone.label(class="form-label") }}
+                    {{ form.phone(class="form-control", placeholder="أدخل رقم الهاتف") }}
+                    {% for error in form.phone.errors %}
+                        <div class="form-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.address.label(class="form-label") }}
+                    {{ form.address(class="form-control", placeholder="أدخل العنوان") }}
+                    {% for error in form.address.errors %}
+                        <div class="form-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-divider">
+                    <h3>تغيير كلمة المرور <small>(اختياري)</small></h3>
+                    <p class="form-hint">اترك الحقول فارغة إذا كنت لا ترغب في تغيير كلمة المرور</p>
+                </div>
+                
+                <div class="form-group">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control", placeholder="أدخل كلمة المرور الجديدة") }}
+                    {% for error in form.password.errors %}
+                        <div class="form-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.password2.label(class="form-label") }}
+                    {{ form.password2(class="form-control", placeholder="أكد كلمة المرور الجديدة") }}
+                    {% for error in form.password2.errors %}
+                        <div class="form-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-actions">
+                    {{ form.submit(class="btn btn-primary btn-block") }}
+                    <a href="{{ url_for('mobile_dashboard') }}" class="btn btn-secondary btn-block mt-2">إلغاء</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation Bar -->
+    <div class="mobile-navbar">
+        <a href="{{ url_for('mobile_index') }}" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="{{ url_for('mobile_services') }}" class="nav-item">
+            <i class="fas fa-tools"></i>
+            <span>الخدمات</span>
+        </a>
+        <a href="{{ url_for('mobile_dashboard') }}" class="nav-item active">
+            <i class="fas fa-user"></i>
+            <span>حسابي</span>
+        </a>
+        <a href="{{ url_for('mobile_notifications') }}" class="nav-item">
+            <i class="fas fa-bell"></i>
+            <span>الإشعارات</span>
+            {% if unread_notifications_count > 0 %}
+                <span class="notification-badge">{{ unread_notifications_count }}</span>
+            {% endif %}
+        </a>
+    </div>
+</div>
+{% endblock %}

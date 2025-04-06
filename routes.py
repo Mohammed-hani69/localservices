@@ -7,6 +7,7 @@ from flask import render_template, flash, redirect, url_for, request, jsonify, a
 from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
 from werkzeug.utils import secure_filename
+from wtforms.validators import ValidationError
 from app import app, db
 from export_db import export_database
 from notifications import send_review_notification, check_completed_bookings, create_notification
@@ -172,6 +173,66 @@ def create_provider_profile():
         return redirect(url_for('dashboard'))
     
     return render_template('profile.html', title='إنشاء ملف مقدم الخدمة', form=form)
+
+# Edit User Profile
+@app.route('/profile/edit', methods=['GET', 'POST'])
+@login_required
+def edit_user_profile():
+    user = User.query.get(current_user.id)
+    
+    # Create a partial registration form with only user fields
+    from forms import RegistrationForm
+    form = RegistrationForm(obj=user)
+    # Don't validate email uniqueness when it's the current user's email
+    def validate_email(form, field):
+        user = User.query.filter_by(email=field.data).first()
+        if user and user.id != current_user.id:
+            raise ValidationError('هذا البريد الإلكتروني مستخدم بالفعل. الرجاء استخدام بريد إلكتروني آخر.')
+    
+    # Replace the original validate_email with our custom one
+    form.validate_email = validate_email
+    
+    # Don't validate username uniqueness when it's the current user's username
+    def validate_username(form, field):
+        user = User.query.filter_by(username=field.data).first()
+        if user and user.id != current_user.id:
+            raise ValidationError('هذا الاسم مستخدم بالفعل. الرجاء اختيار اسم آخر.')
+    
+    # Replace the original validate_username with our custom one
+    form.validate_username = validate_username
+    
+    # Remove password validation when updating profile
+    form.password.validators = []
+    form.password2.validators = []
+    
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data
+        user.phone = form.phone.data
+        user.address = form.address.data
+        
+        # Only update password if provided
+        if form.password.data and form.password.data == form.password2.data:
+            user.set_password(form.password.data)
+        
+        db.session.commit()
+        flash('تم تحديث معلومات حسابك بنجاح!', 'success')
+        
+        # Redirect to the appropriate dashboard based on where the request came from
+        if 'mobile' in request.referrer or 'mobile' in request.headers.get('Referer', ''):
+            return redirect(url_for('mobile_dashboard'))
+        else:
+            return redirect(url_for('dashboard'))
+    
+    # For GET requests, don't show passwords
+    form.password.data = ''
+    form.password2.data = ''
+    
+    # Determine which template to use based on the request
+    if 'mobile' in request.headers.get('Referer', '') or request.args.get('mobile'):
+        return render_template('mobile/edit_profile.html', title='تعديل بيانات الحساب', form=form)
+    else:
+        return render_template('edit_profile.html', title='تعديل بيانات الحساب', form=form)
 
 # Edit Service Provider Profile
 @app.route('/provider/edit', methods=['GET', 'POST'])

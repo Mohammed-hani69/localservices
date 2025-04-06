@@ -18,7 +18,7 @@
                         <h5 class="mb-1">{{ current_user.username }}</h5>
                         <p class="mb-0 text-muted small">{{ current_user.email }}</p>
                     </div>
-                    <a href="{{ url_for('dashboard') }}?section=profile" class="ms-auto">
+                    <a href="{{ url_for('edit_user_profile') }}?mobile=true" class="ms-auto">
                         <i class="fas fa-edit"></i>
                     </a>
                 </div>

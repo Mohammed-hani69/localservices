@@ -392,7 +392,7 @@
                             <p><strong>رقم الهاتف:</strong> {{ current_user.phone }}</p>
                             <p><strong>العنوان:</strong> {{ current_user.address }}</p>
                             <div class="mt-4">
-                                <button class="btn btn-outline-primary btn-sm" disabled>تعديل البيانات</button>
+                                <a href="{{ url_for('edit_user_profile') }}" class="btn btn-outline-primary btn-sm">تعديل البيانات</a>
                             </div>
                         </div>
                     </div>
