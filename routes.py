@@ -185,7 +185,7 @@ def add_service():
         flash('تمت إضافة الخدمة بنجاح!', 'success')
         return redirect(url_for('dashboard'))
     
-    return render_template('service_details.html', title='إضافة خدمة جديدة', form=form)
+    return render_template('service_form.html', form=form)
 
 # Edit Service
 @app.route('/services/edit/<int:service_id>', methods=['GET', 'POST'])
@@ -211,7 +211,7 @@ def edit_service(service_id):
         flash('تم تحديث الخدمة بنجاح!', 'success')
         return redirect(url_for('dashboard'))
     
-    return render_template('service_details.html', title='تعديل الخدمة', form=form, service=service)
+    return render_template('service_form.html', form=form, service=service)
 
 # View all services
 @app.route('/services')
