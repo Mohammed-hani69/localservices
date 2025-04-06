@@ -1,95 +1,114 @@
 {% extends "base.html" %}
 
-{% block title %}حجز خدمة{% endblock %}
+{% block title %}حجز موعد{{ 'لـ ' + service.name if service }}{% endblock %}
 
 {% block content %}
 <section class="py-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">حجز خدمة</h4>
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="mb-0 fw-bold">حجز موعد</h4>
                     </div>
                     <div class="card-body">
                         <div class="row mb-4">
                             <div class="col-md-8">
-                                <h5>{{ service.name }}</h5>
-                                <p class="text-muted">مقدم الخدمة: {{ service.provider.company_name }}</p>
-                                <p><span class="badge bg-primary">{{ service.category }}</span></p>
-                                <p>{{ service.description|truncate(150) }}</p>
+                                <h5 class="text-primary">{{ service.name }}</h5>
+                                <p>{{ service.description|truncate(200) }}</p>
+                                <div class="d-flex align-items-center mt-3">
+                                    <div class="me-3">
+                                        <strong>السعر:</strong> {{ "%.0f"|format(service.price) }} ريال
+                                    </div>
+                                    <div>
+                                        <strong>المدة:</strong> {{ service.duration }} دقيقة
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-4 text-center">
-                                <div class="service-icon mb-2">
-                                    {% if service.category == 'صيانة' %}
-                                        <i class="fas fa-tools fa-4x text-primary"></i>
-                                    {% elif service.category == 'تنظيف' %}
-                                        <i class="fas fa-broom fa-4x text-primary"></i>
-                                    {% elif service.category == 'تعليم' %}
-                                        <i class="fas fa-graduation-cap fa-4x text-primary"></i>
-                                    {% elif service.category == 'صحة' %}
-                                        <i class="fas fa-heartbeat fa-4x text-primary"></i>
-                                    {% elif service.category == 'طعام' %}
-                                        <i class="fas fa-utensils fa-4x text-primary"></i>
-                                    {% else %}
-                                        <i class="fas fa-hand-holding-heart fa-4x text-primary"></i>
-                                    {% endif %}
-                                </div>
-                                <p class="text-primary fw-bold">{{ "%.2f"|format(service.price) }} ريال</p>
-                                <p class="text-muted">المدة: {{ service.duration }} دقيقة</p>
+                                {% if service.image %}
+                                    <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid rounded" style="max-height: 100px;">
+                                {% else %}
+                                    <div class="bg-light rounded p-3">
+                                        {% if service.category == 'صيانة' %}
+                                            <i class="fas fa-tools fa-3x text-primary"></i>
+                                        {% elif service.category == 'تنظيف' %}
+                                            <i class="fas fa-broom fa-3x text-primary"></i>
+                                        {% elif service.category == 'تعليم' %}
+                                            <i class="fas fa-graduation-cap fa-3x text-primary"></i>
+                                        {% elif service.category == 'صحة' %}
+                                            <i class="fas fa-heartbeat fa-3x text-primary"></i>
+                                        {% elif service.category == 'طعام' %}
+                                            <i class="fas fa-utensils fa-3x text-primary"></i>
+                                        {% else %}
+                                            <i class="fas fa-hand-holding-heart fa-3x text-primary"></i>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                         
-                        <hr>
+                        <hr class="my-4">
                         
-                        <form method="post" action="{{ url_for('book_service') }}" class="needs-validation" novalidate>
-                            {{ form.hidden_tag() }}
+                        <form action="{{ url_for('process_booking') }}" method="post">
+                            {{ booking_form.hidden_tag() }}
+                            {{ booking_form.service_id }}
                             
                             <div class="mb-3">
-                                <label for="booking_date" class="form-label">{{ form.booking_date.label }}</label>
-                                {{ form.booking_date(class="form-control", type="datetime-local") }}
-                                {% if form.booking_date.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.booking_date.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                                <small class="form-text text-muted">يرجى اختيار التاريخ والوقت المناسب لك</small>
+                                <label for="{{ booking_form.booking_date.id }}" class="form-label">التاريخ والوقت</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                    {{ booking_form.booking_date(class="form-control", type="datetime-local", min=min_date) }}
+                                </div>
+                                <small class="form-text text-muted">
+                                    اختر التاريخ والوقت المناسبين (يجب أن يكون التاريخ في المستقبل)
+                                </small>
                             </div>
                             
-                            <div class="mb-3">
-                                <label for="notes" class="form-label">{{ form.notes.label }}</label>
-                                {{ form.notes(class="form-control", rows="3") }}
-                                {% if form.notes.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.notes.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+                            <div class="mb-4">
+                                <label for="{{ booking_form.notes.id }}" class="form-label">ملاحظات إضافية</label>
+                                {{ booking_form.notes(class="form-control", rows=3, placeholder="أي معلومات إضافية ترغب في إضافتها للحجز") }}
                             </div>
                             
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>
-                                بعد إتمام الحجز، سيتم توجيهك إلى صفحة الدفع لإتمام عملية الحجز.
+                            <div class="alert alert-info" role="alert">
+                                <h5 class="alert-heading mb-1"><i class="fas fa-info-circle me-2"></i> معلومات مهمة</h5>
+                                <p class="mb-0">بعد إنشاء الحجز، سيتم توجيهك إلى صفحة الدفع لإتمام العملية. يرجى العلم أن الحجز لن يكون مؤكداً حتى إتمام عملية الدفع.</p>
                             </div>
                             
-                            <div class="d-grid gap-2">
-                                {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('service_details', service_id=service.id) }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-right me-1"></i> رجوع
+                                </a>
+                                {{ booking_form.submit(class="btn btn-primary") }}
                             </div>
                         </form>
-                    </div>
-                    <div class="card-footer">
-                        <div class="text-center">
-                            <a href="{{ url_for('service_details', service_id=service.id) }}">
-                                <i class="fas fa-arrow-right me-1"></i> العودة إلى صفحة الخدمة
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set min date for booking
+        const bookingDateInput = document.getElementById('{{ booking_form.booking_date.id }}');
+        
+        if (bookingDateInput) {
+            // Check if current time is valid (server time set in min_date)
+            const minDateTime = new Date('{{ min_date }}');
+            
+            bookingDateInput.addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                
+                if (selectedDate < minDateTime) {
+                    alert('لا يمكن الحجز في تاريخ ماضي. الرجاء اختيار تاريخ مستقبلي.');
+                    this.value = '';
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

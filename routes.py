@@ -336,10 +336,31 @@ def service_details(service_id):
                           booking_form=booking_form, review_form=review_form,
                           reviews=reviews, similar_services=similar_services)
 
-# Book service
-@app.route('/booking', methods=['POST'])
+# Book service - get form
+@app.route('/booking/<int:service_id>', methods=['GET'])
 @login_required
-def book_service():
+def book_service(service_id):
+    service = Service.query.get_or_404(service_id)
+    
+    # Check if user is eligible to book
+    if current_user.id == service.provider.user_id or current_user.is_admin() or not service.is_active:
+        flash('عذراً، لا يمكنك حجز هذه الخدمة.', 'warning')
+        return redirect(url_for('service_details', service_id=service_id))
+    
+    booking_form = BookingForm()
+    booking_form.service_id.data = service_id
+    
+    # Calculate the minimum date for booking (today)
+    min_date = datetime.now().strftime('%Y-%m-%dT%H:%M')
+    
+    return render_template('booking.html', title='حجز موعد', 
+                          service=service, booking_form=booking_form, 
+                          min_date=min_date)
+
+# Process booking
+@app.route('/booking/process', methods=['POST'])
+@login_required
+def process_booking():
     form = BookingForm()
     if form.validate_on_submit():
         service = Service.query.get_or_404(form.service_id.data)
