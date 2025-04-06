@@ -3,11 +3,12 @@ import os
 import secrets
 import uuid
 from datetime import datetime
-from flask import render_template, flash, redirect, url_for, request, jsonify, abort, g
+from flask import render_template, flash, redirect, url_for, request, jsonify, abort, g, send_file
 from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
 from werkzeug.utils import secure_filename
 from app import app, db
+from export_db import export_database
 from notifications import send_review_notification, check_completed_bookings, create_notification
 from models import User, ServiceProvider, Service, Booking, Payment, Review, Notification, ROLE_USER, ROLE_SERVICE_PROVIDER, ROLE_ADMIN
 from forms import LoginForm, RegistrationForm, ServiceProviderForm, ServiceForm, BookingForm, PaymentForm, ReviewForm, SearchForm
@@ -775,6 +776,36 @@ def admin_send_review_notifications():
         flash(f'حدث خطأ: {str(e)}', 'danger')
     
     return redirect(url_for('admin_dashboard'))
+
+# تصدير قاعدة البيانات (للمشرفين)
+@app.route('/admin/export-database')
+@login_required
+def admin_export_database():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
+    
+    backup_file = export_database()
+    
+    if backup_file and os.path.exists(backup_file):
+        # إنشاء إشعار للمشرف
+        create_notification(
+            current_user.id,
+            "تم تصدير قاعدة البيانات",
+            f"تم تصدير قاعدة البيانات بنجاح إلى: {backup_file}",
+            "success"
+        )
+        
+        # تقديم الملف للتحميل
+        return send_file(
+            backup_file,
+            as_attachment=True,
+            download_name=os.path.basename(backup_file),
+            mimetype='application/sql'
+        )
+    else:
+        flash('حدث خطأ أثناء تصدير قاعدة البيانات. الرجاء المحاولة مرة أخرى.', 'danger')
+        return redirect(url_for('admin_dashboard'))
 
 # =============== Mobile Application Routes =============== #
 
