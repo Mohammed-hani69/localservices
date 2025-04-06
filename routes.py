@@ -7,6 +7,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
 from werkzeug.utils import secure_filename
 from app import app, db
+from notifications import send_review_notification, check_completed_bookings
 from models import User, ServiceProvider, Service, Booking, Payment, Review, ROLE_USER, ROLE_SERVICE_PROVIDER, ROLE_ADMIN
 from forms import LoginForm, RegistrationForm, ServiceProviderForm, ServiceForm, BookingForm, PaymentForm, ReviewForm, SearchForm
 
@@ -531,6 +532,25 @@ def toggle_service_active(service_id):
         'active': service.is_active,
         'message': f'تم تغيير حالة الخدمة بنجاح إلى {"متاحة" if service.is_active else "غير متاحة"}'
     })
+
+# إرسال إشعارات التقييم يدويًا (للاختبار)
+@app.route('/admin/send-review-notifications')
+@login_required
+def admin_send_review_notifications():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
+    
+    try:
+        result = check_completed_bookings()
+        if result:
+            flash('تم إرسال إشعارات التقييم بنجاح!', 'success')
+        else:
+            flash('حدث خطأ أثناء إرسال إشعارات التقييم.', 'danger')
+    except Exception as e:
+        flash(f'حدث خطأ: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin_dashboard'))
 
 # Handle 404 errors
 @app.errorhandler(404)

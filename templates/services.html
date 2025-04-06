@@ -62,19 +62,23 @@
                 {% for service in services %}
                     <div class="col-md-4 mb-4">
                         <div class="card h-100 shadow-sm">
-                            <div class="service-image d-flex align-items-center justify-content-center bg-white p-3">
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-5x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-5x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-5x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-5x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-5x text-primary"></i>
+                            <div class="service-image d-flex align-items-center justify-content-center bg-white p-3" style="height: 200px; overflow: hidden;">
+                                {% if service.image %}
+                                    <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 100%; object-fit: contain;">
                                 {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-5x text-primary"></i>
+                                    {% if service.category == 'صيانة' %}
+                                        <i class="fas fa-tools fa-5x text-primary"></i>
+                                    {% elif service.category == 'تنظيف' %}
+                                        <i class="fas fa-broom fa-5x text-primary"></i>
+                                    {% elif service.category == 'تعليم' %}
+                                        <i class="fas fa-graduation-cap fa-5x text-primary"></i>
+                                    {% elif service.category == 'صحة' %}
+                                        <i class="fas fa-heartbeat fa-5x text-primary"></i>
+                                    {% elif service.category == 'طعام' %}
+                                        <i class="fas fa-utensils fa-5x text-primary"></i>
+                                    {% else %}
+                                        <i class="fas fa-hand-holding-heart fa-5x text-primary"></i>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                             <div class="card-body">

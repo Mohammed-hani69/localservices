@@ -160,7 +160,12 @@
             <div class="col-12">
                 <div class="card shadow-sm">
                     <div class="card-header bg-white">
-                        <h5 class="card-title mb-0"><i class="fas fa-server me-2"></i> حالة النظام</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-server me-2"></i> حالة النظام</h5>
+                            <a href="{{ url_for('admin_send_review_notifications') }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-envelope me-1"></i> إرسال إشعارات التقييم
+                            </a>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -193,6 +198,20 @@
                                         </h3>
                                         <p class="text-muted mb-0">خلال هذا الشهر</p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- معلومات عن نظام إشعارات التقييم -->
+                        <div class="alert alert-info mt-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle fa-2x me-3"></i>
+                                <div>
+                                    <h5 class="alert-heading">نظام إشعارات التقييم</h5>
+                                    <p class="mb-0">
+                                        يقوم النظام تلقائيًا بإرسال إشعارات للمستخدمين لتقييم الخدمات بعد انتهاء مواعيدهم. 
+                                        يمكنك إرسال الإشعارات يدويًا بالضغط على الزر أعلاه.
+                                    </p>
                                 </div>
                             </div>
                         </div>
