@@ -1,0 +1,354 @@
+{% extends "base_mobile.html" %}
+
+{% block title %}لوحة التحكم - منصة الخدمات المحلية{% endblock %}
+
+{% block header_title %}لوحة التحكم{% endblock %}
+
+{% block header_back %}
+<!-- No back button on dashboard -->
+{% endblock %}
+
+{% block content %}
+<div class="container p-3">
+    <!-- User Profile Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+                <div class="fs-1 me-3">
+                    <i class="fas fa-user-circle text-primary"></i>
+                </div>
+                <div>
+                    <h5 class="mb-1">{{ current_user.username }}</h5>
+                    <p class="mb-0 text-muted small">{{ current_user.email }}</p>
+                </div>
+                <a href="{{ url_for('dashboard') }}?section=profile" class="ms-auto">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </div>
+            
+            {% if current_user.is_provider() %}
+            <div class="alert alert-info mb-0">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-store me-2"></i>
+                    <span>{{ current_user.provider_profile.company_name }}</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Mobile Dashboard Tabs -->
+    <div class="mobile-tabs mb-4">
+        <div class="mobile-tab active" data-target="overview">نظرة عامة</div>
+        <div class="mobile-tab" data-target="bookings">حجوزاتي</div>
+        {% if current_user.is_provider() %}
+        <div class="mobile-tab" data-target="services">خدماتي</div>
+        {% else %}
+        <div class="mobile-tab" data-target="reviews">تقييماتي</div>
+        {% endif %}
+    </div>
+
+    <!-- Overview Tab Content -->
+    <div class="mobile-tab-content" id="overview">
+        <!-- Stats Cards -->
+        <div class="mobile-dashboard-stats mb-4">
+            {% if current_user.is_provider() %}
+            <div class="mobile-stat-card">
+                <div class="mobile-stat-value">{{ active_services_count }}</div>
+                <div class="mobile-stat-label">الخدمات النشطة</div>
+            </div>
+            {% endif %}
+            
+            <div class="mobile-stat-card">
+                <div class="mobile-stat-value">{{ pending_bookings_count }}</div>
+                <div class="mobile-stat-label">حجوزات معلقة</div>
+            </div>
+            
+            <div class="mobile-stat-card">
+                <div class="mobile-stat-value">{{ completed_bookings_count }}</div>
+                <div class="mobile-stat-label">حجوزات مكتملة</div>
+            </div>
+            
+            {% if current_user.is_provider() %}
+            <div class="mobile-stat-card">
+                <div class="mobile-stat-value">{{ provider_rating }}</div>
+                <div class="mobile-stat-label">التقييم</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Activity -->
+        <h5 class="mb-3">آخر النشاطات</h5>
+        {% if recent_bookings %}
+        <div class="mb-4">
+            {% for booking in recent_bookings %}
+            <div class="mobile-list-item">
+                <div class="mobile-list-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="mobile-list-content">
+                    <div class="mobile-list-title">{{ booking.service.name }}</div>
+                    <div class="mobile-list-subtitle">{{ booking.booking_date.strftime('%Y-%m-%d %H:%M') }}</div>
+                </div>
+                <div class="mobile-list-action">
+                    <span class="badge bg-{{ get_status_color(booking.status) }}">{{ booking.status }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">لا توجد نشاطات حديثة.</p>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <h5 class="mb-3">إجراءات سريعة</h5>
+        <div class="row mb-4">
+            {% if current_user.is_provider() %}
+            <div class="col-6 mb-3">
+                <a href="{{ url_for('add_service') }}" class="btn btn-outline-primary w-100 p-3">
+                    <i class="fas fa-plus mb-2 fa-2x"></i>
+                    <div>إضافة خدمة</div>
+                </a>
+            </div>
+            {% endif %}
+            
+            <div class="col-6 mb-3">
+                <a href="{{ url_for('services') }}" class="btn btn-outline-primary w-100 p-3">
+                    <i class="fas fa-search mb-2 fa-2x"></i>
+                    <div>تصفح الخدمات</div>
+                </a>
+            </div>
+            
+            {% if current_user.is_admin() %}
+            <div class="col-6 mb-3">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary w-100 p-3">
+                    <i class="fas fa-user-shield mb-2 fa-2x"></i>
+                    <div>لوحة الإدارة</div>
+                </a>
+            </div>
+            {% endif %}
+            
+            <div class="col-6 mb-3">
+                <a href="{{ url_for('dashboard') }}?section=profile" class="btn btn-outline-primary w-100 p-3">
+                    <i class="fas fa-user-edit mb-2 fa-2x"></i>
+                    <div>تعديل الملف</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings Tab Content -->
+    <div class="mobile-tab-content" id="bookings" style="display: none;">
+        <h5 class="mb-3">حجوزاتي</h5>
+        
+        <!-- Booking Status Tabs -->
+        <div class="mobile-tabs mb-3">
+            <div class="mobile-tab active booking-filter" data-filter="all">الكل</div>
+            <div class="mobile-tab booking-filter" data-filter="pending">معلق</div>
+            <div class="mobile-tab booking-filter" data-filter="confirmed">مؤكد</div>
+            <div class="mobile-tab booking-filter" data-filter="completed">مكتمل</div>
+        </div>
+        
+        {% if bookings %}
+        <div class="mb-4">
+            {% for booking in bookings %}
+            <div class="mobile-booking-card mobile-card booking-item" data-status="{{ booking.status }}" data-booking-id="{{ booking.id }}">
+                <div class="mobile-card-content">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="mobile-card-title">{{ booking.service.name }}</h5>
+                        <span class="badge bg-{{ get_status_color(booking.status) }}">{{ booking.status }}</span>
+                    </div>
+                    <p class="mb-1"><i class="fas fa-calendar me-2"></i> {{ booking.booking_date.strftime('%Y-%m-%d') }}</p>
+                    <p class="mb-1"><i class="fas fa-clock me-2"></i> {{ booking.booking_date.strftime('%H:%M') }}</p>
+                    <p class="mb-2"><i class="fas fa-tag me-2"></i> {{ "%.2f"|format(booking.service.price) }} ر.س</p>
+                    
+                    {% if booking.status == 'pending' %}
+                    <div class="d-flex">
+                        <a href="{{ url_for('payment', booking_id=booking.id) }}" class="btn btn-primary btn-sm me-2">الدفع</a>
+                        <a href="#" class="btn btn-outline-danger btn-sm cancel-booking" data-booking-id="{{ booking.id }}">إلغاء</a>
+                    </div>
+                    {% elif booking.status == 'completed' and not has_review(booking.service.id, current_user.id) %}
+                    <a href="#" class="btn btn-outline-primary btn-sm add-review" data-service-id="{{ booking.service.id }}">إضافة تقييم</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">لا توجد حجوزات.</p>
+        {% endif %}
+    </div>
+
+    <!-- Services Tab Content (for providers) -->
+    {% if current_user.is_provider() %}
+    <div class="mobile-tab-content" id="services" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">خدماتي</h5>
+            <a href="{{ url_for('add_service') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i> إضافة خدمة
+            </a>
+        </div>
+        
+        {% if services %}
+        <div class="mb-4">
+            {% for service in services %}
+            <div class="mobile-list-item">
+                <div class="mobile-list-icon">
+                    <i class="fas fa-concierge-bell"></i>
+                </div>
+                <div class="mobile-list-content">
+                    <div class="mobile-list-title">{{ service.name }}</div>
+                    <div class="mobile-list-subtitle">{{ "%.2f"|format(service.price) }} ر.س - {{ service.category }}</div>
+                </div>
+                <a href="{{ url_for('edit_service', service_id=service.id) }}" class="mobile-list-action">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">لم تقم بإضافة أي خدمات بعد. <a href="{{ url_for('add_service') }}">أضف خدمة جديدة</a></p>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <!-- Reviews Tab Content (for customers) -->
+    <div class="mobile-tab-content" id="reviews" style="display: none;">
+        <h5 class="mb-3">تقييماتي</h5>
+        
+        {% if reviews %}
+        <div class="mb-4">
+            {% for review in reviews %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0">{{ review.service.name }}</h6>
+                        <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                    <div class="rating-display mb-2" data-rating="{{ review.rating }}"></div>
+                    <p class="mb-0">{{ review.comment }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">لم تقم بإضافة أي تقييمات بعد.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Review Modal (hidden by default) -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة تقييم</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
+                    <input type="hidden" name="service_id" id="reviewServiceId">
+                    {{ review_form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">التقييم</label>
+                        <select class="form-select" name="rating" required>
+                            <option value="5">5 - ممتاز</option>
+                            <option value="4">4 - جيد جدًا</option>
+                            <option value="3">3 - جيد</option>
+                            <option value="2">2 - مقبول</option>
+                            <option value="1">1 - سيء</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">التعليق</label>
+                        <textarea class="form-control" name="comment" rows="3" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">إرسال التقييم</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle booking filters
+    const bookingFilters = document.querySelectorAll('.booking-filter');
+    const bookingItems = document.querySelectorAll('.booking-item');
+    
+    bookingFilters.forEach(filter => {
+        filter.addEventListener('click', function() {
+            // Update active state
+            bookingFilters.forEach(f => f.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filter bookings
+            const filterValue = this.getAttribute('data-filter');
+            
+            bookingItems.forEach(item => {
+                if (filterValue === 'all' || item.getAttribute('data-status') === filterValue) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Handle add review buttons
+    const reviewButtons = document.querySelectorAll('.add-review');
+    const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+    
+    reviewButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const serviceId = this.getAttribute('data-service-id');
+            document.getElementById('reviewServiceId').value = serviceId;
+            reviewModal.show();
+        });
+    });
+    
+    // Handle cancel booking buttons
+    const cancelButtons = document.querySelectorAll('.cancel-booking');
+    
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const bookingId = this.getAttribute('data-booking-id');
+            
+            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
+                fetch(`/bookings/${bookingId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.showMobileToast('تم إلغاء الحجز بنجاح', 'success');
+                        // Reload the page after a short delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        window.showMobileToast(data.message || 'حدث خطأ أثناء إلغاء الحجز', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    window.showMobileToast('حدث خطأ أثناء إلغاء الحجز', 'error');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

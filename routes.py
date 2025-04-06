@@ -25,9 +25,21 @@ def inject_now():
 @app.route('/')
 @app.route('/index')
 def index():
-    services = Service.query.filter_by(is_active=True).limit(6).all()
+    # Check if the user is requesting from a mobile device
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent
+    
+    # Query services for display
+    featured_services = Service.query.filter_by(is_active=True).order_by(Service.id.desc()).limit(6).all()
+    recent_services = Service.query.filter_by(is_active=True).order_by(Service.created_at.desc()).limit(6).all()
     search_form = SearchForm()
-    return render_template('index.html', title='الصفحة الرئيسية', services=services, search_form=search_form)
+    
+    if is_mobile and request.args.get('view') != 'desktop':
+        return render_template('mobile/index.html', 
+                              featured_services=featured_services, 
+                              recent_services=recent_services)
+    
+    return render_template('index.html', title='الصفحة الرئيسية', services=featured_services, search_form=search_form)
 
 # Login
 @app.route('/login', methods=['GET', 'POST'])
@@ -551,6 +563,121 @@ def admin_send_review_notifications():
         flash(f'حدث خطأ: {str(e)}', 'danger')
     
     return redirect(url_for('admin_dashboard'))
+
+# =============== Mobile Application Routes =============== #
+
+# Mobile Home Page
+@app.route('/mobile/')
+@app.route('/mobile/index')
+def mobile_index():
+    featured_services = Service.query.filter_by(is_active=True).order_by(Service.id.desc()).limit(6).all()
+    recent_services = Service.query.filter_by(is_active=True).order_by(Service.created_at.desc()).limit(6).all()
+    return render_template('mobile/index.html', featured_services=featured_services, recent_services=recent_services)
+
+# Mobile Services Page
+@app.route('/mobile/services')
+def mobile_services():
+    query = request.args.get('query', '')
+    category = request.args.get('category', '')
+    
+    services_query = Service.query.filter_by(is_active=True)
+    
+    if query:
+        services_query = services_query.filter(Service.name.contains(query) | 
+                                            Service.description.contains(query))
+    
+    if category:
+        services_query = services_query.filter_by(category=category)
+    
+    services = services_query.all()
+    
+    return render_template('mobile/services.html', services=services, category=category)
+
+# Mobile Service Details
+@app.route('/mobile/services/<int:service_id>')
+def mobile_service_details(service_id):
+    service = Service.query.get_or_404(service_id)
+    review_form = ReviewForm()
+    
+    return render_template('mobile/service_details.html', service=service, review_form=review_form)
+
+# Mobile Dashboard
+@app.route('/mobile/dashboard')
+@login_required
+def mobile_dashboard():
+    if current_user.is_provider():
+        # Provider Dashboard
+        provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
+        if not provider:
+            return redirect(url_for('create_provider_profile'))
+        
+        services = Service.query.filter_by(provider_id=provider.id).all()
+        active_services_count = Service.query.filter_by(provider_id=provider.id, is_active=True).count()
+        
+        # Get provider bookings
+        bookings = []
+        for service in services:
+            service_bookings = Booking.query.filter_by(service_id=service.id).all()
+            bookings.extend(service_bookings)
+            
+        pending_bookings_count = sum(1 for b in bookings if b.status == 'pending')
+        completed_bookings_count = sum(1 for b in bookings if b.status == 'completed')
+        recent_bookings = sorted(bookings, key=lambda x: x.booking_date, reverse=True)[:5]
+        provider_rating = provider.rating
+        
+        return render_template('mobile/dashboard.html',
+                              provider=provider,
+                              services=services,
+                              bookings=bookings,
+                              active_services_count=active_services_count,
+                              pending_bookings_count=pending_bookings_count,
+                              completed_bookings_count=completed_bookings_count,
+                              recent_bookings=recent_bookings,
+                              provider_rating=provider_rating,
+                              review_form=ReviewForm())
+    else:
+        # User Dashboard
+        bookings = Booking.query.filter_by(client_id=current_user.id).order_by(Booking.booking_date.desc()).all()
+        pending_bookings_count = Booking.query.filter_by(client_id=current_user.id, status='pending').count()
+        completed_bookings_count = Booking.query.filter_by(client_id=current_user.id, status='completed').count()
+        recent_bookings = Booking.query.filter_by(client_id=current_user.id).order_by(Booking.booking_date.desc()).limit(5).all()
+        reviews = Review.query.filter_by(user_id=current_user.id).all()
+        
+        return render_template('mobile/dashboard.html',
+                              bookings=bookings,
+                              pending_bookings_count=pending_bookings_count,
+                              completed_bookings_count=completed_bookings_count,
+                              recent_bookings=recent_bookings,
+                              reviews=reviews,
+                              review_form=ReviewForm())
+
+# Mobile Booking Page
+@app.route('/mobile/booking/<int:service_id>')
+@login_required
+def mobile_booking(service_id):
+    service = Service.query.get_or_404(service_id)
+    booking_form = BookingForm()
+    booking_form.service_id.data = service_id
+    
+    # Calculate the minimum date for booking (today)
+    min_date = datetime.now().strftime('%Y-%m-%dT%H:%M')
+    
+    return render_template('mobile/booking.html', service=service, booking_form=booking_form, min_date=min_date)
+
+# Helper functions for mobile templates
+@app.template_filter('get_status_color')
+def get_status_color(status):
+    status_colors = {
+        'pending': 'warning',
+        'confirmed': 'info',
+        'completed': 'success',
+        'cancelled': 'danger'
+    }
+    return status_colors.get(status, 'secondary')
+
+@app.template_filter('has_review')
+def has_review(service_id, user_id):
+    return Review.query.filter_by(service_id=service_id, user_id=user_id).first() is not None
 
 # Handle 404 errors
 @app.errorhandler(404)

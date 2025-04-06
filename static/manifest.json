@@ -1,0 +1,22 @@
+{
+  "name": "منصة الخدمات المحلية",
+  "short_name": "الخدمات المحلية",
+  "description": "تطبيق لحجز الخدمات المحلية والورش التدريبية",
+  "start_url": "/mobile/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#dc3545",
+  "icons": [
+    {
+      "src": "/static/img/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
