@@ -26,7 +26,7 @@
                             {% endif %}
                         </div>
                         
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
+                        <div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
                             {% if service.image %}
                                 <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
                             {% else %}
@@ -41,376 +41,80 @@
                                 {% elif service.category == 'طعام' %}
                                     <i class="fas fa-utensils fa-7x text-primary"></i>
                                 {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-<div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
-                            {% if service.image %}
-                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
-                            {% else %}
-                                {% if service.category == 'صيانة' %}
-                                    <i class="fas fa-tools fa-7x text-primary"></i>
-                                {% elif service.category == 'تنظيف' %}
-                                    <i class="fas fa-broom fa-7x text-primary"></i>
-                                {% elif service.category == 'تعليم' %}
-                                    <i class="fas fa-graduation-cap fa-7x text-primary"></i>
-                                {% elif service.category == 'صحة' %}
-                                    <i class="fas fa-heartbeat fa-7x text-primary"></i>
-                                {% elif service.category == 'طعام' %}
-                                    <i class="fas fa-utensils fa-7x text-primary"></i>
-                                {% else %}
-                                    <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
-                                {% endif %}
-                            {% endif %}
-                        </div>
                                     <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
                                 {% endif %}
                             {% endif %}
                         </div>
                         
                         <h4>الوصف</h4>
-<p class="card-text">{{ service.description }}</p>
+                        <p class="card-text">{{ service.description }}</p>
                         {% if service.service_type %}
                         <p class="mt-3"><strong>نوع الخدمة:</strong> {{ service.service_type }}</p>
                         {% endif %}
                         {% if service.additional_info %}
                         <div class="mt-3">
-                            <h5>معلومات إضافية:</h5>
+                            <h5>معلومات إضافية</h5>
                             <p>{{ service.additional_info|nl2br }}</p>
                         </div>
                         {% endif %}
                         
-                        <div class="row mt-4">
-                            <div class="col-md-6">
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body">
-                                        <h5 class="card-title">
-                                            <i class="fas fa-clock me-2"></i> المدة
-                                        </h5>
-                                        <p class="card-text">{{ service.duration }} دقيقة</p>
-                                    </div>
-                                </div>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <h4 class="text-primary mb-0">{{ "%.0f"|format(service.price) }} ريال</h4>
+                                <small class="text-muted">المدة: {{ service.duration }} دقيقة</small>
                             </div>
-                            <div class="col-md-6">
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body">
-                                        <h5 class="card-title">
-                                            <i class="fas fa-money-bill-wave me-2"></i> السعر
-                                        </h5>
-                                        <p class="card-text text-primary fw-bold">{{ "%.2f"|format(service.price) }} ريال</p>
-                                    </div>
-                                </div>
-                            </div>
+                            {% if current_user.is_authenticated and service.is_active and not current_user.is_admin() and current_user.id != service.provider.user_id %}
+                                <a href="{{ url_for('book_service', service_id=service.id) }}" class="btn btn-primary">
+                                    <i class="fas fa-calendar-check me-1"></i> حجز موعد
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
                 
-                <!-- Reviews Section -->
+                <!-- تقييمات الخدمة -->
                 <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-white">
-                        <h4 class="mb-0">التقييمات والمراجعات</h4>
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">تقييمات الخدمة</h5>
                     </div>
                     <div class="card-body">
-                        {% if reviews %}
-                            <div class="mb-4">
-                                <h5>متوسط التقييم</h5>
-                                <div class="d-flex align-items-center">
-                                    <div class="rating-display me-2" data-rating="{{ service.provider.rating }}"></div>
-                                    <span class="fw-bold">{{ "%.1f"|format(service.provider.rating) }} من 5</span>
-                                </div>
-                            </div>
-                            
-                            <hr>
-                            
-                            {% for review in reviews %}
+                        {% if service.reviews.count() > 0 %}
+                            <div class="reviews-list">
+                                {% for review in service.reviews %}
                                 <div class="review-item mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="rating-display me-2" data-rating="{{ review.rating }}"></div>
-                                        <span class="fw-bold">{{ review.rating }} من 5</span>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="rating-display me-2" data-rating="{{ review.rating }}"></div>
+                                                <span class="text-muted">({{ review.rating }})</span>
+                                            </div>
+                                            <h6 class="mb-0 mt-1 text-primary">{{ review.user.username }}</h6>
+                                        </div>
+                                        <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
                                     </div>
-                                    <p class="mb-1">{{ review.comment }}</p>
-                                    <p class="text-muted small mb-0">
-                                        <i class="fas fa-user me-1"></i> {{ review.user.username }}
-                                        <span class="mx-2">|</span>
-                                        <i class="fas fa-calendar-alt me-1"></i> {{ review.created_at.strftime('%Y-%m-%d') }}
-                                    </p>
+                                    <p class="mb-0">{{ review.comment }}</p>
                                 </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="text-center py-3">
-                                <i class="fas fa-comments fa-3x text-muted mb-3"></i>
-                                <p>لا توجد مراجعات بعد لهذه الخدمة</p>
+                                {% endfor %}
                             </div>
+                        {% else %}
+                            <p class="text-center text-muted py-3">لا توجد تقييمات حتى الآن</p>
                         {% endif %}
                         
-                        <!-- Add Review Form -->
-                        {% if current_user.is_authenticated and review_form %}
+                        {% if current_user.is_authenticated and current_user.id != service.provider.user_id and not current_user.is_admin() and not has_review(service.id, current_user.id) %}
                             <div class="mt-4">
-                                <h5>أضف تقييمك</h5>
-                                <form method="post" action="{{ url_for('add_review') }}">
+                                <h6 class="mb-3">إضافة تقييم</h6>
+                                <form action="{{ url_for('add_review') }}" method="post">
                                     {{ review_form.hidden_tag() }}
-                                    
+                                    {{ review_form.service_id(value=service.id) }}
                                     <div class="mb-3">
-                                        <label for="rating" class="form-label">{{ review_form.rating.label }}</label>
+                                        <label for="{{ review_form.rating.id }}" class="form-label">التقييم</label>
                                         {{ review_form.rating(class="form-select") }}
                                     </div>
-                                    
                                     <div class="mb-3">
-                                        <label for="comment" class="form-label">{{ review_form.comment.label }}</label>
-                                        {{ review_form.comment(class="form-control", rows="4") }}
+                                        <label for="{{ review_form.comment.id }}" class="form-label">التعليق</label>
+                                        {{ review_form.comment(class="form-control", rows=3) }}
                                     </div>
-                                    
-                                    <div class="d-grid">
-                                        {{ review_form.submit(class="btn btn-primary") }}
-                                    </div>
+                                    {{ review_form.submit(class="btn btn-primary") }}
                                 </form>
                             </div>
                         {% endif %}
@@ -418,88 +122,42 @@
                 </div>
             </div>
             
+            <!-- sidebar -->
             <div class="col-lg-4">
-                <!-- Provider Info -->
+                <!-- معلومات مقدم الخدمة -->
                 <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-white">
-                        <h4 class="mb-0">مقدم الخدمة</h4>
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">معلومات مقدم الخدمة</h5>
                     </div>
                     <div class="card-body">
-                        <h5 class="card-title">{{ provider.company_name }}</h5>
-                        
-                        <div class="mb-3">
-                            <div class="rating-display me-2" data-rating="{{ provider.rating }}"></div>
-                            <span class="text-muted">({{ "%.1f"|format(provider.rating) }})</span>
+                        <h5 class="card-title text-primary">{{ service.provider.company_name }}</h5>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rating-display me-2" data-rating="{{ service.provider.rating }}"></div>
+                            <span class="text-muted">({{ "%.1f"|format(service.provider.rating) }})</span>
                         </div>
-                        
-                        <p class="card-text">{{ provider.description|truncate(150) }}</p>
-                        
-                        {% if provider.verified %}
-                            <p><span class="badge bg-success"><i class="fas fa-check-circle"></i> مقدم خدمة موثق</span></p>
+                        <p class="card-text">{{ service.provider.description }}</p>
+                        {% if service.provider.website %}
+                            <p class="mb-0">
+                                <i class="fas fa-globe me-2 text-primary"></i> 
+                                <a href="{{ service.provider.website }}" target="_blank" class="text-decoration-none">{{ service.provider.website }}</a>
+                            </p>
                         {% endif %}
-                        
-                        {% if provider.website %}
-                            <p><i class="fas fa-globe me-2"></i> <a href="{{ provider.website }}" target="_blank">الموقع الإلكتروني</a></p>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <!-- Booking Card -->
-                {% if service.is_active %}
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0">احجز هذه الخدمة</h4>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text fw-bold mb-3">السعر: {{ "%.2f"|format(service.price) }} ريال</p>
-                            
-                            {% if current_user.is_authenticated %}
-                                <form method="post" action="{{ url_for('book_service') }}">
-                                    {{ booking_form.hidden_tag() }}
-                                    
-                                    <div class="mb-3">
-                                        <label for="booking_date" class="form-label">اختر التاريخ والوقت</label>
-                                        {{ booking_form.booking_date(class="form-control", type="datetime-local") }}
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="notes" class="form-label">ملاحظات إضافية (اختياري)</label>
-                                        {{ booking_form.notes(class="form-control", rows="3") }}
-                                    </div>
-                                    
-                                    <div class="d-grid">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-calendar-check me-2"></i> احجز الآن
-                                        </button>
-                                    </div>
-                                </form>
-                            {% else %}
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    يجب <a href="{{ url_for('login') }}">تسجيل الدخول</a> لتتمكن من حجز هذه الخدمة.
-                                </div>
+                        <div class="mt-3">
+                            <span class="badge bg-light text-dark me-1">{{ service.provider.services.count() }} خدمة</span>
+                            {% if service.provider.verified %}
+                                <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> موثوق</span>
                             {% endif %}
                         </div>
                     </div>
-                {% else %}
-                    <div class="card shadow-sm mb-4 border-danger">
-                        <div class="card-body text-center">
-                            <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
-                            <h5 class="card-title">هذه الخدمة غير متاحة حالياً</h5>
-                            <p class="card-text">يرجى البحث عن خدمات أخرى متاحة.</p>
-                            <a href="{{ url_for('services') }}" class="btn btn-outline-primary mt-2">تصفح الخدمات</a>
-                        </div>
-                    </div>
-                {% endif %}
+                </div>
                 
-                <!-- Similar Services -->
+                <!-- خدمات مشابهة -->
                 <div class="card shadow-sm">
-                    <div class="card-header bg-white">
-                        <h4 class="mb-0">خدمات مشابهة</h4>
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">خدمات مشابهة</h5>
                     </div>
-                    <div class="card-body">
-                        <div class="list-group">
-                            {% set similar_services = service.provider.services.filter_by(is_active=True).all()[:5] %}
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
                             {% if similar_services %}
                                 {% for similar in similar_services %}
                                     {% if similar.id != service.id %}

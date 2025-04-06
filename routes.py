@@ -675,9 +675,11 @@ def get_status_color(status):
     }
     return status_colors.get(status, 'secondary')
 
-@app.template_filter('has_review')
-def has_review(service_id, user_id):
-    return Review.query.filter_by(service_id=service_id, user_id=user_id).first() is not None
+@app.context_processor
+def utility_processor():
+    def has_review(service_id, user_id):
+        return Review.query.filter_by(service_id=service_id, user_id=user_id).first() is not None
+    return {'has_review': has_review}
 
 # Handle 404 errors
 @app.errorhandler(404)
