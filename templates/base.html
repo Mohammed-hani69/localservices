@@ -14,6 +14,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/rtl.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -52,7 +53,19 @@
                     {% endif %}
                 </ul>
                 
-                <div class="d-flex">
+                <div class="d-flex align-items-center">
+                    <!-- Dark Mode Toggle -->
+                    <div class="theme-switch-wrapper me-3">
+                        <label class="theme-switch" for="darkModeToggle">
+                            <input type="checkbox" id="darkModeToggle">
+                            <span class="slider"></span>
+                        </label>
+                        <div class="dark-mode-icon ms-1">
+                            <i class="fas fa-sun"></i>
+                            <i class="fas fa-moon"></i>
+                        </div>
+                    </div>
+                    
                     {% if current_user.is_authenticated %}
                         <!-- زر الإشعارات -->
                         <a href="{{ url_for('notifications') }}" class="btn btn-outline-secondary position-relative me-2">
@@ -171,6 +184,7 @@
     
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     
     {% block extra_js %}{% endblock %}
 </body>

@@ -189,7 +189,7 @@
                                 
                                 {% if booking.status == 'pending' %}
                                 <div class="d-flex">
-                                    <a href="{{ url_for('payment', booking_id=booking.id) }}" class="btn btn-primary btn-sm me-2">الدفع</a>
+                                    <a href="{{ url_for('payment', payment_id=booking.id) }}" class="btn btn-primary btn-sm me-2">الدفع</a>
                                     <a href="#" class="btn btn-outline-danger btn-sm cancel-booking" data-booking-id="{{ booking.id }}">إلغاء</a>
                                 </div>
                                 {% elif booking.status == 'completed' and not has_review(booking.service.id, current_user.id) %}
