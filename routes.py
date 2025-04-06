@@ -862,7 +862,7 @@ def admin_export_database():
             backup_file,
             as_attachment=True,
             download_name=os.path.basename(backup_file),
-            mimetype='application/sql'
+            mimetype='application/json'
         )
     else:
         flash('حدث خطأ أثناء تصدير قاعدة البيانات. الرجاء المحاولة مرة أخرى.', 'danger')
