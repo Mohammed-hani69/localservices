@@ -314,6 +314,9 @@ def service_details(service_id):
     provider = ServiceProvider.query.get(service.provider_id)
     reviews = Review.query.filter_by(service_id=service_id).all()
     
+    # Get similar services from the same category
+    similar_services = Service.query.filter_by(category=service.category).filter(Service.id != service_id).limit(5).all()
+    
     booking_form = BookingForm()
     booking_form.service_id.data = service_id
     
@@ -331,7 +334,7 @@ def service_details(service_id):
     return render_template('service_details.html', title=service.name, 
                           service=service, provider=provider, 
                           booking_form=booking_form, review_form=review_form,
-                          reviews=reviews)
+                          reviews=reviews, similar_services=similar_services)
 
 # Book service
 @app.route('/booking', methods=['POST'])

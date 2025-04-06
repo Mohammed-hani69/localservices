@@ -101,6 +101,7 @@
                         {% endif %}
                         
                         {% if current_user.is_authenticated and current_user.id != service.provider.user_id and not current_user.is_admin() and not has_review(service.id, current_user.id) %}
+                            {% if review_form %}
                             <div class="mt-4">
                                 <h6 class="mb-3">إضافة تقييم</h6>
                                 <form action="{{ url_for('add_review') }}" method="post">
@@ -117,6 +118,7 @@
                                     {{ review_form.submit(class="btn btn-primary") }}
                                 </form>
                             </div>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
