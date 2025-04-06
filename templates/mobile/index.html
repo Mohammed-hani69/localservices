@@ -1,147 +1,269 @@
-{% extends "base_mobile.html" %}
+{% extends "mobile/base_mobile.html" %}
 
 {% block title %}منصة الخدمات المحلية{% endblock %}
 
-{% block header_title %}الخدمات المحلية{% endblock %}
-
-{% block header_back %}
-<!-- No back button on home page -->
-{% endblock %}
-
 {% block content %}
-<div class="container p-3">
-    <!-- Search Box -->
-    <div class="mobile-search-box mb-4">
-        <form action="{{ url_for('services') }}" method="get" class="mobile-form">
-            <div class="input-group">
-                <input type="text" name="query" class="form-control" placeholder="ابحث عن خدمة...">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i>
-                </button>
+<div class="mobile-home-page">
+    <div class="container py-4">
+        <h1 class="text-center mb-4">الخدمات المحلية</h1>
+        
+        <!-- Search Box -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form action="{{ url_for('services') }}" method="get">
+                    <div class="input-group">
+                        <input type="text" name="query" class="form-control" placeholder="ابحث عن خدمة...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
-    </div>
+        </div>
 
-    <!-- Categories Scroll -->
-    <h5 class="mb-3">تصفح حسب الفئة</h5>
-    <div class="categories-scroll mb-4">
-        <a href="{{ url_for('services', category='صيانة') }}" class="category-item">
-            <div class="category-circle">
-                <i class="fas fa-tools"></i>
-            </div>
-            <span>صيانة</span>
-        </a>
-        <a href="{{ url_for('services', category='تنظيف') }}" class="category-item">
-            <div class="category-circle">
-                <i class="fas fa-broom"></i>
-            </div>
-            <span>تنظيف</span>
-        </a>
-        <a href="{{ url_for('services', category='تعليم') }}" class="category-item">
-            <div class="category-circle">
-                <i class="fas fa-graduation-cap"></i>
-            </div>
-            <span>تعليم</span>
-        </a>
-        <a href="{{ url_for('services', category='صحة') }}" class="category-item">
-            <div class="category-circle">
-                <i class="fas fa-heartbeat"></i>
-            </div>
-            <span>صحة</span>
-        </a>
-        <a href="{{ url_for('services', category='طعام') }}" class="category-item">
-            <div class="category-circle">
-                <i class="fas fa-utensils"></i>
-            </div>
-            <span>طعام</span>
-        </a>
-        <a href="{{ url_for('services', category='أخرى') }}" class="category-item">
-            <div class="category-circle">
-                <i class="fas fa-ellipsis-h"></i>
-            </div>
-            <span>أخرى</span>
-        </a>
-    </div>
-
-    <!-- Featured Services -->
-    <h5 class="mb-3">خدمات مميزة</h5>
-    <div class="mb-4">
-        {% for service in featured_services %}
-        <div class="mobile-card" data-href="{{ url_for('service_details', service_id=service.id) }}">
-            <div class="mobile-card-image">
-                {% if service.image %}
-                <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}">
-                {% else %}
-                <div class="d-flex align-items-center justify-content-center h-100">
-                    <i class="fas fa-concierge-bell fa-3x text-muted"></i>
+        <!-- Categories Scroll -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3 text-center">تصفح حسب الفئة</h5>
+                <div class="categories-scroll">
+                    <a href="{{ url_for('services', category='صيانة') }}" class="category-item">
+                        <div class="category-circle">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <span>صيانة</span>
+                    </a>
+                    <a href="{{ url_for('services', category='تنظيف') }}" class="category-item">
+                        <div class="category-circle">
+                            <i class="fas fa-broom"></i>
+                        </div>
+                        <span>تنظيف</span>
+                    </a>
+                    <a href="{{ url_for('services', category='تعليم') }}" class="category-item">
+                        <div class="category-circle">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <span>تعليم</span>
+                    </a>
+                    <a href="{{ url_for('services', category='صحة') }}" class="category-item">
+                        <div class="category-circle">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <span>صحة</span>
+                    </a>
+                    <a href="{{ url_for('services', category='طعام') }}" class="category-item">
+                        <div class="category-circle">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <span>طعام</span>
+                    </a>
+                    <a href="{{ url_for('services', category='أخرى') }}" class="category-item">
+                        <div class="category-circle">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </div>
+                        <span>أخرى</span>
+                    </a>
                 </div>
+            </div>
+        </div>
+
+        <!-- Featured Services -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">خدمات مميزة</h5>
+                
+                {% if featured_services %}
+                    {% for service in featured_services %}
+                    <div class="service-card mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}" data-href="{{ url_for('service_details', service_id=service.id) }}">
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="service-image-container">
+                                    {% if service.image %}
+                                    <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" class="img-fluid rounded">
+                                    {% else %}
+                                    <div class="d-flex align-items-center justify-content-center h-100 bg-light rounded">
+                                        <i class="fas fa-concierge-bell fa-2x text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-8">
+                                <h6 class="mb-1">{{ service.name }}</h6>
+                                <p class="text-muted small mb-1">{{ service.category }} - {{ service.provider.company_name }}</p>
+                                <div class="rating-display mb-1" data-rating="{{ service.provider.rating }}"></div>
+                                <p class="fw-bold text-primary mb-0">{{ "%.2f"|format(service.price) }} ر.س</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted mb-0">لا توجد خدمات مميزة حاليًا.</p>
                 {% endif %}
             </div>
-            <div class="mobile-card-content">
-                <h5 class="mobile-card-title">{{ service.name }}</h5>
-                <p class="mobile-card-subtitle">{{ service.category }} - {{ service.provider.company_name }}</p>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="mobile-card-price">{{ "%.2f"|format(service.price) }} ر.س</span>
-                    <div class="rating-display" data-rating="{{ service.provider.rating }}"></div>
-                </div>
-            </div>
         </div>
-        {% endfor %}
-    </div>
 
-    <!-- Recent Services -->
-    <h5 class="mb-3">أحدث الخدمات</h5>
-    <div class="mb-4">
-        {% for service in recent_services %}
-        <div class="mobile-card" data-href="{{ url_for('service_details', service_id=service.id) }}">
-            <div class="mobile-card-image">
-                {% if service.image %}
-                <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}">
+        <!-- Recent Services -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">أحدث الخدمات</h5>
+                
+                {% if recent_services %}
+                    {% for service in recent_services %}
+                    <div class="service-card mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}" data-href="{{ url_for('service_details', service_id=service.id) }}">
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="service-image-container">
+                                    {% if service.image %}
+                                    <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" class="img-fluid rounded">
+                                    {% else %}
+                                    <div class="d-flex align-items-center justify-content-center h-100 bg-light rounded">
+                                        <i class="fas fa-concierge-bell fa-2x text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-8">
+                                <h6 class="mb-1">{{ service.name }}</h6>
+                                <p class="text-muted small mb-1">{{ service.category }} - {{ service.provider.company_name }}</p>
+                                <div class="rating-display mb-1" data-rating="{{ service.provider.rating }}"></div>
+                                <p class="fw-bold text-primary mb-0">{{ "%.2f"|format(service.price) }} ر.س</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 {% else %}
-                <div class="d-flex align-items-center justify-content-center h-100">
-                    <i class="fas fa-concierge-bell fa-3x text-muted"></i>
-                </div>
+                    <p class="text-muted mb-0">لا توجد خدمات حديثة حاليًا.</p>
                 {% endif %}
             </div>
-            <div class="mobile-card-content">
-                <h5 class="mobile-card-title">{{ service.name }}</h5>
-                <p class="mobile-card-subtitle">{{ service.category }} - {{ service.provider.company_name }}</p>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="mobile-card-price">{{ "%.2f"|format(service.price) }} ر.س</span>
-                    <div class="rating-display" data-rating="{{ service.provider.rating }}"></div>
+        </div>
+
+        <!-- Popular Categories -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3 text-center">الفئات الأكثر طلبًا</h5>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <a href="{{ url_for('services', category='صيانة') }}" class="btn btn-outline-primary w-100 p-3 h-100">
+                            <i class="fas fa-tools mb-2 fa-2x"></i>
+                            <div>صيانة</div>
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="{{ url_for('services', category='تنظيف') }}" class="btn btn-outline-primary w-100 p-3 h-100">
+                            <i class="fas fa-broom mb-2 fa-2x"></i>
+                            <div>تنظيف</div>
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="{{ url_for('services', category='تعليم') }}" class="btn btn-outline-primary w-100 p-3 h-100">
+                            <i class="fas fa-graduation-cap mb-2 fa-2x"></i>
+                            <div>تعليم</div>
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="{{ url_for('services', category='صحة') }}" class="btn btn-outline-primary w-100 p-3 h-100">
+                            <i class="fas fa-heartbeat mb-2 fa-2x"></i>
+                            <div>صحة</div>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Popular Categories -->
-    <h5 class="mb-3">الفئات الأكثر طلبًا</h5>
-    <div class="row mb-4">
-        <div class="col-6 mb-3">
-            <a href="{{ url_for('services', category='صيانة') }}" class="btn btn-outline-primary w-100 p-3">
-                <i class="fas fa-tools mb-2 fa-2x"></i>
-                <div>صيانة</div>
-            </a>
-        </div>
-        <div class="col-6 mb-3">
-            <a href="{{ url_for('services', category='تنظيف') }}" class="btn btn-outline-primary w-100 p-3">
-                <i class="fas fa-broom mb-2 fa-2x"></i>
-                <div>تنظيف</div>
-            </a>
-        </div>
-        <div class="col-6 mb-3">
-            <a href="{{ url_for('services', category='تعليم') }}" class="btn btn-outline-primary w-100 p-3">
-                <i class="fas fa-graduation-cap mb-2 fa-2x"></i>
-                <div>تعليم</div>
-            </a>
-        </div>
-        <div class="col-6 mb-3">
-            <a href="{{ url_for('services', category='صحة') }}" class="btn btn-outline-primary w-100 p-3">
-                <i class="fas fa-heartbeat mb-2 fa-2x"></i>
-                <div>صحة</div>
-            </a>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize rating displays
+    const ratingDisplays = document.querySelectorAll('.rating-display');
+    ratingDisplays.forEach(display => {
+        const rating = parseFloat(display.getAttribute('data-rating'));
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                stars += '<i class="fas fa-star text-warning"></i>';
+            } else if (i - 0.5 <= rating) {
+                stars += '<i class="fas fa-star-half-alt text-warning"></i>';
+            } else {
+                stars += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        display.innerHTML = stars;
+    });
+    
+    // Make the whole service card clickable
+    const serviceCards = document.querySelectorAll('.service-card');
+    serviceCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const href = this.getAttribute('data-href');
+            if (href) {
+                window.location.href = href;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .service-image-container {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .service-card {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .service-card:active {
+        transform: scale(0.98);
+    }
+    
+    .categories-scroll {
+        display: flex;
+        overflow-x: auto;
+        padding: 10px 5px;
+        gap: 15px;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .category-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 70px;
+        color: #212529;
+        text-decoration: none;
+    }
+    
+    .category-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+        color: #e63946;
+        font-size: 1.25rem;
+        transition: all 0.2s;
+    }
+    
+    .category-item:hover .category-circle,
+    .category-item.active .category-circle {
+        background-color: #e63946;
+        color: white;
+    }
+    
+    .rating-display i {
+        font-size: 0.8rem;
+    }
+</style>
 {% endblock %}
