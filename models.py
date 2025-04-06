@@ -23,6 +23,7 @@ class User(UserMixin, db.Model):
     provider_profile = db.relationship('ServiceProvider', backref='user', uselist=False)
     bookings = db.relationship('Booking', backref='client', lazy='dynamic')
     payments = db.relationship('Payment', backref='client', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='user', lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -102,3 +103,14 @@ class Review(db.Model):
     # Define relationships
     service = db.relationship('Service', backref=db.backref('reviews', lazy='dynamic'))
     user = db.relationship('User')
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    notification_type = db.Column(db.String(20), default='info')  # info, success, warning, danger
+    related_id = db.Column(db.Integer, nullable=True)  # ID of related object (booking, payment, etc.)
+    related_type = db.Column(db.String(20), nullable=True)  # Type of related object (booking, payment, etc.)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

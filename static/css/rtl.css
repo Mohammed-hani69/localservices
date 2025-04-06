@@ -1,105 +1,164 @@
-/* RTL Specific Styles */
+/* ملف CSS لدعم اللغة العربية (RTL) */
 
-/* Override Bootstrap RTL specific styles */
-.mr-auto {
-    margin-left: auto !important;
-    margin-right: 0 !important;
+/* تبديل نقطة البداية للقوائم */
+[dir="rtl"] .dropdown-menu-end {
+    left: 0;
+    right: auto;
 }
 
-.ml-auto {
-    margin-right: auto !important;
-    margin-left: 0 !important;
-}
-
-.text-left {
+/* محاذاة النصوص والعناصر */
+[dir="rtl"] .text-start {
     text-align: right !important;
 }
 
-.text-right {
+[dir="rtl"] .text-end {
     text-align: left !important;
 }
 
-/* Form control specific overrides */
-.form-check {
-    padding-right: 1.25rem;
+/* الهوامش */
+[dir="rtl"] .me-1 {
+    margin-left: 0.25rem !important;
+    margin-right: 0 !important;
+}
+
+[dir="rtl"] .me-2 {
+    margin-left: 0.5rem !important;
+    margin-right: 0 !important;
+}
+
+[dir="rtl"] .me-3 {
+    margin-left: 1rem !important;
+    margin-right: 0 !important;
+}
+
+[dir="rtl"] .me-4 {
+    margin-left: 1.5rem !important;
+    margin-right: 0 !important;
+}
+
+[dir="rtl"] .ms-1 {
+    margin-right: 0.25rem !important;
+    margin-left: 0 !important;
+}
+
+[dir="rtl"] .ms-2 {
+    margin-right: 0.5rem !important;
+    margin-left: 0 !important;
+}
+
+[dir="rtl"] .ms-3 {
+    margin-right: 1rem !important;
+    margin-left: 0 !important;
+}
+
+[dir="rtl"] .ms-4 {
+    margin-right: 1.5rem !important;
+    margin-left: 0 !important;
+}
+
+/* الحدود */
+[dir="rtl"] .border-start {
+    border-right: 1px solid #dee2e6 !important;
+    border-left: 0 !important;
+}
+
+[dir="rtl"] .border-end {
+    border-left: 1px solid #dee2e6 !important;
+    border-right: 0 !important;
+}
+
+/* القوائم المنسدلة */
+[dir="rtl"] .dropdown-menu {
+    text-align: right;
+}
+
+[dir="rtl"] .dropdown-item {
+    text-align: right;
+}
+
+/* نظام الشبكة */
+[dir="rtl"] .offset-md-1 {
+    margin-right: 8.333333%;
+    margin-left: 0;
+}
+
+[dir="rtl"] .offset-md-2 {
+    margin-right: 16.666667%;
+    margin-left: 0;
+}
+
+/* الفئات في تفاصيل الخدمة */
+[dir="rtl"] .card-category {
+    right: 10px;
+    left: auto;
+}
+
+/* الأيقونات */
+[dir="rtl"] .fa-chevron-right::before {
+    content: "\f053";
+}
+
+[dir="rtl"] .fa-chevron-left::before {
+    content: "\f054";
+}
+
+/* التنقل بين الصفحات */
+[dir="rtl"] .page-item:first-child .page-link {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+[dir="rtl"] .page-item:last-child .page-link {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+}
+
+/* نجوم التقييم */
+[dir="rtl"] .rating-stars i {
+    margin-left: 0.25rem;
+    margin-right: 0;
+}
+
+/* النماذج */
+[dir="rtl"] .form-check {
+    padding-right: 1.5em;
     padding-left: 0;
 }
 
-.form-check-input {
-    margin-right: -1.25rem;
+[dir="rtl"] .form-check .form-check-input {
+    float: right;
+    margin-right: -1.5em;
     margin-left: 0;
 }
 
-/* Dropdown menu positioning */
-.dropdown-menu {
-    right: 0;
-    left: auto;
-    text-align: right;
+/* الإشعارات غير المقروءة */
+[dir="rtl"] .unread-notification {
+    border-right: 4px solid #e63946;
+    border-left: none;
 }
 
-/* List group items */
-.list-group-item {
-    text-align: right;
+/* تصحيح شكل الأزرار في المودال */
+[dir="rtl"] .modal-footer > * {
+    margin: 0.25rem;
 }
 
-/* Card text alignment */
-.card-text {
-    text-align: right;
-}
-
-/* Modal dialog */
-.modal-header .close {
-    margin: -1rem auto -1rem -1rem;
-}
-
-/* Input groups */
-.input-group > .form-control:not(:last-child),
-.input-group > .custom-select:not(:last-child) {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-top-right-radius: 0.25rem;
-    border-bottom-right-radius: 0.25rem;
-}
-
-.input-group > .form-control:not(:first-child),
-.input-group > .custom-select:not(:first-child) {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-top-left-radius: 0.25rem;
-    border-bottom-left-radius: 0.25rem;
-}
-
-.input-group-prepend {
-    margin-left: -1px;
-    margin-right: 0;
-}
-
-.input-group-append {
-    margin-right: -1px;
-    margin-left: 0;
-}
-
-/* Nav tabs */
-.nav-tabs .nav-item {
-    margin-right: 0;
-    margin-left: 0.5rem;
-}
-
-/* Pagination */
-.pagination {
+/* تصحيح القوائم */
+[dir="rtl"] .list-group {
     padding-right: 0;
 }
 
-.page-item:first-child .page-link {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-top-right-radius: 0.25rem;
-    border-bottom-right-radius: 0.25rem;
-}
-
-.page-item:last-child .page-link {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-top-left-radius: 0.25rem;
-    border-bottom-left-radius: 0.25rem;
+/* تخصيصات لواجهة المستخدم المحمولة */
+@media (max-width: 576px) {
+    [dir="rtl"] .navbar-brand {
+        margin-right: 0;
+    }
+    
+    [dir="rtl"] .dropdown-menu-end {
+        left: 10px;
+        right: auto;
+    }
 }

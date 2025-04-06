@@ -1,495 +1,214 @@
-/* Mobile Styles */
+/* ملف CSS للتطبيق الجوال */
+
+/* الخطوط والألوان الأساسية */
 :root {
-    --primary-color: #dc3545;
-    --primary-hover: #c82333;
-    --secondary-color: #f8f9fa;
-    --text-color: #333;
-    --light-gray: #f0f0f0;
-    --medium-gray: #ddd;
-    --dark-gray: #777;
-    --border-radius: 8px;
-    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --primary-color: #e63946;
+    --secondary-color: #457b9d;
+    --light-color: #f1faee;
+    --dark-color: #1d3557;
+    --success-color: #2a9d8f;
+    --warning-color: #e9c46a;
+    --danger-color: #e76f51;
+    --border-radius: 0.5rem;
 }
 
-/* Base Mobile Layout */
-body.mobile {
-    background-color: var(--light-gray);
+body {
     font-family: 'Tajawal', sans-serif;
-    color: var(--text-color);
-    direction: rtl;
-    padding-bottom: 70px; /* Space for bottom navigation */
-    padding-top: 60px; /* Space for header */
-    overscroll-behavior-y: none;
-    -webkit-tap-highlight-color: transparent;
+    color: var(--dark-color);
+    background-color: #f8f9fa;
 }
 
-/* Mobile Header */
-.mobile-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background-color: var(--primary-color);
-    color: white;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.mobile-header-title {
-    font-size: 1.2rem;
+/* العناوين */
+h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
-    flex: 1;
-    text-align: center;
-    margin: 0;
 }
 
-.mobile-header-back {
-    margin-left: 15px;
-    font-size: 1.2rem;
+/* الأزرار */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
-.mobile-header-action {
-    margin-right: 15px;
-    font-size: 1.2rem;
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #d62c3b;
+    border-color: #d62c3b;
 }
 
-/* Mobile Bottom Navigation */
-.mobile-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background-color: white;
-    display: flex;
-    z-index: 1000;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
-.mobile-nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    color: var(--dark-gray);
-    font-size: 0.8rem;
-    transition: color 0.2s;
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
-.mobile-nav-item.active {
+/* شريط التنقل السفلي */
+.bottom-nav {
+    box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.nav-item {
+    transition: all 0.2s;
+}
+
+.nav-item.active {
     color: var(--primary-color);
 }
 
-.mobile-nav-icon {
-    font-size: 1.3rem;
-    margin-bottom: 2px;
-}
-
-/* Mobile Cards */
-.mobile-card {
-    background-color: white;
+/* البطاقات */
+.card {
     border-radius: var(--border-radius);
-    overflow: hidden;
-    margin-bottom: 15px;
-    box-shadow: var(--box-shadow);
-    cursor: pointer;
-    transition: transform 0.3s, box-shadow 0.3s;
-    display: flex;
-    flex-direction: column;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
 }
 
-.mobile-card:active {
+.card-img-top {
+    border-top-right-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius);
+    height: 180px;
+    object-fit: cover;
+}
+
+/* الإشعارات */
+.badge-notification {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+/* قائمة الإشعارات */
+.notification-list {
+    margin-bottom: 60px;
+}
+
+.notification-item {
+    transition: all 0.2s;
+    border: 1px solid #f0f0f0;
+}
+
+.notification-item:active {
     transform: scale(0.98);
 }
 
-.mobile-card-image {
-    height: 150px;
-    background-color: var(--light-gray);
-    position: relative;
-    overflow: hidden;
+.unread-notification {
+    border-right: 3px solid var(--primary-color);
+    background-color: rgba(230, 57, 70, 0.03);
 }
 
-.mobile-card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.mobile-card-content {
-    padding: 15px;
-}
-
-.mobile-card-title {
-    margin: 0 0 5px 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.mobile-card-subtitle {
-    color: var(--dark-gray);
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-}
-
-.mobile-card-price {
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-/* Categories Scroll */
-.categories-scroll {
-    display: flex;
-    overflow-x: auto;
-    padding: 10px 0;
-    margin: 0 -15px;
-    padding: 10px 15px;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-}
-
-.categories-scroll::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-}
-
-.category-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-left: 15px;
-    text-decoration: none;
-    color: var(--text-color);
-    min-width: 60px;
-}
-
-.category-circle {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 8px;
-    box-shadow: var(--box-shadow);
-    color: var(--primary-color);
-    transition: background-color 0.3s;
-}
-
-.category-item.active .category-circle {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.category-item span {
-    font-size: 0.8rem;
-}
-
-/* Mobile Search Box */
-.mobile-search-box {
-    position: relative;
-}
-
-.mobile-search-box .input-group {
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    box-shadow: var(--box-shadow);
-}
-
-.mobile-search-box .form-control {
-    border: none;
-    padding: 12px 15px;
-    font-size: 1rem;
-}
-
-.mobile-search-box .btn {
-    padding: 0 15px;
-    border: none;
-}
-
-/* Mobile Form Styles */
-.mobile-form .form-control,
-.mobile-form .form-select {
-    padding: 12px 15px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--medium-gray);
-    background-color: white;
-    margin-bottom: 15px;
-}
-
-.mobile-form label {
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-/* Mobile Service Detail Page */
-.mobile-service-image {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    background-color: var(--light-gray);
-}
-
-.mobile-service-detail {
-    background-color: white;
-    padding: 20px;
-    margin-top: -20px;
-    border-radius: 20px 20px 0 0;
-    position: relative;
-    z-index: 1;
-    min-height: calc(100vh - 250px - 60px);
-}
-
-/* Action Button */
-.mobile-action-button {
-    position: fixed;
-    bottom: 70px;
-    left: 20px;
-    right: 20px;
-    background-color: var(--primary-color);
-    color: white;
-    text-align: center;
-    padding: 15px;
-    border-radius: var(--border-radius);
-    text-decoration: none;
-    font-weight: 600;
-    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-    z-index: 900;
-    transition: background-color 0.3s;
-}
-
-.mobile-action-button:hover,
-.mobile-action-button:active {
-    background-color: var(--primary-hover);
-    color: white;
-}
-
-/* Tabs */
-.mobile-tabs {
-    display: flex;
-    background-color: white;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    box-shadow: var(--box-shadow);
-    margin-bottom: 20px;
-}
-
-.mobile-tab {
-    flex: 1;
-    text-align: center;
-    padding: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    color: var(--dark-gray);
-    transition: all 0.3s;
-}
-
-.mobile-tab.active {
-    border-bottom-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-/* Mobile Dashboard Stats */
-.mobile-dashboard-stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-}
-
-.mobile-stat-card {
-    background-color: white;
-    border-radius: var(--border-radius);
-    padding: 15px;
-    box-shadow: var(--box-shadow);
-    text-align: center;
-}
-
-.mobile-stat-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 5px;
-}
-
-.mobile-stat-label {
-    color: var(--dark-gray);
-    font-size: 0.9rem;
-}
-
-/* Mobile List Items */
-.mobile-list-item {
-    background-color: white;
-    border-radius: var(--border-radius);
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: var(--box-shadow);
-    display: flex;
-    align-items: center;
-}
-
-.mobile-list-icon {
+.notification-icon {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
-    background-color: var(--light-gray);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 15px;
-    color: var(--primary-color);
-}
-
-.mobile-list-content {
-    flex: 1;
-}
-
-.mobile-list-title {
-    font-weight: 600;
-    margin-bottom: 5px;
-}
-
-.mobile-list-subtitle {
-    color: var(--dark-gray);
-    font-size: 0.8rem;
-}
-
-.mobile-list-action {
-    color: var(--primary-color);
-    font-size: 1.2rem;
-    margin-right: 10px;
-}
-
-/* Mobile Booking Cards */
-.mobile-booking-card {
-    background-color: white;
-    border-radius: var(--border-radius);
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: var(--box-shadow);
-}
-
-/* Mobile Toast Notifications */
-.mobile-toast {
-    position: fixed;
-    top: 70px;
-    left: 20px;
-    right: 20px;
-    padding: 15px;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    border-radius: var(--border-radius);
-    z-index: 2000;
-    text-align: center;
-    transform: translateY(-100px);
-    opacity: 0;
-    transition: transform 0.3s, opacity 0.3s;
-    pointer-events: none;
-}
-
-.mobile-toast.show {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.mobile-toast.success {
-    background-color: rgba(40, 167, 69, 0.9);
-}
-
-.mobile-toast.error {
-    background-color: rgba(220, 53, 69, 0.9);
-}
-
-/* Offline Indicator */
-.mobile-offline-indicator {
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    background-color: #f8d7da;
-    color: #721c24;
-    text-align: center;
-    padding: 8px;
-    z-index: 999;
-    font-size: 0.9rem;
-    display: none;
-}
-
-/* Rating Display */
-.rating-display {
-    color: #ffc107;
-    font-size: 0.9rem;
-}
-
-/* Loading Spinner */
-.mobile-spinner {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(255, 255, 255, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-}
-
-.mobile-spinner-inner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(220, 53, 69, 0.3);
+    background-color: #f8f9fa;
     border-radius: 50%;
-    border-top-color: var(--primary-color);
-    animation: spin 1s infinite linear;
 }
 
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+/* الحالة بلا اتصال */
+#networkStatus {
+    position: sticky;
+    top: 56px;
+    z-index: 1000;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 320px) {
-    .mobile-nav-item {
-        font-size: 0.7rem;
-    }
-    
-    .mobile-nav-icon {
-        font-size: 1.1rem;
-    }
-    
-    .mobile-card-title {
-        font-size: 1rem;
-    }
+/* أشرطة التقدم */
+.progress {
+    height: 0.5rem;
+    border-radius: 1rem;
 }
 
-/* RTL Specific Adjustments */
-.mobile-header-back {
+/* تخصيص علامات التقييم */
+.star-rating {
+    font-size: 1.5rem;
+    color: #e9c46a;
+}
+
+/* أنماط مخصصة للنموذج */
+.form-control, .form-select {
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* التاريخ والوقت */
+input[type="datetime-local"] {
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid #ced4da;
+    width: 100%;
+}
+
+/* مودال */
+.modal-content {
+    border-radius: var(--border-radius);
+}
+
+.modal-header {
+    border-top-right-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius);
+}
+
+/* توطين للغة العربية */
+[dir="rtl"] .dropdown-menu-end {
+    left: 0;
+    right: auto;
+}
+
+[dir="rtl"] .modal-footer {
+    justify-content: flex-start;
+}
+
+[dir="rtl"] .notification-icon {
+    margin-left: 12px;
+    margin-right: 0;
+}
+
+[dir="rtl"] .notification-action {
     transform: scaleX(-1);
 }
 
-/* Animation for card transitions */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* كلاسات المساعدة */
+.bg-light-primary {
+    background-color: rgba(230, 57, 70, 0.1);
 }
 
-.mobile-card {
-    animation: fadeIn 0.3s ease-out;
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.border-primary {
+    border-color: var(--primary-color) !important;
+}
+
+/* تحسينات لقابلية الاستخدام على الأجهزة المحمولة */
+@media (max-width: 576px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    .card-title {
+        font-size: 1.2rem;
+    }
 }

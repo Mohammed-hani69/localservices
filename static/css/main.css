@@ -1,701 +1,345 @@
-/* Main CSS File */
+/* ملف CSS الرئيسي للتطبيق */
 
-/* ===== Fonts ===== */
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap');
-
-/* ===== Variables ===== */
+/* الخطوط والألوان الأساسية */
 :root {
-    --primary-color: #e41d36;    /* Red */
-    --primary-light: #ff6e67;
-    --primary-dark: #a90018;
-    --secondary-color: #ffffff;  /* White */
-    --text-color: #333333;
-    --light-gray: #f8f9fa;
-    --medium-gray: #e0e0e0;
-    --dark-gray: #6c757d;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #17a2b8;
-}
-
-/* ===== General Styles ===== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    --primary-color: #e63946;
+    --secondary-color: #457b9d;
+    --light-color: #f1faee;
+    --dark-color: #1d3557;
+    --success-color: #2a9d8f;
+    --warning-color: #e9c46a;
+    --danger-color: #e76f51;
+    --border-radius: 0.5rem;
 }
 
 body {
     font-family: 'Tajawal', sans-serif;
-    color: var(--text-color);
-    background-color: var(--light-gray);
-    line-height: 1.6;
-    direction: rtl;
-    text-align: right;
+    color: var(--dark-color);
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 15px;
+main {
+    flex: 1;
 }
 
-a {
+/* العناوين */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+}
+
+/* الأزرار */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #d62c3b;
+    border-color: #d62c3b;
+}
+
+.btn-outline-primary {
     color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* الروابط */
+a {
+    color: var(--secondary-color);
     text-decoration: none;
-    transition: color 0.3s ease;
 }
 
 a:hover {
-    color: var(--primary-dark);
+    color: var(--primary-color);
     text-decoration: underline;
 }
 
-/* ===== Typography ===== */
-h1, h2, h3, h4, h5, h6 {
+/* شريط التنقل */
+.navbar {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.navbar-brand {
     font-weight: 700;
+    color: var(--primary-color) !important;
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+.nav-link.active {
+    color: var(--primary-color) !important;
+}
+
+/* البطاقات */
+.card {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    border-top-right-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius);
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.card-category {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+/* القسم الرئيسي */
+.hero-section {
+    background: linear-gradient(to left, #e63946, #d62c3b);
+    color: white;
+    padding: 5rem 0;
+    margin-bottom: 3rem;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+/* الفئات */
+.category-card {
+    text-align: center;
+    padding: 2rem 1rem;
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.category-icon {
+    font-size: 2.5rem;
     margin-bottom: 1rem;
     color: var(--primary-color);
+}
+
+/* النماذج */
+.form-control, .form-select {
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* أشرطة التقدم */
+.progress {
+    height: 0.6rem;
+    border-radius: 1rem;
+}
+
+/* بطاقات الخدمات */
+.service-card {
+    height: 100%;
+}
+
+.service-price {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.service-rating {
+    display: flex;
+    align-items: center;
+}
+
+.service-rating .fas.fa-star {
+    color: #ffc107;
+}
+
+.service-rating .far.fa-star {
+    color: #e0e0e0;
+}
+
+/* الذيل */
+.footer {
+    background-color: var(--dark-color);
+    color: white;
+    padding: 3rem 0 1.5rem;
+    margin-top: 3rem;
+}
+
+.footer-heading {
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.footer-links {
+    list-style: none;
+    padding-left: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: white;
+}
+
+/* لوحة التحكم */
+.dashboard-card {
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-card .card-header {
+    background-color: white;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 20px;
+}
+
+/* صفحة تفاصيل الخدمة */
+.service-detail-img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+}
+
+.service-detail-price {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+.service-provider-info {
+    padding: 1.5rem;
+    background-color: rgba(241, 250, 238, 0.5);
+    border-radius: var(--border-radius);
+}
+
+/* نظام التقييم */
+.rating-stars {
+    font-size: 1.5rem;
+}
+
+.rating-stars i {
+    margin-right: 0.25rem;
+    cursor: pointer;
+}
+
+.star-selected {
+    color: #ffc107;
+}
+
+.star-unselected {
+    color: #e0e0e0;
+}
+
+/* الإشعارات */
+.unread-notification {
+    background-color: rgba(230, 57, 70, 0.05);
+    font-weight: 500;
+}
+
+/* كلاسات المساعدة */
+.bg-light-primary {
+    background-color: rgba(230, 57, 70, 0.1);
 }
 
 .text-primary {
     color: var(--primary-color) !important;
 }
 
-.text-white {
-    color: var(--secondary-color) !important;
+.border-primary {
+    border-color: var(--primary-color) !important;
 }
 
-/* ===== Buttons ===== */
-.btn {
-    display: inline-block;
-    font-weight: 500;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: middle;
-    user-select: none;
-    border: 1px solid transparent;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    border-radius: 0.25rem;
-    transition: all 0.15s ease-in-out;
-    cursor: pointer;
-}
-
-.btn-primary {
-    color: var(--secondary-color);
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-    background-color: var(--primary-dark);
-    border-color: var(--primary-dark);
-    color: var(--secondary-color);
-    text-decoration: none;
-}
-
-.btn-outline-primary {
-    color: var(--primary-color);
-    background-color: transparent;
-    background-image: none;
-    border-color: var(--primary-color);
-}
-
-.btn-outline-primary:hover {
-    color: var(--secondary-color);
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    text-decoration: none;
-}
-
-.btn-secondary {
-    color: var(--text-color);
-    background-color: var(--secondary-color);
-    border-color: var(--medium-gray);
-}
-
-.btn-secondary:hover {
-    color: var(--text-color);
-    background-color: var(--medium-gray);
-    border-color: var(--dark-gray);
-    text-decoration: none;
-}
-
-.btn-lg {
-    padding: 0.75rem 1.5rem;
-    font-size: 1.25rem;
-    line-height: 1.5;
-    border-radius: 0.3rem;
-}
-
-.btn-sm {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    border-radius: 0.2rem;
-}
-
-.btn-block {
-    display: block;
-    width: 100%;
-}
-
-/* ===== Navbar ===== */
-.navbar {
-    background-color: var(--secondary-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 1rem 0;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.navbar-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.navbar-logo {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-.navbar-logo:hover {
-    text-decoration: none;
-}
-
-.navbar-menu {
-    display: flex;
-    list-style: none;
-}
-
-.navbar-item {
-    margin-right: 1.5rem;
-}
-
-.navbar-item:last-child {
-    margin-right: 0;
-}
-
-.navbar-link {
-    color: var(--text-color);
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.navbar-link:hover {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-.navbar-link.active {
-    color: var(--primary-color);
-}
-
-.navbar-toggle {
-    display: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-    color: var(--text-color);
-}
-
-/* ===== Forms ===== */
-.form-group {
-    margin-bottom: 1rem;
-}
-
-.form-control {
-    display: block;
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: var(--text-color);
-    background-color: var(--secondary-color);
-    background-clip: padding-box;
-    border: 1px solid var(--medium-gray);
-    border-radius: 0.25rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.form-control:focus {
-    color: var(--text-color);
-    background-color: var(--secondary-color);
-    border-color: var(--primary-color);
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(228, 29, 54, 0.25);
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.form-text {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-    color: var(--dark-gray);
-}
-
-.form-check {
-    position: relative;
-    display: block;
-    padding-right: 1.25rem;
-}
-
-.form-check-input {
-    position: absolute;
-    margin-top: 0.3rem;
-    margin-right: -1.25rem;
-}
-
-.form-check-label {
-    margin-bottom: 0;
-}
-
-/* ===== Cards ===== */
-.card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    word-wrap: break-word;
-    background-color: var(--secondary-color);
-    background-clip: border-box;
-    border: 1px solid var(--medium-gray);
-    border-radius: 0.25rem;
-    overflow: hidden;
-    margin-bottom: 1.5rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-    padding: 0.75rem 1.25rem;
-    margin-bottom: 0;
-    background-color: rgba(0, 0, 0, 0.03);
-    border-bottom: 1px solid var(--medium-gray);
-}
-
-.card-body {
-    flex: 1 1 auto;
-    padding: 1.25rem;
-}
-
-.card-title {
-    margin-bottom: 0.75rem;
-}
-
-.card-text {
-    margin-bottom: 1rem;
-}
-
-.card-footer {
-    padding: 0.75rem 1.25rem;
-    background-color: rgba(0, 0, 0, 0.03);
-    border-top: 1px solid var(--medium-gray);
-}
-
-/* ===== Alerts ===== */
-.alert {
-    position: relative;
-    padding: 0.75rem 1.25rem;
-    margin-bottom: 1rem;
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-}
-
-.alert-success {
-    color: #155724;
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-}
-
-.alert-danger {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-}
-
-.alert-warning {
-    color: #856404;
-    background-color: #fff3cd;
-    border-color: #ffeeba;
-}
-
-.alert-info {
-    color: #0c5460;
-    background-color: #d1ecf1;
-    border-color: #bee5eb;
-}
-
-/* ===== Badges ===== */
-.badge {
-    display: inline-block;
-    padding: 0.25em 0.4em;
-    font-size: 75%;
-    font-weight: 700;
-    line-height: 1;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: 0.25rem;
-}
-
-.badge-primary {
-    color: var(--secondary-color);
-    background-color: var(--primary-color);
-}
-
-.badge-secondary {
-    color: var(--text-color);
-    background-color: var(--medium-gray);
-}
-
-.badge-success {
-    color: var(--secondary-color);
-    background-color: var(--success-color);
-}
-
-.badge-danger {
-    color: var(--secondary-color);
-    background-color: var(--danger-color);
-}
-
-.badge-warning {
-    color: var(--text-color);
-    background-color: var(--warning-color);
-}
-
-.badge-info {
-    color: var(--secondary-color);
-    background-color: var(--info-color);
-}
-
-/* ===== Hero Section ===== */
-.hero {
-    background-color: var(--primary-color);
-    color: var(--secondary-color);
-    padding: 5rem 0;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-content {
-    max-width: 800px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-}
-
-.hero-title {
-    font-size: 3rem;
-    margin-bottom: 1.5rem;
-    color: var(--secondary-color);
-}
-
-.hero-subtitle {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-    font-weight: 300;
-}
-
-.hero-cta {
-    margin-top: 2rem;
-}
-
-/* ===== Features Section ===== */
-.features {
-    padding: 5rem 0;
-    background-color: var(--secondary-color);
-}
-
-.section-title {
-    text-align: center;
-    margin-bottom: 3rem;
-}
-
-.feature-item {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.feature-icon {
-    font-size: 3rem;
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.feature-title {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-/* ===== Services Section ===== */
-.services {
-    padding: 5rem 0;
-    background-color: var(--light-gray);
-}
-
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
-
-.service-card {
-    height: 100%;
-}
-
-.service-image {
-    height: 200px;
-    background-color: var(--medium-gray);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    color: var(--dark-gray);
-}
-
-.service-price {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-.service-provider {
-    font-size: 0.875rem;
-    color: var(--dark-gray);
-}
-
-.service-rating {
-    margin-top: 0.5rem;
-}
-
-.rating-star {
-    color: var(--warning-color);
-}
-
-/* ===== Testimonials Section ===== */
-.testimonials {
-    padding: 5rem 0;
-    background-color: var(--secondary-color);
-    text-align: center;
-}
-
-.testimonial-item {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.testimonial-text {
-    font-size: 1.25rem;
-    font-style: italic;
-    margin-bottom: 1.5rem;
-}
-
-.testimonial-author {
-    font-weight: 700;
-}
-
-/* ===== Footer ===== */
-.footer {
-    background-color: var(--text-color);
-    color: var(--secondary-color);
-    padding: 3rem 0;
-}
-
-.footer-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
-}
-
-.footer-logo {
-    color: var(--secondary-color);
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-}
-
-.footer-heading {
-    color: var(--secondary-color);
-    margin-bottom: 1rem;
-    font-size: 1.25rem;
-}
-
-.footer-links {
-    list-style: none;
-    padding: 0;
-}
-
-.footer-link-item {
-    margin-bottom: 0.5rem;
-}
-
-.footer-link {
-    color: var(--medium-gray);
-    transition: color 0.3s ease;
-}
-
-.footer-link:hover {
-    color: var(--secondary-color);
-    text-decoration: none;
-}
-
-.footer-bottom {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
-    font-size: 0.875rem;
-    color: var(--medium-gray);
-}
-
-/* ===== Dashboard ===== */
-.dashboard {
-    padding: 2rem 0;
-}
-
-.dashboard-header {
-    margin-bottom: 2rem;
-}
-
-.dashboard-title {
-    margin-bottom: 0.5rem;
-}
-
-.dashboard-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background-color: var(--secondary-color);
-    border-radius: 0.25rem;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-.stat-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
-
-.stat-label {
-    color: var(--dark-gray);
-    font-size: 0.875rem;
-}
-
-.dashboard-sections {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-}
-
-@media (min-width: 992px) {
-    .dashboard-sections {
-        grid-template-columns: 3fr 1fr;
-    }
-}
-
-.dashboard-main {
-    background-color: var(--secondary-color);
-    border-radius: 0.25rem;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.dashboard-sidebar {
-    background-color: var(--secondary-color);
-    border-radius: 0.25rem;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* ===== Tables ===== */
-.table {
-    width: 100%;
-    margin-bottom: 1rem;
-    color: var(--text-color);
-    border-collapse: collapse;
-}
-
-.table th,
-.table td {
-    padding: 0.75rem;
-    vertical-align: top;
-    border-top: 1px solid var(--medium-gray);
-}
-
-.table thead th {
-    vertical-align: bottom;
-    border-bottom: 2px solid var(--medium-gray);
-    background-color: var(--light-gray);
-}
-
-.table tbody + tbody {
-    border-top: 2px solid var(--medium-gray);
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.table-hover tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.075);
-}
-
-/* ===== Responsive Styles ===== */
+/* الاستجابة للشاشات */
 @media (max-width: 768px) {
-    .navbar-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: var(--secondary-color);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        padding: 1rem;
-        flex-direction: column;
+    .hero-section {
+        padding: 3rem 0;
     }
-
-    .navbar-menu.active {
-        display: flex;
-    }
-
-    .navbar-item {
-        margin-right: 0;
-        margin-bottom: 0.5rem;
-    }
-
-    .navbar-toggle {
-        display: block;
-    }
-
+    
     .hero-title {
         font-size: 2rem;
     }
+    
+    .card-img-top {
+        height: 180px;
+    }
+}
 
-    .hero-subtitle {
-        font-size: 1.25rem;
+@media (max-width: 576px) {
+    .container {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    .hero-section {
+        padding: 2rem 0;
+    }
+    
+    .hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .card-title {
+        font-size: 1.2rem;
     }
 }

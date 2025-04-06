@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}الإشعارات - منصة الخدمات المحلية{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">الأقسام</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('dashboard') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-tachometer-alt me-2"></i> لوحة التحكم</span>
+                    </a>
+                    <a href="{{ url_for('notifications') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center active">
+                        <span><i class="fas fa-bell me-2"></i> الإشعارات</span>
+                        {% if unread_notifications_count > 0 %}
+                        <span class="badge bg-danger rounded-pill">{{ unread_notifications_count }}</span>
+                        {% endif %}
+                    </a>
+                    {% if current_user.is_provider() %}
+                    <a href="{{ url_for('dashboard') }}#services" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tools me-2"></i> خدماتي
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('dashboard') }}#bookings" class="list-group-item list-group-item-action">
+                        <i class="fas fa-calendar-check me-2"></i> حجوزاتي
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">الإشعارات</h4>
+                    <div>
+                        {% if notifications %}
+                        <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#clearAllModal">
+                            <i class="fas fa-trash me-1"></i> حذف الكل
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>العنوان</th>
+                                        <th>المحتوى</th>
+                                        <th>النوع</th>
+                                        <th>التاريخ</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for notification in notifications %}
+                                    <tr {% if not notification.is_read %}class="table-light fw-bold"{% endif %}>
+                                        <td>{{ notification.title }}</td>
+                                        <td>{{ notification.content }}</td>
+                                        <td>
+                                            {% if notification.notification_type == 'success' %}
+                                                <span class="badge bg-success">نجاح</span>
+                                            {% elif notification.notification_type == 'warning' %}
+                                                <span class="badge bg-warning">تنبيه</span>
+                                            {% elif notification.notification_type == 'danger' %}
+                                                <span class="badge bg-danger">خطأ</span>
+                                            {% else %}
+                                                <span class="badge bg-info">معلومات</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <a href="{{ url_for('delete_notification', notification_id=notification.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('هل أنت متأكد من حذف هذا الإشعار؟')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if pagination.pages > 1 %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                {% if pagination.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('notifications', page=pagination.prev_num) }}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for page in pagination.iter_pages() %}
+                                    {% if page %}
+                                        {% if page != pagination.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('notifications', page=page) }}">{{ page }}</a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item active">
+                                            <a class="page-link" href="#">{{ page }}</a>
+                                        </li>
+                                        {% endif %}
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">...</a>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if pagination.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('notifications', page=pagination.next_num) }}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <img src="{{ url_for('static', filename='images/empty-notifications.svg') }}" alt="لا توجد إشعارات" class="img-fluid mb-3" style="max-width: 200px;">
+                            <h5>لا توجد إشعارات</h5>
+                            <p class="text-muted">ستظهر هنا الإشعارات المتعلقة بحسابك والخدمات التي تستخدمها.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Clear All Notifications -->
+<div class="modal fade" id="clearAllModal" tabindex="-1" aria-labelledby="clearAllModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clearAllModalLabel">حذف جميع الإشعارات</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                هل أنت متأكد من رغبتك في حذف جميع الإشعارات؟ لا يمكن التراجع عن هذا الإجراء.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{{ url_for('delete_all_notifications') }}" method="post">
+                    <button type="submit" class="btn btn-danger">حذف الكل</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة تأثير التلاشي للتنبيهات بعد مرور فترة زمنية
+    setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            let bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+});
+</script>
+{% endblock %}

@@ -7,19 +7,29 @@ from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
 from werkzeug.utils import secure_filename
 from app import app, db
-from notifications import send_review_notification, check_completed_bookings
-from models import User, ServiceProvider, Service, Booking, Payment, Review, ROLE_USER, ROLE_SERVICE_PROVIDER, ROLE_ADMIN
+from notifications import send_review_notification, check_completed_bookings, create_notification
+from models import User, ServiceProvider, Service, Booking, Payment, Review, Notification, ROLE_USER, ROLE_SERVICE_PROVIDER, ROLE_ADMIN
 from forms import LoginForm, RegistrationForm, ServiceProviderForm, ServiceForm, BookingForm, PaymentForm, ReviewForm, SearchForm
 
 # Set up date context for all requests
 @app.before_request
 def before_request():
     g.now = datetime.now()
+    
+    # اضافة عدد الإشعارات غير المقروءة للمستخدم
+    if current_user.is_authenticated:
+        unread_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+        g.unread_notifications_count = unread_count
+    else:
+        g.unread_notifications_count = 0
 
 # Make variables available to templates
 @app.context_processor
 def inject_now():
-    return {'now': g.now}
+    return {
+        'now': g.now,
+        'unread_notifications_count': g.unread_notifications_count if hasattr(g, 'unread_notifications_count') else 0
+    }
 
 # Home page
 @app.route('/')
@@ -704,6 +714,97 @@ def utility_processor():
     def has_review(service_id, user_id):
         return Review.query.filter_by(service_id=service_id, user_id=user_id).first() is not None
     return {'has_review': has_review}
+
+# Notifications
+@app.route('/notifications')
+@login_required
+def notifications():
+    """عرض الإشعارات للمستخدم الحالي"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    
+    # جلب الإشعارات وترتيبها حسب الأحدث أولاً
+    notifications_query = Notification.query.filter_by(user_id=current_user.id)
+    notifications_pagination = notifications_query.order_by(Notification.created_at.desc()).paginate(page=page, per_page=per_page)
+    notifications = notifications_pagination.items
+    
+    # تحديث حالة الإشعارات غير المقروءة
+    unread_notifications = notifications_query.filter_by(is_read=False).all()
+    for notification in unread_notifications:
+        notification.is_read = True
+    
+    db.session.commit()
+    
+    return render_template('notifications.html', title='الإشعارات',
+                          notifications=notifications, 
+                          pagination=notifications_pagination)
+
+# تعليم إشعار كمقروء
+@app.route('/notifications/mark-read/<int:notification_id>')
+@login_required
+def mark_notification_read(notification_id):
+    """تعليم إشعار معين كمقروء"""
+    notification = Notification.query.get_or_404(notification_id)
+    
+    # التأكد من أن الإشعار للمستخدم الحالي
+    if notification.user_id != current_user.id:
+        flash('ليس لديك صلاحية الوصول إلى هذا الإشعار.', 'danger')
+        return redirect(url_for('notifications'))
+    
+    notification.is_read = True
+    db.session.commit()
+    
+    # إذا تم تحديد عنوان URL للعودة، عد إليه
+    next_page = request.args.get('next')
+    if next_page:
+        return redirect(next_page)
+    
+    # وإلا عد إلى صفحة الإشعارات
+    return redirect(url_for('notifications'))
+
+# حذف إشعار
+@app.route('/notifications/delete/<int:notification_id>')
+@login_required
+def delete_notification(notification_id):
+    """حذف إشعار معين"""
+    notification = Notification.query.get_or_404(notification_id)
+    
+    # التأكد من أن الإشعار للمستخدم الحالي
+    if notification.user_id != current_user.id:
+        flash('ليس لديك صلاحية حذف هذا الإشعار.', 'danger')
+        return redirect(url_for('notifications'))
+    
+    db.session.delete(notification)
+    db.session.commit()
+    
+    flash('تم حذف الإشعار بنجاح.', 'success')
+    return redirect(url_for('notifications'))
+
+# حذف جميع الإشعارات للمستخدم الحالي
+@app.route('/notifications/delete-all', methods=['POST'])
+@login_required
+def delete_all_notifications():
+    """حذف جميع إشعارات المستخدم الحالي"""
+    Notification.query.filter_by(user_id=current_user.id).delete()
+    db.session.commit()
+    flash('تم حذف جميع الإشعارات بنجاح.', 'success')
+    return redirect(url_for('notifications'))
+
+# الإشعارات للتطبيق الجوال
+@app.route('/mobile/notifications')
+@login_required
+def mobile_notifications():
+    """عرض الإشعارات في واجهة الهاتف المحمول"""
+    notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    
+    # تحديث حالة الإشعارات غير المقروءة
+    unread_notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).all()
+    for notification in unread_notifications:
+        notification.is_read = True
+    
+    db.session.commit()
+    
+    return render_template('mobile/notifications.html', title='الإشعارات', notifications=notifications)
 
 # Handle 404 errors
 @app.errorhandler(404)

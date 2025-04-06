@@ -5,11 +5,32 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, From, To, Subject, PlainTextContent, HtmlContent
 from flask import request
 from app import app, db
-from models import Booking, User, Service
+from models import Booking, User, Service, Notification
 
 # تكوين متغيرات البيئة
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
 FROM_EMAIL = 'no-reply@localservices.com'  # يمكن تغييره إلى بريد إلكتروني حقيقي
+
+def create_notification(user_id, title, content, notification_type='info', related_id=None, related_type=None):
+    """إنشاء إشعار جديد للمستخدم"""
+    try:
+        notification = Notification(
+            user_id=user_id,
+            title=title,
+            content=content,
+            notification_type=notification_type,
+            related_id=related_id,
+            related_type=related_type,
+            is_read=False
+        )
+        db.session.add(notification)
+        db.session.commit()
+        logging.info(f"تم إنشاء إشعار جديد للمستخدم {user_id}: {title}")
+        return notification
+    except Exception as e:
+        logging.error(f"خطأ في إنشاء الإشعار: {str(e)}")
+        db.session.rollback()
+        return None
 
 def send_email(to_email, subject, html_content):
     """إرسال بريد إلكتروني باستخدام SendGrid"""
@@ -63,8 +84,20 @@ def send_review_notification(booking_id):
         # إنشاء رابط التقييم
         review_url = f"{request.host_url}services/{service.id}#review"
         
+        # إنشاء إشعار داخلي في الموقع
+        notification_title = f"🌟 قيّم تجربتك مع {service.name}"
+        notification_content = f"نأمل أن تكون قد استمتعت بخدمة {service.name}. نرجو تخصيص لحظة لتقييم الخدمة ومساعدة الآخرين."
+        create_notification(
+            user_id=user.id,
+            title=notification_title,
+            content=notification_content,
+            notification_type='info',
+            related_id=service.id,
+            related_type='service'
+        )
+        
         # إنشاء محتوى البريد الإلكتروني
-        subject = f"قم بتقييم خدمة {service.name}"
+        subject = notification_title
         html_content = f"""
         <html>
         <head>
