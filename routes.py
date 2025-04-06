@@ -891,7 +891,17 @@ def get_status_color(status):
 def utility_processor():
     def has_review(service_id, user_id):
         return Review.query.filter_by(service_id=service_id, user_id=user_id).first() is not None
-    return {'has_review': has_review}
+    
+    def get_status_color(status):
+        status_colors = {
+            'pending': 'warning',
+            'confirmed': 'info',
+            'completed': 'success',
+            'cancelled': 'danger'
+        }
+        return status_colors.get(status, 'secondary')
+    
+    return {'has_review': has_review, 'get_status_color': get_status_color}
 
 # Notifications
 @app.route('/notifications')
