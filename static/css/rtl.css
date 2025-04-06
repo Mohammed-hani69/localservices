@@ -1,0 +1,105 @@
+/* RTL Specific Styles */
+
+/* Override Bootstrap RTL specific styles */
+.mr-auto {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+}
+
+.ml-auto {
+    margin-right: auto !important;
+    margin-left: 0 !important;
+}
+
+.text-left {
+    text-align: right !important;
+}
+
+.text-right {
+    text-align: left !important;
+}
+
+/* Form control specific overrides */
+.form-check {
+    padding-right: 1.25rem;
+    padding-left: 0;
+}
+
+.form-check-input {
+    margin-right: -1.25rem;
+    margin-left: 0;
+}
+
+/* Dropdown menu positioning */
+.dropdown-menu {
+    right: 0;
+    left: auto;
+    text-align: right;
+}
+
+/* List group items */
+.list-group-item {
+    text-align: right;
+}
+
+/* Card text alignment */
+.card-text {
+    text-align: right;
+}
+
+/* Modal dialog */
+.modal-header .close {
+    margin: -1rem auto -1rem -1rem;
+}
+
+/* Input groups */
+.input-group > .form-control:not(:last-child),
+.input-group > .custom-select:not(:last-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.input-group > .form-control:not(:first-child),
+.input-group > .custom-select:not(:first-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+}
+
+.input-group-prepend {
+    margin-left: -1px;
+    margin-right: 0;
+}
+
+.input-group-append {
+    margin-right: -1px;
+    margin-left: 0;
+}
+
+/* Nav tabs */
+.nav-tabs .nav-item {
+    margin-right: 0;
+    margin-left: 0.5rem;
+}
+
+/* Pagination */
+.pagination {
+    padding-right: 0;
+}
+
+.page-item:first-child .page-link {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.page-item:last-child .page-link {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+}

@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم{% endblock %}
+
+{% block content %}
+<section class="dashboard py-5">
+    <div class="container">
+        <div class="dashboard-header">
+            <h2 class="dashboard-title">مرحباً، {{ current_user.username }}</h2>
+            <p class="text-muted">
+                {% if current_user.is_provider() %}
+                    لوحة تحكم مقدم الخدمة
+                {% else %}
+                    لوحة تحكم المستخدم
+                {% endif %}
+            </p>
+        </div>
+        
+        <!-- Provider Dashboard -->
+        {% if current_user.is_provider() %}
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">ملف الشركة</h5>
+                            {% if provider %}
+                                <p><strong>اسم الشركة:</strong> {{ provider.company_name }}</p>
+                                <p><strong>الوصف:</strong> {{ provider.description|truncate(100) }}</p>
+                                <p><strong>التقييم:</strong> <span class="rating-display" data-rating="{{ provider.rating }}"></span> ({{ "%.1f"|format(provider.rating) }})</p>
+                                <p><strong>الحالة:</strong> {% if provider.verified %}<span class="badge bg-success">موثّق</span>{% else %}<span class="badge bg-warning">قيد المراجعة</span>{% endif %}</p>
+                                <a href="{{ url_for('edit_provider_profile') }}" class="btn btn-sm btn-outline-primary mt-2">تعديل الملف</a>
+                            {% else %}
+                                <p class="text-muted">لم تقم بإنشاء ملف الشركة بعد.</p>
+                                <a href="{{ url_for('create_provider_profile') }}" class="btn btn-primary mt-2">إنشاء ملف الشركة</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-8 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0">الخدمات ({{ services|length }})</h5>
+                                <a href="{{ url_for('add_service') }}" class="btn btn-sm btn-primary">إضافة خدمة جديدة</a>
+                            </div>
+                            
+                            {% if services %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>الخدمة</th>
+                                                <th>الفئة</th>
+                                                <th>السعر</th>
+                                                <th>الحالة</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for service in services %}
+                                                <tr>
+                                                    <td>{{ service.name }}</td>
+                                                    <td><span class="badge bg-info">{{ service.category }}</span></td>
+                                                    <td>{{ "%.2f"|format(service.price) }} ريال</td>
+                                                    <td>
+                                                        {% if service.is_active %}
+                                                            <span class="badge bg-success">متاح</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">غير متاح</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary">تعديل</a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">لم تقم بإضافة أي خدمات بعد.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">الحجوزات ({{ bookings|length }})</h5>
+                            
+                            {% if bookings %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>العميل</th>
+                                                <th>الخدمة</th>
+                                                <th>التاريخ</th>
+                                                <th>الحالة</th>
+                                                <th>المبلغ</th>
+                                                <th>حالة الدفع</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for booking in bookings %}
+                                                <tr>
+                                                    <td>{{ booking.client.username }}</td>
+                                                    <td>{{ booking.service.name }}</td>
+                                                    <td>{{ booking.booking_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                    <td>
+                                                        {% if booking.status == 'pending' %}
+                                                            <span class="badge bg-warning">قيد الانتظار</span>
+                                                        {% elif booking.status == 'confirmed' %}
+                                                            <span class="badge bg-success">مؤكد</span>
+                                                        {% elif booking.status == 'cancelled' %}
+                                                            <span class="badge bg-danger">ملغي</span>
+                                                        {% elif booking.status == 'completed' %}
+                                                            <span class="badge bg-info">مكتمل</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ "%.2f"|format(booking.service.price) }} ريال</td>
+                                                    <td>
+                                                        {% if booking.payment and booking.payment.status == 'completed' %}
+                                                            <span class="badge bg-success">تم الدفع</span>
+                                                        {% else %}
+                                                            <span class="badge bg-warning">في انتظار الدفع</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">لا توجد حجوزات حالياً.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        <!-- Regular User Dashboard -->
+        {% else %}
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">حجوزاتي</h5>
+                            
+                            {% if bookings %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>الخدمة</th>
+                                                <th>مقدم الخدمة</th>
+                                                <th>التاريخ</th>
+                                                <th>الحالة</th>
+                                                <th>المبلغ</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for booking in bookings %}
+                                                <tr>
+                                                    <td>{{ booking.service.name }}</td>
+                                                    <td>{{ booking.service.provider.company_name }}</td>
+                                                    <td>{{ booking.booking_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                    <td>
+                                                        {% if booking.status == 'pending' %}
+                                                            <span class="badge bg-warning">قيد الانتظار</span>
+                                                        {% elif booking.status == 'confirmed' %}
+                                                            <span class="badge bg-success">مؤكد</span>
+                                                        {% elif booking.status == 'cancelled' %}
+                                                            <span class="badge bg-danger">ملغي</span>
+                                                        {% elif booking.status == 'completed' %}
+                                                            <span class="badge bg-info">مكتمل</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ "%.2f"|format(booking.service.price) }} ريال</td>
+                                                    <td>
+                                                        {% if booking.payment and booking.payment.status != 'completed' %}
+                                                            <a href="{{ url_for('payment', payment_id=booking.payment.id) }}" class="btn btn-sm btn-primary">إتمام الدفع</a>
+                                                        {% elif booking.status == 'confirmed' %}
+                                                            <span class="badge bg-success">تم الدفع</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">لم تقم بأي حجوزات بعد.</p>
+                                <a href="{{ url_for('services') }}" class="btn btn-primary">تصفح الخدمات</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">المدفوعات</h5>
+                            
+                            {% if payments %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>رقم العملية</th>
+                                                <th>الخدمة</th>
+                                                <th>المبلغ</th>
+                                                <th>طريقة الدفع</th>
+                                                <th>التاريخ</th>
+                                                <th>الحالة</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for payment in payments %}
+                                                <tr>
+                                                    <td>{{ payment.transaction_id or 'غير متوفر' }}</td>
+                                                    <td>{{ payment.booking.service.name }}</td>
+                                                    <td>{{ "%.2f"|format(payment.amount) }} ريال</td>
+                                                    <td>{{ payment.payment_method or 'غير محدد' }}</td>
+                                                    <td>{{ payment.payment_date.strftime('%Y-%m-%d %H:%M') if payment.payment_date else 'غير متوفر' }}</td>
+                                                    <td>
+                                                        {% if payment.status == 'pending' %}
+                                                            <span class="badge bg-warning">قيد الانتظار</span>
+                                                        {% elif payment.status == 'completed' %}
+                                                            <span class="badge bg-success">مكتمل</span>
+                                                        {% elif payment.status == 'failed' %}
+                                                            <span class="badge bg-danger">فشل</span>
+                                                        {% elif payment.status == 'refunded' %}
+                                                            <span class="badge bg-info">مسترجع</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">لا توجد مدفوعات حالياً.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">معلومات الحساب</h5>
+                            <p><strong>الاسم:</strong> {{ current_user.username }}</p>
+                            <p><strong>البريد الإلكتروني:</strong> {{ current_user.email }}</p>
+                            <p><strong>رقم الهاتف:</strong> {{ current_user.phone }}</p>
+                            <p><strong>العنوان:</strong> {{ current_user.address }}</p>
+                            <a href="#" class="btn btn-sm btn-outline-primary mt-2">تعديل المعلومات</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">روابط سريعة</h5>
+                            <div class="list-group">
+                                <a href="{{ url_for('services') }}" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-search me-2"></i> تصفح الخدمات
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-heart me-2"></i> الخدمات المفضلة
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-bell me-2"></i> الإشعارات
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-cog me-2"></i> إعدادات الحساب
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}الخدمات المتاحة{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="text-center mb-4">تصفح الخدمات المتاحة</h2>
+                
+                <!-- Search Form -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <form action="{{ url_for('services') }}" method="get" id="search-form">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="searchQuery" name="query" placeholder="ابحث عن خدمة" value="{{ query }}">
+                                        <label for="searchQuery">ابحث عن خدمة</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="searchCategory" name="category">
+                                            <option value="" {% if not category %}selected{% endif %}>جميع الفئات</option>
+                                            <option value="صيانة" {% if category == 'صيانة' %}selected{% endif %}>صيانة</option>
+                                            <option value="تنظيف" {% if category == 'تنظيف' %}selected{% endif %}>تنظيف</option>
+                                            <option value="تعليم" {% if category == 'تعليم' %}selected{% endif %}>تعليم</option>
+                                            <option value="صحة" {% if category == 'صحة' %}selected{% endif %}>صحة</option>
+                                            <option value="طعام" {% if category == 'طعام' %}selected{% endif %}>طعام</option>
+                                            <option value="أخرى" {% if category == 'أخرى' %}selected{% endif %}>أخرى</option>
+                                        </select>
+                                        <label for="searchCategory">اختر فئة</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary w-100 h-100">
+                                        <i class="fas fa-search"></i> بحث
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Results Info -->
+                {% if query or category %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        نتائج البحث 
+                        {% if query %}عن "<strong>{{ query }}</strong>"{% endif %}
+                        {% if category %}في فئة "<strong>{{ category }}</strong>"{% endif %}
+                        ({{ services|length }} خدمة)
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="row">
+            {% if services %}
+                {% for service in services %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="service-image d-flex align-items-center justify-content-center bg-white p-3">
+                                {% if service.category == 'صيانة' %}
+                                    <i class="fas fa-tools fa-5x text-primary"></i>
+                                {% elif service.category == 'تنظيف' %}
+                                    <i class="fas fa-broom fa-5x text-primary"></i>
+                                {% elif service.category == 'تعليم' %}
+                                    <i class="fas fa-graduation-cap fa-5x text-primary"></i>
+                                {% elif service.category == 'صحة' %}
+                                    <i class="fas fa-heartbeat fa-5x text-primary"></i>
+                                {% elif service.category == 'طعام' %}
+                                    <i class="fas fa-utensils fa-5x text-primary"></i>
+                                {% else %}
+                                    <i class="fas fa-hand-holding-heart fa-5x text-primary"></i>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ service.name }}</h5>
+                                <div class="rating-display mb-2" data-rating="{{ service.provider.rating }}"></div>
+                                <p class="card-text text-muted">{{ service.description|truncate(100) }}</p>
+                                <p class="card-text">
+                                    <span class="badge bg-primary mb-2">{{ service.category }}</span>
+                                    <span class="d-block mb-2">المدة: {{ service.duration }} دقيقة</span>
+                                    <span class="d-block text-primary fw-bold">{{ "%.2f"|format(service.price) }} ريال</span>
+                                </p>
+                                <p class="card-text">
+                                    <small class="text-muted">مقدم الخدمة: {{ service.provider.company_name }}</small>
+                                </p>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <a href="{{ url_for('service_details', service_id=service.id) }}" class="btn btn-outline-primary w-100">عرض التفاصيل</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        لا توجد خدمات متاحة تطابق معايير البحث الخاصة بك.
+                    </div>
+                    <a href="{{ url_for('services') }}" class="btn btn-primary mt-3">عرض جميع الخدمات</a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Filters Sidebar (for larger screens) -->
+        <div class="d-none d-lg-block position-fixed" style="top: 100px; right: 20px; width: 250px;">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">فلترة النتائج</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-3">الفئات</h6>
+                    <div class="list-group mb-4">
+                        <a href="{{ url_for('services', query=query) }}" class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
+                            جميع الفئات
+                        </a>
+                        <a href="{{ url_for('services', query=query, category='صيانة') }}" class="list-group-item list-group-item-action {% if category == 'صيانة' %}active{% endif %}">
+                            صيانة
+                        </a>
+                        <a href="{{ url_for('services', query=query, category='تنظيف') }}" class="list-group-item list-group-item-action {% if category == 'تنظيف' %}active{% endif %}">
+                            تنظيف
+                        </a>
+                        <a href="{{ url_for('services', query=query, category='تعليم') }}" class="list-group-item list-group-item-action {% if category == 'تعليم' %}active{% endif %}">
+                            تعليم
+                        </a>
+                        <a href="{{ url_for('services', query=query, category='صحة') }}" class="list-group-item list-group-item-action {% if category == 'صحة' %}active{% endif %}">
+                            صحة
+                        </a>
+                        <a href="{{ url_for('services', query=query, category='طعام') }}" class="list-group-item list-group-item-action {% if category == 'طعام' %}active{% endif %}">
+                            طعام
+                        </a>
+                        <a href="{{ url_for('services', query=query, category='أخرى') }}" class="list-group-item list-group-item-action {% if category == 'أخرى' %}active{% endif %}">
+                            أخرى
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}{{ service.name }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <!-- Service Details -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h1 class="card-title h2 mb-3">{{ service.name }}</h1>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rating-display me-2" data-rating="{{ service.provider.rating }}"></div>
+                            <span class="text-muted">({{ "%.1f"|format(service.provider.rating) }})</span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <span class="badge bg-primary">{{ service.category }}</span>
+                            {% if service.is_active %}
+                                <span class="badge bg-success">متاح</span>
+                            {% else %}
+                                <span class="badge bg-danger">غير متاح</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
+                            {% if service.category == 'صيانة' %}
+                                <i class="fas fa-tools fa-7x text-primary"></i>
+                            {% elif service.category == 'تنظيف' %}
+                                <i class="fas fa-broom fa-7x text-primary"></i>
+                            {% elif service.category == 'تعليم' %}
+                                <i class="fas fa-graduation-cap fa-7x text-primary"></i>
+                            {% elif service.category == 'صحة' %}
+                                <i class="fas fa-heartbeat fa-7x text-primary"></i>
+                            {% elif service.category == 'طعام' %}
+                                <i class="fas fa-utensils fa-7x text-primary"></i>
+                            {% else %}
+                                <i class="fas fa-hand-holding-heart fa-7x text-primary"></i>
+                            {% endif %}
+                        </div>
+                        
+                        <h4>الوصف</h4>
+                        <p class="card-text">{{ service.description }}</p>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-clock me-2"></i> المدة
+                                        </h5>
+                                        <p class="card-text">{{ service.duration }} دقيقة</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-money-bill-wave me-2"></i> السعر
+                                        </h5>
+                                        <p class="card-text text-primary fw-bold">{{ "%.2f"|format(service.price) }} ريال</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reviews Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h4 class="mb-0">التقييمات والمراجعات</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if reviews %}
+                            <div class="mb-4">
+                                <h5>متوسط التقييم</h5>
+                                <div class="d-flex align-items-center">
+                                    <div class="rating-display me-2" data-rating="{{ service.provider.rating }}"></div>
+                                    <span class="fw-bold">{{ "%.1f"|format(service.provider.rating) }} من 5</span>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            {% for review in reviews %}
+                                <div class="review-item mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="rating-display me-2" data-rating="{{ review.rating }}"></div>
+                                        <span class="fw-bold">{{ review.rating }} من 5</span>
+                                    </div>
+                                    <p class="mb-1">{{ review.comment }}</p>
+                                    <p class="text-muted small mb-0">
+                                        <i class="fas fa-user me-1"></i> {{ review.user.username }}
+                                        <span class="mx-2">|</span>
+                                        <i class="fas fa-calendar-alt me-1"></i> {{ review.created_at.strftime('%Y-%m-%d') }}
+                                    </p>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-3">
+                                <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                                <p>لا توجد مراجعات بعد لهذه الخدمة</p>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Add Review Form -->
+                        {% if current_user.is_authenticated and review_form %}
+                            <div class="mt-4">
+                                <h5>أضف تقييمك</h5>
+                                <form method="post" action="{{ url_for('add_review') }}">
+                                    {{ review_form.hidden_tag() }}
+                                    
+                                    <div class="mb-3">
+                                        <label for="rating" class="form-label">{{ review_form.rating.label }}</label>
+                                        {{ review_form.rating(class="form-select") }}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="comment" class="form-label">{{ review_form.comment.label }}</label>
+                                        {{ review_form.comment(class="form-control", rows="4") }}
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        {{ review_form.submit(class="btn btn-primary") }}
+                                    </div>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Provider Info -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h4 class="mb-0">مقدم الخدمة</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ provider.company_name }}</h5>
+                        
+                        <div class="mb-3">
+                            <div class="rating-display me-2" data-rating="{{ provider.rating }}"></div>
+                            <span class="text-muted">({{ "%.1f"|format(provider.rating) }})</span>
+                        </div>
+                        
+                        <p class="card-text">{{ provider.description|truncate(150) }}</p>
+                        
+                        {% if provider.verified %}
+                            <p><span class="badge bg-success"><i class="fas fa-check-circle"></i> مقدم خدمة موثق</span></p>
+                        {% endif %}
+                        
+                        {% if provider.website %}
+                            <p><i class="fas fa-globe me-2"></i> <a href="{{ provider.website }}" target="_blank">الموقع الإلكتروني</a></p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Booking Card -->
+                {% if service.is_active %}
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">احجز هذه الخدمة</h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text fw-bold mb-3">السعر: {{ "%.2f"|format(service.price) }} ريال</p>
+                            
+                            {% if current_user.is_authenticated %}
+                                <form method="post" action="{{ url_for('book_service') }}">
+                                    {{ booking_form.hidden_tag() }}
+                                    
+                                    <div class="mb-3">
+                                        <label for="booking_date" class="form-label">اختر التاريخ والوقت</label>
+                                        {{ booking_form.booking_date(class="form-control", type="datetime-local") }}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="notes" class="form-label">ملاحظات إضافية (اختياري)</label>
+                                        {{ booking_form.notes(class="form-control", rows="3") }}
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-calendar-check me-2"></i> احجز الآن
+                                        </button>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    يجب <a href="{{ url_for('login') }}">تسجيل الدخول</a> لتتمكن من حجز هذه الخدمة.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card shadow-sm mb-4 border-danger">
+                        <div class="card-body text-center">
+                            <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
+                            <h5 class="card-title">هذه الخدمة غير متاحة حالياً</h5>
+                            <p class="card-text">يرجى البحث عن خدمات أخرى متاحة.</p>
+                            <a href="{{ url_for('services') }}" class="btn btn-outline-primary mt-2">تصفح الخدمات</a>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <!-- Similar Services -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h4 class="mb-0">خدمات مشابهة</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% set similar_services = service.provider.services.filter_by(is_active=True).all()[:5] %}
+                            {% if similar_services %}
+                                {% for similar in similar_services %}
+                                    {% if similar.id != service.id %}
+                                        <a href="{{ url_for('service_details', service_id=similar.id) }}" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">{{ similar.name }}</h6>
+                                                <small class="text-primary">{{ "%.0f"|format(similar.price) }} ريال</small>
+                                            </div>
+                                            <small class="text-muted">{{ similar.category }}</small>
+                                        </a>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted text-center py-3">لا توجد خدمات مشابهة متاحة</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

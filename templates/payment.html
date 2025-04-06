@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}إتمام الدفع{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/payment.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">إتمام الدفع</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Order Summary -->
+                        <div class="mb-4">
+                            <h5>ملخص الطلب</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p><strong>الخدمة:</strong> {{ service.name }}</p>
+                                            <p><strong>مقدم الخدمة:</strong> {{ service.provider.company_name }}</p>
+                                            <p><strong>تاريخ الحجز:</strong> {{ booking.booking_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                                            <p><strong>رقم الحجز:</strong> #{{ booking.id }}</p>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <p><strong>المبلغ:</strong></p>
+                                            <p class="text-primary h4">{{ "%.2f"|format(payment.amount) }} ريال</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Error Alert -->
+                        <div id="payment-errors" class="alert alert-danger d-none"></div>
+                        
+                        <!-- Payment Form -->
+                        <h5>اختر طريقة الدفع</h5>
+                        <form method="post" action="{{ url_for('payment', payment_id=payment.id) }}" id="payment-form">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="mb-3">
+                                <label for="payment_method" class="form-label">{{ form.payment_method.label }}</label>
+                                {{ form.payment_method(class="form-select", id="payment_method") }}
+                            </div>
+                            
+                            <!-- Card Details (shown only for credit/debit card) -->
+                            <div id="card-details" class="mb-4">
+                                <h6 class="mb-3">تفاصيل البطاقة</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="card_number" class="form-label">رقم البطاقة</label>
+                                    {{ form.card_number(class="form-control", id="card_number", placeholder="XXXX XXXX XXXX XXXX") }}
+                                    <small class="form-text text-muted">أدخل 16 رقماً بدون مسافات</small>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="card_expiry" class="form-label">تاريخ الانتهاء</label>
+                                        {{ form.card_expiry(class="form-control", id="card_expiry", placeholder="MM/YY") }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="card_cvv" class="form-label">رمز التحقق (CVV)</label>
+                                        {{ form.card_cvv(class="form-control", id="card_cvv", placeholder="XXX") }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-warning mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>ملاحظة:</strong> هذه عملية دفع آمنة. بيانات بطاقتك لن يتم تخزينها على خوادمنا.
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-lock me-2"></i> إتمام الدفع
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer">
+                        <div class="text-center">
+                            <a href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-arrow-right me-1"></i> العودة إلى لوحة التحكم
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

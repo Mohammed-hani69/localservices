@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}تسجيل حساب جديد{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">تسجيل حساب جديد</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{{ url_for('register') }}" class="needs-validation" novalidate>
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label">{{ form.username.label }}</label>
+                                    {{ form.username(class="form-control", id="username", placeholder="أدخل اسم المستخدم") }}
+                                    {% if form.username.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.username.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">{{ form.email.label }}</label>
+                                    {{ form.email(class="form-control", id="email", placeholder="أدخل بريدك الإلكتروني") }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label">{{ form.phone.label }}</label>
+                                    {{ form.phone(class="form-control", id="phone", placeholder="أدخل رقم الهاتف") }}
+                                    {% if form.phone.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="address" class="form-label">{{ form.address.label }}</label>
+                                    {{ form.address(class="form-control", id="address", placeholder="أدخل العنوان") }}
+                                    {% if form.address.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.address.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label">{{ form.password.label }}</label>
+                                    {{ form.password(class="form-control", id="password", placeholder="أدخل كلمة المرور") }}
+                                    {% if form.password.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.password.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">كلمة المرور يجب أن تكون 8 أحرف على الأقل</small>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="password2" class="form-label">{{ form.password2.label }}</label>
+                                    {{ form.password2(class="form-control", id="password2", placeholder="أكد كلمة المرور") }}
+                                    {% if form.password2.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.password2.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="role" class="form-label">{{ form.role.label }}</label>
+                                {{ form.role(class="form-select", id="role") }}
+                                {% if form.role.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.role.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">إذا كنت مقدم خدمة، سيطلب منك إكمال معلومات إضافية بعد التسجيل</small>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                {{ form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer">
+                        <div class="text-center">
+                            <p>لديك حساب بالفعل؟ <a href="{{ url_for('login') }}">تسجيل الدخول</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

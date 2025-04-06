@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}منصة الخدمات المحلية - الصفحة الرئيسية{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero bg-primary">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="text-white mb-4">اكتشف أفضل الخدمات المحلية</h1>
+                <p class="text-white mb-4 lead">منصتنا تربط بين مقدمي الخدمات المتميزين والعملاء، لتوفير تجربة سهلة وموثوقة للجميع. احجز خدمتك الآن بضغطة زر!</p>
+                <div class="d-flex mt-4">
+                    <a href="{{ url_for('services') }}" class="btn btn-light btn-lg me-3">تصفح الخدمات</a>
+                    {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">انضم إلينا</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center d-none d-lg-block">
+                <i class="fas fa-hands-helping fa-10x text-white-50 mt-4"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Search Section -->
+<section class="search-section py-5 bg-white">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h3 class="card-title text-center mb-4">ابحث عن الخدمة التي تحتاجها</h3>
+                        <form action="{{ url_for('services') }}" method="get" id="search-form">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="searchQuery" name="query" placeholder="ابحث عن خدمة">
+                                        <label for="searchQuery">ابحث عن خدمة</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="searchCategory" name="category">
+                                            <option value="" selected>جميع الفئات</option>
+                                            <option value="صيانة">صيانة</option>
+                                            <option value="تنظيف">تنظيف</option>
+                                            <option value="تعليم">تعليم</option>
+                                            <option value="صحة">صحة</option>
+                                            <option value="طعام">طعام</option>
+                                            <option value="أخرى">أخرى</option>
+                                        </select>
+                                        <label for="searchCategory">اختر فئة</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary w-100 h-100">
+                                        <i class="fas fa-search"></i> بحث
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Services Section -->
+<section class="featured-services py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="section-title">خدمات مميزة</h2>
+                <p class="lead text-muted">اكتشف أبرز الخدمات المتاحة على منصتنا</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            {% if services %}
+                {% for service in services %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ service.name }}</h5>
+                                <div class="rating-display mb-2" data-rating="{{ service.provider.rating }}"></div>
+                                <p class="card-text text-muted">{{ service.description|truncate(100) }}</p>
+                                <p class="card-text">
+                                    <span class="badge bg-primary mb-2">{{ service.category }}</span>
+                                    <span class="d-block text-primary fw-bold">{{ "%.2f"|format(service.price) }} ريال</span>
+                                </p>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <a href="{{ url_for('service_details', service_id=service.id) }}" class="btn btn-sm btn-outline-primary">عرض التفاصيل</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <p class="text-muted">لا توجد خدمات متاحة حالياً.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{{ url_for('services') }}" class="btn btn-primary">عرض جميع الخدمات</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works py-5 bg-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="section-title">كيف تعمل منصتنا؟</h2>
+                <p class="lead text-muted">خطوات بسيطة للحصول على الخدمة التي تحتاجها</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-search fa-3x text-primary"></i>
+                </div>
+                <h4>ابحث</h4>
+                <p class="text-muted">ابحث عن الخدمة التي تناسب احتياجاتك من بين مجموعة متنوعة من الخدمات المحلية</p>
+            </div>
+            
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-calendar-alt fa-3x text-primary"></i>
+                </div>
+                <h4>احجز</h4>
+                <p class="text-muted">اختر الوقت المناسب لك واحجز الخدمة مباشرة من خلال المنصة</p>
+            </div>
+            
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-credit-card fa-3x text-primary"></i>
+                </div>
+                <h4>ادفع</h4>
+                <p class="text-muted">أتمم عملية الدفع بطريقة آمنة وسهلة باستخدام وسائل الدفع المتاحة</p>
+            </div>
+            
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-thumbs-up fa-3x text-primary"></i>
+                </div>
+                <h4>استمتع</h4>
+                <p class="text-muted">احصل على الخدمة في الوقت المحدد وشارك تجربتك مع الآخرين</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Join Us Section -->
+<section class="join-us py-5 bg-primary">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-7">
+                <h2 class="text-white mb-3">هل أنت مقدم خدمة؟</h2>
+                <p class="text-white mb-4">انضم إلى منصتنا وابدأ في الوصول إلى عملاء جدد وتنمية أعمالك. نحن نوفر لك منصة سهلة ومريحة لإدارة خدماتك والحجوزات والمدفوعات.</p>
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">انضم كمقدم خدمة</a>
+                {% endif %}
+            </div>
+            <div class="col-md-5 text-center d-none d-md-block">
+                <i class="fas fa-user-tie fa-10x text-white-50"></i>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
