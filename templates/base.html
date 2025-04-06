@@ -37,6 +37,9 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == url_for('services') %}active{% endif %}" href="{{ url_for('services') }}">الخدمات</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('about') %}active{% endif %}" href="{{ url_for('about') }}">عن المنصة</a>
+                    </li>
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link {% if request.path == url_for('dashboard') %}active{% endif %}" href="{{ url_for('dashboard') }}">لوحة التحكم</a>

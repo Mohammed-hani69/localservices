@@ -70,9 +70,39 @@
                                 {{ booking_form.notes(class="form-control", rows=3, placeholder="أي معلومات إضافية ترغب في إضافتها للحجز") }}
                             </div>
                             
+                            <hr class="my-4">
+                            
+                            <h5 class="mb-3">معلومات الدفع</h5>
+                            
+                            <div class="mb-3">
+                                <label for="{{ booking_form.payment_method.id }}" class="form-label">طريقة الدفع</label>
+                                {{ booking_form.payment_method(class="form-control", id="payment_method") }}
+                            </div>
+                            
+                            <div id="card_details" class="card-details">
+                                <div class="mb-3">
+                                    <label for="{{ booking_form.card_number.id }}" class="form-label">رقم البطاقة</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-credit-card"></i></span>
+                                        {{ booking_form.card_number(class="form-control", placeholder="XXXX-XXXX-XXXX-XXXX") }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ booking_form.card_expiry.id }}" class="form-label">تاريخ الانتهاء</label>
+                                        {{ booking_form.card_expiry(class="form-control", placeholder="MM/YY") }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ booking_form.card_cvv.id }}" class="form-label">رمز التحقق CVV</label>
+                                        {{ booking_form.card_cvv(class="form-control", placeholder="XXX") }}
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="alert alert-info" role="alert">
                                 <h5 class="alert-heading mb-1"><i class="fas fa-info-circle me-2"></i> معلومات مهمة</h5>
-                                <p class="mb-0">بعد إنشاء الحجز، سيتم توجيهك إلى صفحة الدفع لإتمام العملية. يرجى العلم أن الحجز لن يكون مؤكداً حتى إتمام عملية الدفع.</p>
+                                <p class="mb-0">سيتم تأكيد الحجز فور إتمام عملية الدفع. يرجى التأكد من اختيار طريقة الدفع المناسبة وإدخال البيانات بشكل صحيح.</p>
                             </div>
                             
                             <div class="d-flex justify-content-between">
@@ -108,6 +138,25 @@
                     this.value = '';
                 }
             });
+        }
+        
+        // Toggle card details based on payment method
+        const paymentMethodSelect = document.getElementById('payment_method');
+        const cardDetailsDiv = document.getElementById('card_details');
+        
+        function toggleCardDetails() {
+            const selectedMethod = paymentMethodSelect.value;
+            if (selectedMethod === 'credit_card' || selectedMethod === 'debit_card') {
+                cardDetailsDiv.style.display = 'block';
+            } else {
+                cardDetailsDiv.style.display = 'none';
+            }
+        }
+        
+        // Initial toggle and setup event listener
+        if (paymentMethodSelect && cardDetailsDiv) {
+            toggleCardDetails();
+            paymentMethodSelect.addEventListener('change', toggleCardDetails);
         }
     });
 </script>

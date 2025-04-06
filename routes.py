@@ -1,6 +1,7 @@
 import logging
 import os
 import secrets
+import uuid
 from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request, jsonify, abort, g
 from flask_login import login_user, logout_user, current_user, login_required
@@ -50,6 +51,18 @@ def index():
                               recent_services=recent_services)
     
     return render_template('index.html', title='الصفحة الرئيسية', services=featured_services, search_form=search_form)
+
+# About page
+@app.route('/about')
+def about():
+    # Check if the user is requesting from a mobile device
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent
+    
+    if is_mobile and request.args.get('view') != 'desktop':
+        return render_template('mobile/about.html', title='عن منصتنا')
+    
+    return render_template('about.html', title='عن منصتنا')
 
 # Login
 @app.route('/login', methods=['GET', 'POST'])
@@ -385,18 +398,65 @@ def process_booking():
         db.session.add(booking)
         db.session.commit()
         
-        # Create a pending payment
+        # تحديد حالة الدفع بناءً على طريقة الدفع المختارة
+        payment_status = 'pending'
+        if form.payment_method.data == 'cash':
+            payment_status = 'awaiting_confirmation'
+        
+        # Create a payment record
         payment = Payment(
             booking_id=booking.id,
             user_id=current_user.id,
             amount=service.price,
-            status='pending'
+            status=payment_status,
+            payment_method=form.payment_method.data
         )
+        
+        # إذا كانت طريقة الدفع بالبطاقة، قم بتخزين تفاصيل البطاقة
+        if form.payment_method.data in ['credit_card', 'debit_card']:
+            # في بيئة الإنتاج الحقيقية، يجب استخدام خدمة دفع آمنة مثل Stripe بدلاً من تخزين تفاصيل البطاقة
+            payment.transaction_id = f"TR-{uuid.uuid4().hex[:8]}"  # إنشاء معرف معاملة وهمي
+            
+            # في حالة نجاح الدفع، نقوم بتحديث حالة الدفع وتاريخه
+            payment.status = 'completed'
+            payment.payment_date = datetime.utcnow()
+            
+            # تحديث حالة الحجز إلى مؤكد
+            booking.status = 'confirmed'
+        
         db.session.add(payment)
         db.session.commit()
         
-        flash('تم إنشاء الحجز بنجاح! الرجاء إكمال عملية الدفع.', 'success')
-        return redirect(url_for('payment', payment_id=payment.id))
+        # إنشاء إشعار للمستخدم
+        create_notification(
+            current_user.id,
+            "تم إنشاء الحجز بنجاح",
+            f"تم إنشاء حجز لخدمة {service.name} بتاريخ {booking.booking_date.strftime('%Y-%m-%d %H:%M')}",
+            "success",
+            booking.id,
+            "booking"
+        )
+        
+        # إنشاء إشعار لمقدم الخدمة
+        provider = ServiceProvider.query.get(service.provider_id)
+        create_notification(
+            provider.user_id,
+            "حجز جديد",
+            f"لديك طلب حجز جديد لخدمة {service.name} من المستخدم {current_user.username}",
+            "info",
+            booking.id,
+            "booking"
+        )
+        
+        if payment.status == 'completed':
+            flash('تم تأكيد الحجز وإتمام عملية الدفع بنجاح!', 'success')
+            return redirect(url_for('dashboard'))
+        elif payment.status == 'awaiting_confirmation':
+            flash('تم إنشاء الحجز بنجاح! سيتم تأكيده بعد الدفع نقدًا عند الاستلام.', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('تم إنشاء الحجز بنجاح! الرجاء إكمال عملية الدفع.', 'info')
+            return redirect(url_for('payment', payment_id=payment.id))
     
     flash('حدث خطأ أثناء إنشاء الحجز. الرجاء المحاولة مرة أخرى.', 'danger')
     return redirect(url_for('services'))
@@ -578,6 +638,124 @@ def toggle_service_active(service_id):
         'active': service.is_active,
         'message': f'تم تغيير حالة الخدمة بنجاح إلى {"متاحة" if service.is_active else "غير متاحة"}'
     })
+
+# تغيير حالة الحجز (للمزودين)
+@app.route('/booking/<int:booking_id>/<action>', methods=['POST'])
+@login_required
+def manage_booking(booking_id, action):
+    # التحقق من الحجز
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # التحقق من أن المستخدم هو مزود الخدمة المرتبط بالحجز
+    service = Service.query.get(booking.service_id)
+    provider = ServiceProvider.query.get(service.provider_id)
+    
+    if provider.user_id != current_user.id and not current_user.is_admin():
+        return jsonify({'success': False, 'message': 'ليس لديك صلاحية إدارة هذا الحجز'})
+    
+    # تنفيذ الإجراء المطلوب
+    if action == 'confirm':
+        booking.status = 'confirmed'
+        message = 'تم تأكيد الحجز بنجاح'
+        
+        # إنشاء إشعار للعميل
+        create_notification(
+            booking.client_id,
+            "تم تأكيد الحجز",
+            f"تم تأكيد حجزك للخدمة {service.name} بتاريخ {booking.booking_date.strftime('%Y-%m-%d %H:%M')}",
+            "success",
+            booking.id,
+            "booking"
+        )
+    
+    elif action == 'cancel':
+        booking.status = 'cancelled'
+        message = 'تم إلغاء الحجز بنجاح'
+        
+        # إعادة تعيين حالة الدفع إذا كانت موجودة
+        if booking.payment:
+            booking.payment.status = 'cancelled'
+        
+        # إنشاء إشعار للعميل
+        create_notification(
+            booking.client_id,
+            "تم إلغاء الحجز",
+            f"تم إلغاء حجزك للخدمة {service.name} بتاريخ {booking.booking_date.strftime('%Y-%m-%d %H:%M')}",
+            "danger",
+            booking.id,
+            "booking"
+        )
+    
+    elif action == 'complete':
+        booking.status = 'completed'
+        message = 'تم تعليم الحجز كمكتمل'
+        
+        # إنشاء إشعار للعميل
+        create_notification(
+            booking.client_id,
+            "تم إكمال الخدمة",
+            f"تم إكمال تقديم الخدمة {service.name}. نأمل أن تكون راضياً عن الخدمة. يمكنك الآن تقييم الخدمة.",
+            "info",
+            booking.id,
+            "booking"
+        )
+        
+        # إرسال إشعار للتقييم
+        send_review_notification(booking.id)
+    
+    else:
+        return jsonify({'success': False, 'message': 'إجراء غير صالح'})
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': message,
+        'status': booking.status
+    })
+
+# تغيير حالة الدفع (للمزودين)
+@app.route('/payment/<int:payment_id>/confirm-payment', methods=['POST'])
+@login_required
+def confirm_payment(payment_id):
+    # التحقق من الدفع
+    payment = Payment.query.get_or_404(payment_id)
+    booking = Booking.query.get(payment.booking_id)
+    
+    # التحقق من أن المستخدم هو مزود الخدمة المرتبط بالحجز
+    service = Service.query.get(booking.service_id)
+    provider = ServiceProvider.query.get(service.provider_id)
+    
+    if provider.user_id != current_user.id and not current_user.is_admin():
+        return jsonify({'success': False, 'message': 'ليس لديك صلاحية تأكيد هذا الدفع'})
+    
+    # تأكيد الدفع
+    if payment.status == 'awaiting_confirmation':
+        payment.status = 'completed'
+        payment.payment_date = datetime.utcnow()
+        
+        # تحديث حالة الحجز إلى مؤكد
+        booking.status = 'confirmed'
+        
+        # إنشاء إشعار للعميل
+        create_notification(
+            booking.client_id,
+            "تم تأكيد الدفع",
+            f"تم تأكيد دفعك للخدمة {service.name} وتأكيد الحجز بنجاح",
+            "success",
+            payment.id,
+            "payment"
+        )
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'تم تأكيد استلام الدفع بنجاح',
+            'status': payment.status
+        })
+    else:
+        return jsonify({'success': False, 'message': 'لا يمكن تأكيد هذا الدفع في حالته الحالية'})
 
 # إرسال إشعارات التقييم يدويًا (للاختبار)
 @app.route('/admin/send-review-notifications')
@@ -815,3 +993,4 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_server_error(e):
     return render_template('500.html'), 500
+

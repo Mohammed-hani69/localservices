@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, FloatField, DateTimeField, HiddenField, IntegerField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange, Optional
 from models import User
 
 class LoginForm(FlaskForm):
@@ -126,7 +126,16 @@ class BookingForm(FlaskForm):
     service_id = HiddenField('معرف الخدمة', validators=[DataRequired()])
     booking_date = DateTimeField('التاريخ والوقت', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
     notes = TextAreaField('ملاحظات إضافية')
-    submit = SubmitField('حجز موعد')
+    payment_method = SelectField('طريقة الدفع', choices=[
+        ('credit_card', 'بطاقة ائتمان'),
+        ('debit_card', 'بطاقة مدين'),
+        ('bank_transfer', 'تحويل بنكي'),
+        ('cash', 'نقدًا عند الاستلام')
+    ], validators=[DataRequired()])
+    card_number = StringField('رقم البطاقة', validators=[Optional(), Length(min=16, max=16)])
+    card_expiry = StringField('تاريخ الانتهاء (MM/YY)', validators=[Optional()])
+    card_cvv = StringField('رمز التحقق CVV', validators=[Optional(), Length(min=3, max=4)])
+    submit = SubmitField('تأكيد الحجز والدفع')
 
 class PaymentForm(FlaskForm):
     booking_id = HiddenField('معرف الحجز', validators=[DataRequired()])
