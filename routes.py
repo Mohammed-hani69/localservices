@@ -1,8 +1,11 @@
 import logging
+import os
+import secrets
 from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request, jsonify, abort, g
 from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
+from werkzeug.utils import secure_filename
 from app import app, db
 from models import User, ServiceProvider, Service, Booking, Payment, Review, ROLE_USER, ROLE_SERVICE_PROVIDER, ROLE_ADMIN
 from forms import LoginForm, RegistrationForm, ServiceProviderForm, ServiceForm, BookingForm, PaymentForm, ReviewForm, SearchForm
@@ -156,6 +159,31 @@ def edit_provider_profile():
     
     return render_template('profile.html', title='تعديل ملف مقدم الخدمة', form=form)
 
+# وظيفة حفظ الصورة
+def save_image(file):
+    if not file:
+        return None
+    random_hex = secrets.token_hex(8)
+    _, file_extension = os.path.splitext(file.filename)
+    filename = random_hex + file_extension.lower()  # تحويل امتداد الملف إلى أحرف صغيرة
+    
+    # التأكد من وجود مجلد الصور
+    upload_folder = os.path.join(app.root_path, 'static/uploads/services')
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder)
+    
+    file_path = os.path.join(upload_folder, filename)
+    file.save(file_path)
+    return 'uploads/services/' + filename
+
+# واجهة لتحديث اختيارات نوع الخدمة بناءً على الفئة
+@app.route('/api/service-types/<category>')
+def get_service_types(category):
+    form = ServiceForm()
+    # تهيئة النموذج للحصول على أنواع الخدمات
+    types = form.service_types.get(category, [('', 'اختر نوع الخدمة')])
+    return jsonify(types)
+
 # Add Service
 @app.route('/services/add', methods=['GET', 'POST'])
 @login_required
@@ -170,7 +198,18 @@ def add_service():
         return redirect(url_for('create_provider_profile'))
     
     form = ServiceForm()
+    
+    # تحديث اختيارات نوع الخدمة عند تغيير الفئة
+    if request.method == 'GET' and request.args.get('category'):
+        category = request.args.get('category')
+        form.service_type.choices = form.service_types.get(category, [('', 'اختر نوع الخدمة')])
+    
     if form.validate_on_submit():
+        # معالجة تحميل الصورة إن وجدت
+        image_path = None
+        if form.image.data:
+            image_path = save_image(form.image.data)
+        
         service = Service(
             provider_id=provider.id,
             name=form.name.data,
@@ -178,6 +217,9 @@ def add_service():
             price=form.price.data,
             duration=form.duration.data,
             category=form.category.data,
+            service_type=form.service_type.data,
+            additional_info=form.additional_info.data,
+            image=image_path,
             is_active=form.is_active.data
         )
         db.session.add(service)
@@ -200,13 +242,30 @@ def edit_service(service_id):
         return redirect(url_for('dashboard'))
     
     form = ServiceForm(obj=service)
+    
+    # تحديث اختيارات نوع الخدمة حسب الفئة المحددة حالياً
+    if service.category:
+        form.service_type.choices = form.service_types.get(service.category, [('', 'اختر نوع الخدمة')])
+    
+    # تحديث اختيارات نوع الخدمة عند تغيير الفئة
+    if request.method == 'GET' and request.args.get('category'):
+        category = request.args.get('category')
+        form.service_type.choices = form.service_types.get(category, [('', 'اختر نوع الخدمة')])
+    
     if form.validate_on_submit():
         service.name = form.name.data
         service.description = form.description.data
         service.price = form.price.data
         service.duration = form.duration.data
         service.category = form.category.data
+        service.service_type = form.service_type.data
+        service.additional_info = form.additional_info.data
         service.is_active = form.is_active.data
+        
+        # تحديث الصورة إذا تم تحميل صورة جديدة
+        if form.image.data:
+            service.image = save_image(form.image.data)
+            
         db.session.commit()
         flash('تم تحديث الخدمة بنجاح!', 'success')
         return redirect(url_for('dashboard'))

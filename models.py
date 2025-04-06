@@ -59,6 +59,9 @@ class Service(db.Model):
     duration = db.Column(db.Integer)  # Duration in minutes
     category = db.Column(db.String(50))
     is_active = db.Column(db.Boolean, default=True)
+    image = db.Column(db.String(200))  # لتخزين مسار الصورة
+    service_type = db.Column(db.String(50))  # نوع الخدمة المحدد (مثل نوع التنظيف، نوع الصيانة، إلخ)
+    additional_info = db.Column(db.Text)  # معلومات إضافية حسب نوع الخدمة
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Define relationships

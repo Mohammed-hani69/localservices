@@ -1,6 +1,8 @@
 import os
 import logging
+import re
 from flask import Flask
+from markupsafe import Markup
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -40,6 +42,13 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'الرجاء تسجيل الدخول للوصول إلى هذه الصفحة'
 login_manager.login_message_category = 'info'
+
+# مرشح Jinja2 لتحويل أسطر النص إلى HTML
+@app.template_filter('nl2br')
+def nl2br(value):
+    if value:
+        value = str(value)
+        return Markup(re.sub(r'\r\n|\r|\n', '<br>', value))
 
 # Import models to ensure tables are created
 with app.app_context():

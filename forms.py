@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, FloatField, DateTimeField, HiddenField, IntegerField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange
 from models import User
@@ -48,8 +49,78 @@ class ServiceForm(FlaskForm):
         ('طعام', 'طعام'),
         ('أخرى', 'أخرى')
     ])
+    service_type = SelectField('نوع الخدمة المحدد', choices=[])
+    image = FileField('صورة الخدمة', validators=[
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'يُسمح فقط بملفات الصور')
+    ])
+    additional_info = TextAreaField('معلومات إضافية')
     is_active = BooleanField('متاح', default=True)
     submit = SubmitField('إضافة الخدمة')
+    
+    def __init__(self, *args, **kwargs):
+        super(ServiceForm, self).__init__(*args, **kwargs)
+        # قائمة أنواع الخدمات حسب التصنيف
+        self.service_types = {
+            'صيانة': [
+                ('', 'اختر نوع الخدمة'),
+                ('كهرباء', 'صيانة كهربائية'),
+                ('سباكة', 'صيانة سباكة'),
+                ('تكييف', 'صيانة تكييف'),
+                ('أجهزة', 'صيانة أجهزة منزلية'),
+                ('حاسوب', 'صيانة حاسوب'),
+                ('أخرى', 'أنواع أخرى')
+            ],
+            'تنظيف': [
+                ('', 'اختر نوع الخدمة'),
+                ('منزلي', 'تنظيف منزلي'),
+                ('مكتبي', 'تنظيف مكاتب'),
+                ('سجاد', 'تنظيف سجاد'),
+                ('واجهات', 'تنظيف واجهات'),
+                ('سيارات', 'تنظيف سيارات'),
+                ('أخرى', 'أنواع أخرى')
+            ],
+            'تعليم': [
+                ('', 'اختر نوع الخدمة'),
+                ('لغات', 'تعليم لغات'),
+                ('رياضيات', 'تعليم رياضيات'),
+                ('علوم', 'تعليم علوم'),
+                ('حاسوب', 'تعليم حاسوب'),
+                ('موسيقى', 'تعليم موسيقى'),
+                ('أخرى', 'أنواع أخرى')
+            ],
+            'صحة': [
+                ('', 'اختر نوع الخدمة'),
+                ('استشارات', 'استشارات طبية'),
+                ('علاج طبيعي', 'علاج طبيعي'),
+                ('تغذية', 'استشارات تغذية'),
+                ('لياقة', 'تدريب لياقة'),
+                ('تمريض', 'خدمات تمريض'),
+                ('أخرى', 'أنواع أخرى')
+            ],
+            'طعام': [
+                ('', 'اختر نوع الخدمة'),
+                ('وجبات', 'إعداد وجبات'),
+                ('حلويات', 'حلويات'),
+                ('مشروبات', 'مشروبات'),
+                ('طعام صحي', 'طعام صحي'),
+                ('مناسبات', 'طعام مناسبات'),
+                ('أخرى', 'أنواع أخرى')
+            ],
+            'أخرى': [
+                ('', 'اختر نوع الخدمة'),
+                ('تصميم', 'خدمات تصميم'),
+                ('ترجمة', 'خدمات ترجمة'),
+                ('قانون', 'استشارات قانونية'),
+                ('سفر', 'خدمات سفر'),
+                ('تجميل', 'خدمات تجميل'),
+                ('أخرى', 'أنواع أخرى')
+            ]
+        }
+        
+        # تحديث اختيارات نوع الخدمة المحدد بناءً على التصنيف المحدد
+        if 'category' in kwargs.get('data', {}) and kwargs['data']['category']:
+            selected_category = kwargs['data']['category']
+            self.service_type.choices = self.service_types.get(selected_category, [('', 'اختر نوع الخدمة')])
 
 class BookingForm(FlaskForm):
     service_id = HiddenField('معرف الخدمة', validators=[DataRequired()])
