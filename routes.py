@@ -898,6 +898,10 @@ def mobile_dashboard():
 @app.route('/mobile/booking/<int:service_id>')
 @login_required
 def mobile_booking(service_id):
+    if current_user.is_provider():
+        flash('لا يمكن لمقدمي الخدمات حجز خدمات أخرى', 'warning')
+        return redirect(url_for('mobile_dashboard'))
+        
     service = Service.query.get_or_404(service_id)
     booking_form = BookingForm()
     booking_form.service_id.data = service_id

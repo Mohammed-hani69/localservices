@@ -1,92 +1,147 @@
-{% extends "base_mobile.html" %}
+{% extends "mobile/base_mobile.html" %}
 
 {% block title %}{{ service.name }} - منصة الخدمات المحلية{% endblock %}
 
-{% block header_title %}تفاصيل الخدمة{% endblock %}
-
 {% block content %}
-<!-- Service Image -->
-{% if service.image %}
-<img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" class="mobile-service-image">
-{% else %}
-<div class="mobile-service-image d-flex align-items-center justify-content-center">
-    <i class="fas fa-concierge-bell fa-4x text-muted"></i>
-</div>
-{% endif %}
-
-<!-- Service Details -->
-<div class="mobile-service-detail">
-    <!-- Service Header -->
-    <div class="mb-3">
-        <div class="d-flex justify-content-between align-items-start">
-            <h4 class="mb-1">{{ service.name }}</h4>
-            <span class="badge bg-primary">{{ service.category }}</span>
-        </div>
-        <div class="d-flex align-items-center mb-2">
-            <div class="rating-display me-2" data-rating="{{ service.provider.rating }}"></div>
-            <span class="text-muted small">({{ service.reviews.count() }} تقييم)</span>
-        </div>
-        <p class="mb-1 text-primary fw-bold">{{ "%.2f"|format(service.price) }} ر.س</p>
-        <p class="mb-1 text-muted small">المدة: {{ service.duration }} دقيقة</p>
-    </div>
-
-    <!-- Service Provider -->
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="d-flex align-items-center">
-                <div class="me-3">
-                    <i class="fas fa-user-tie fa-2x text-muted"></i>
+<div class="mobile-service-details-page">
+    <div class="container py-4">
+        <h1 class="text-center mb-4">تفاصيل الخدمة</h1>
+        
+        <div class="card shadow-sm mb-4">
+            <!-- Service Image -->
+            <div class="service-image-container">
+                {% if service.image %}
+                <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" class="card-img-top">
+                {% else %}
+                <div class="d-flex align-items-center justify-content-center bg-light py-5">
+                    <i class="fas fa-concierge-bell fa-4x text-muted"></i>
                 </div>
-                <div>
-                    <h6 class="mb-1">{{ service.provider.company_name }}</h6>
-                    <div class="rating-display small" data-rating="{{ service.provider.rating }}"></div>
-                </div>
+                {% endif %}
             </div>
-        </div>
-    </div>
-
-    <!-- Service Description -->
-    <div class="mb-3">
-        <h5>وصف الخدمة</h5>
-        <p>{{ service.description|nl2br }}</p>
-    </div>
-
-    <!-- Additional Info -->
-    {% if service.additional_info %}
-    <div class="mb-3">
-        <h5>معلومات إضافية</h5>
-        <p>{{ service.additional_info|nl2br }}</p>
-    </div>
-    {% endif %}
-
-    <!-- Service Reviews -->
-    <div class="mb-3">
-        <h5>التقييمات والمراجعات</h5>
-        {% if service.reviews.count() > 0 %}
-            {% for review in service.reviews %}
-            <div class="card mb-2">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h6 class="mb-0">{{ review.user.username }}</h6>
-                            <div class="rating-display" data-rating="{{ review.rating }}"></div>
-                        </div>
-                        <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+            
+            <div class="card-body">
+                <!-- Service Header -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h4 class="mb-1">{{ service.name }}</h4>
+                        <span class="badge bg-primary">{{ service.category }}</span>
                     </div>
-                    <p class="mb-0">{{ review.comment }}</p>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="rating-display me-2" data-rating="{{ service.provider.rating }}"></div>
+                        <span class="text-muted small">({{ service.reviews.count() }} تقييم)</span>
+                    </div>
+                    <p class="mb-1 text-primary fw-bold">{{ "%.2f"|format(service.price) }} ر.س</p>
+                    <p class="mb-1 text-muted small">المدة: {{ service.duration }} دقيقة</p>
                 </div>
             </div>
-            {% endfor %}
-        {% else %}
-            <p class="text-muted">لا توجد تقييمات بعد لهذه الخدمة.</p>
+        </div>
+        
+        <!-- Service Provider -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">مقدم الخدمة</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-user-tie fa-2x text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">{{ service.provider.company_name }}</h6>
+                        <div class="rating-display small" data-rating="{{ service.provider.rating }}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Service Description -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">وصف الخدمة</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ service.description|nl2br }}</p>
+            </div>
+        </div>
+        
+        <!-- Additional Info -->
+        {% if service.additional_info %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">معلومات إضافية</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ service.additional_info|nl2br }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Service Reviews -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">التقييمات والمراجعات</h5>
+            </div>
+            <div class="card-body">
+                {% if service.reviews.count() > 0 %}
+                    {% for review in service.reviews %}
+                    <div class="review-item mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-0">{{ review.user.username }}</h6>
+                                <div class="rating-display" data-rating="{{ review.rating }}"></div>
+                            </div>
+                            <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                        </div>
+                        <p class="mb-0">{{ review.comment }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-3">لا توجد تقييمات بعد لهذه الخدمة.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Booking Button -->
+        {% if current_user.is_authenticated and not current_user.is_provider() and service.is_active %}
+        <div class="d-grid gap-2 mb-4">
+            <a href="{{ url_for('mobile_booking', service_id=service.id) }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-calendar-plus me-1"></i> حجز موعد
+            </a>
+        </div>
+        {% elif not current_user.is_authenticated %}
+        <div class="d-grid gap-2 mb-4">
+            <a href="{{ url_for('login', next=url_for('mobile_service_details', service_id=service.id)) }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-sign-in-alt me-1"></i> تسجيل الدخول للحجز
+            </a>
+        </div>
         {% endif %}
     </div>
 </div>
+{% endblock %}
 
-<!-- Booking Button -->
-{% if current_user.is_authenticated and not current_user.is_provider() and service.is_active %}
-<a href="{{ url_for('book_service', service_id=service.id) }}" class="mobile-action-button">حجز موعد</a>
-{% elif not current_user.is_authenticated %}
-<a href="{{ url_for('login', next=url_for('service_details', service_id=service.id)) }}" class="mobile-action-button">تسجيل الدخول للحجز</a>
-{% endif %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize rating displays
+    initRatingDisplays();
+});
+
+function initRatingDisplays() {
+    const ratingDisplays = document.querySelectorAll('.rating-display');
+    ratingDisplays.forEach(display => {
+        const rating = parseFloat(display.getAttribute('data-rating')) || 0;
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                stars += '<i class="fas fa-star text-warning"></i>';
+            } else if (i - 0.5 <= rating) {
+                stars += '<i class="fas fa-star-half-alt text-warning"></i>';
+            } else {
+                stars += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        display.innerHTML = stars;
+    });
+}
+</script>
 {% endblock %}

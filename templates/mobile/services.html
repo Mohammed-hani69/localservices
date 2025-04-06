@@ -10,7 +10,7 @@
         <!-- Search and Filter -->
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <form action="{{ url_for('services') }}" method="get">
+                <form action="{{ url_for('mobile_services') }}" method="get">
                     <div class="input-group">
                         <input type="text" name="query" class="form-control" placeholder="ابحث عن خدمة..." value="{{ request.args.get('query', '') }}">
                         <select name="category" class="form-select" style="max-width: 120px;">
@@ -33,46 +33,48 @@
         <!-- Category Pills (if no search) -->
         {% if not request.args.get('query') %}
         <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-center">تصنيفات الخدمات</h5>
+            </div>
             <div class="card-body">
-                <h5 class="card-title mb-3 text-center">تصنيفات الخدمات</h5>
                 <div class="categories-scroll">
-                    <a href="{{ url_for('services') }}" class="category-item {% if not category %}active{% endif %}">
+                    <a href="{{ url_for('mobile_services') }}" class="category-item {% if not category %}active{% endif %}">
                         <div class="category-circle">
                             <i class="fas fa-th"></i>
                         </div>
                         <span>الكل</span>
                     </a>
-                    <a href="{{ url_for('services', category='صيانة') }}" class="category-item {% if category == 'صيانة' %}active{% endif %}">
+                    <a href="{{ url_for('mobile_services', category='صيانة') }}" class="category-item {% if category == 'صيانة' %}active{% endif %}">
                         <div class="category-circle">
                             <i class="fas fa-tools"></i>
                         </div>
                         <span>صيانة</span>
                     </a>
-                    <a href="{{ url_for('services', category='تنظيف') }}" class="category-item {% if category == 'تنظيف' %}active{% endif %}">
+                    <a href="{{ url_for('mobile_services', category='تنظيف') }}" class="category-item {% if category == 'تنظيف' %}active{% endif %}">
                         <div class="category-circle">
                             <i class="fas fa-broom"></i>
                         </div>
                         <span>تنظيف</span>
                     </a>
-                    <a href="{{ url_for('services', category='تعليم') }}" class="category-item {% if category == 'تعليم' %}active{% endif %}">
+                    <a href="{{ url_for('mobile_services', category='تعليم') }}" class="category-item {% if category == 'تعليم' %}active{% endif %}">
                         <div class="category-circle">
                             <i class="fas fa-graduation-cap"></i>
                         </div>
                         <span>تعليم</span>
                     </a>
-                    <a href="{{ url_for('services', category='صحة') }}" class="category-item {% if category == 'صحة' %}active{% endif %}">
+                    <a href="{{ url_for('mobile_services', category='صحة') }}" class="category-item {% if category == 'صحة' %}active{% endif %}">
                         <div class="category-circle">
                             <i class="fas fa-heartbeat"></i>
                         </div>
                         <span>صحة</span>
                     </a>
-                    <a href="{{ url_for('services', category='طعام') }}" class="category-item {% if category == 'طعام' %}active{% endif %}">
+                    <a href="{{ url_for('mobile_services', category='طعام') }}" class="category-item {% if category == 'طعام' %}active{% endif %}">
                         <div class="category-circle">
                             <i class="fas fa-utensils"></i>
                         </div>
                         <span>طعام</span>
                     </a>
-                    <a href="{{ url_for('services', category='أخرى') }}" class="category-item {% if category == 'أخرى' %}active{% endif %}">
+                    <a href="{{ url_for('mobile_services', category='أخرى') }}" class="category-item {% if category == 'أخرى' %}active{% endif %}">
                         <div class="category-circle">
                             <i class="fas fa-ellipsis-h"></i>
                         </div>
@@ -86,7 +88,7 @@
         <!-- Services List -->
         {% if services %}
             {% for service in services %}
-            <div class="card shadow-sm mb-4 service-card" data-href="{{ url_for('service_details', service_id=service.id) }}">
+            <div class="card shadow-sm mb-4 service-card" data-href="{{ url_for('mobile_service_details', service_id=service.id) }}">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-4">
@@ -105,7 +107,7 @@
                             <p class="text-muted small mb-1">{{ service.category }} - {{ service.provider.company_name }}</p>
                             <div class="rating-display mb-2" data-rating="{{ service.provider.rating }}"></div>
                             <p class="fw-bold text-primary mb-1">{{ "%.2f"|format(service.price) }} ر.س</p>
-                            <a href="{{ url_for('service_details', service_id=service.id) }}" class="btn btn-sm btn-outline-primary mt-1">عرض التفاصيل</a>
+                            <a href="{{ url_for('mobile_service_details', service_id=service.id) }}" class="btn btn-sm btn-outline-primary mt-1">عرض التفاصيل</a>
                         </div>
                     </div>
                 </div>
@@ -136,21 +138,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize rating displays
-    const ratingDisplays = document.querySelectorAll('.rating-display');
-    ratingDisplays.forEach(display => {
-        const rating = parseFloat(display.getAttribute('data-rating'));
-        let stars = '';
-        for (let i = 1; i <= 5; i++) {
-            if (i <= rating) {
-                stars += '<i class="fas fa-star text-warning"></i>';
-            } else if (i - 0.5 <= rating) {
-                stars += '<i class="fas fa-star-half-alt text-warning"></i>';
-            } else {
-                stars += '<i class="far fa-star text-warning"></i>';
-            }
-        }
-        display.innerHTML = stars;
-    });
+    initRatingDisplays();
     
     // Make the whole service card clickable
     const serviceCards = document.querySelectorAll('.service-card');
@@ -163,5 +151,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function initRatingDisplays() {
+    const ratingDisplays = document.querySelectorAll('.rating-display');
+    ratingDisplays.forEach(display => {
+        const rating = parseFloat(display.getAttribute('data-rating')) || 0;
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                stars += '<i class="fas fa-star text-warning"></i>';
+            } else if (i - 0.5 <= rating) {
+                stars += '<i class="fas fa-star-half-alt text-warning"></i>';
+            } else {
+                stars += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        display.innerHTML = stars;
+    });
+}
 </script>
 {% endblock %}
