@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block title %}تفاصيل الدفع{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-money-bill-wave text-primary me-2"></i> تفاصيل الدفع</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">لوحة التحكم</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">تفاصيل الدفع</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-right me-1"></i> العودة للوحة التحكم
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-receipt me-2"></i> بيانات الدفع</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">معرف الدفع:</h6>
+                            <p class="text-muted">{{ payment.id }}</p>
+                            <h6 class="fw-bold">المبلغ:</h6>
+                            <p class="text-success fw-bold">{{ payment.amount }} {{ payment.currency }}</p>
+                            <h6 class="fw-bold">حالة الدفع:</h6>
+                            <p>
+                                {% if payment.status == 'completed' %}
+                                    <span class="badge bg-success">مكتمل</span>
+                                {% elif payment.status == 'processing' %}
+                                    <span class="badge bg-warning">قيد المعالجة</span>
+                                {% elif payment.status == 'pending' %}
+                                    <span class="badge bg-info">في انتظار التأكيد</span>
+                                {% elif payment.status == 'awaiting_confirmation' %}
+                                    <span class="badge bg-info">في انتظار تأكيد المزود</span>
+                                {% elif payment.status == 'cancelled' %}
+                                    <span class="badge bg-danger">ملغي</span>
+                                {% elif payment.status == 'refunded' %}
+                                    <span class="badge bg-secondary">مسترد</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ payment.status }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">تاريخ الإنشاء:</h6>
+                            <p class="text-muted">{{ payment.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            <h6 class="fw-bold">تاريخ الدفع:</h6>
+                            <p class="text-muted">
+                                {% if payment.payment_date %}
+                                    {{ payment.payment_date.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </p>
+                            <h6 class="fw-bold">طريقة الدفع:</h6>
+                            <p>
+                                {% if payment.payment_method == 'stripe' %}
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" height="30">
+                                {% else %}
+                                    {{ payment.payment_method }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if payment.transaction_id %}
+                    <div class="mt-3">
+                        <h6 class="fw-bold">معرف المعاملة:</h6>
+                        <p class="text-muted small">{{ payment.transaction_id }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i> تفاصيل الخدمة</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold">الخدمة:</h6>
+                    <p><a href="{{ url_for('service_details', service_id=service.id) }}">{{ service.name }}</a></p>
+                    <h6 class="fw-bold">التصنيف:</h6>
+                    <p><span class="badge bg-secondary">{{ service.category }}</span></p>
+                    <h6 class="fw-bold">المدة:</h6>
+                    <p>{{ service.duration }} دقيقة</p>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-calendar-alt me-2"></i> تفاصيل الحجز</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold">معرف الحجز:</h6>
+                    <p class="text-muted">{{ booking.id }}</p>
+                    <h6 class="fw-bold">تاريخ الحجز:</h6>
+                    <p>{{ booking.booking_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <h6 class="fw-bold">حالة الحجز:</h6>
+                    <p>
+                        {% if booking.status == 'pending' %}
+                            <span class="badge bg-warning">قيد الانتظار</span>
+                        {% elif booking.status == 'confirmed' %}
+                            <span class="badge bg-info">مؤكد</span>
+                        {% elif booking.status == 'completed' %}
+                            <span class="badge bg-success">مكتمل</span>
+                        {% elif booking.status == 'cancelled' %}
+                            <span class="badge bg-danger">ملغي</span>
+                        {% elif booking.status == 'awaiting_payment' %}
+                            <span class="badge bg-warning">في انتظار الدفع</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ booking.status }}</span>
+                        {% endif %}
+                    </p>
+                    {% if booking.notes %}
+                    <h6 class="fw-bold">ملاحظات:</h6>
+                    <p class="text-muted small">{{ booking.notes }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if payment.status == 'processing' and payment.user_id == current_user.id %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>تنبيه:</strong> عملية الدفع الخاصة بك قيد المعالجة. يرجى الانتظار لحين اكتمال العملية.
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('payment_cancel') }}?booking_id={{ booking.id }}" class="btn btn-danger">
+                            <i class="fas fa-times me-1"></i> إلغاء الدفع
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if payment.status == 'awaiting_confirmation' and service.provider.user_id == current_user.id %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>تنبيه:</strong> هذا الدفع في انتظار تأكيدك كمزود خدمة.
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button class="btn btn-success confirm-payment-btn" data-payment-id="{{ payment.id }}">
+                            <i class="fas fa-check me-1"></i> تأكيد استلام الدفع
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // معالجة زر تأكيد الدفع
+        const confirmPaymentBtn = document.querySelector('.confirm-payment-btn');
+        if (confirmPaymentBtn) {
+            confirmPaymentBtn.addEventListener('click', function() {
+                const paymentId = this.getAttribute('data-payment-id');
+                
+                // تأكيد استلام الدفع
+                fetch(`/payment/${paymentId}/confirm-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', data.message);
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showAlert('danger', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('danger', 'حدث خطأ أثناء تأكيد الدفع. يرجى المحاولة مرة أخرى.');
+                });
+            });
+        }
+        
+        // عرض رسائل التنبيه
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // إخفاء التنبيه بعد 3 ثواني
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    });
+</script>
+{% endblock %}

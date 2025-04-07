@@ -13,6 +13,7 @@ from export_db import export_database
 from notifications import send_review_notification, check_completed_bookings, create_notification
 from models import User, ServiceProvider, Service, Booking, Payment, Review, Notification, ROLE_USER, ROLE_SERVICE_PROVIDER, ROLE_ADMIN
 from forms import LoginForm, RegistrationForm, ServiceProviderForm, ServiceForm, BookingForm, PaymentForm, ReviewForm, SearchForm
+from stripe_payment import create_checkout_session, verify_payment_session, get_payment_status, cancel_payment
 
 # Set up date context for all requests
 @app.before_request
@@ -623,6 +624,127 @@ def admin_dashboard():
                           payments_count=payments_count, recent_users=recent_users,
                           recent_bookings=recent_bookings)
 
+# Admin Reports
+@app.route('/admin/reports')
+@login_required
+def admin_reports():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
+
+    # استخراج إحصائيات المستخدمين
+    total_users = User.query.count()
+    total_providers = ServiceProvider.query.count()
+    total_regular_users = User.query.filter_by(role=ROLE_USER).count()
+    verified_providers = ServiceProvider.query.filter_by(verified=True).count()
+    unverified_providers = total_providers - verified_providers
+    
+    # استخراج إحصائيات الخدمات
+    total_services = Service.query.count()
+    active_services = Service.query.filter_by(is_active=True).count()
+    inactive_services = total_services - active_services
+    
+    # توزيع الخدمات حسب الفئات
+    categories = db.session.query(Service.category, db.func.count(Service.id)).group_by(Service.category).all()
+    category_labels = [category[0] for category in categories]
+    category_data = [category[1] for category in categories]
+    
+    # إحصائيات الحجوزات
+    total_bookings = Booking.query.count()
+    pending_bookings = Booking.query.filter_by(status='pending').count()
+    confirmed_bookings = Booking.query.filter_by(status='confirmed').count()
+    completed_bookings = Booking.query.filter_by(status='completed').count()
+    cancelled_bookings = Booking.query.filter_by(status='cancelled').count()
+    
+    # إحصائيات المدفوعات
+    total_payments = Payment.query.count()
+    completed_payments = Payment.query.filter_by(status='completed').count()
+    pending_payments = Payment.query.filter_by(status='pending').count()
+    payment_amounts = db.session.query(Payment.status, db.func.sum(Payment.amount)).group_by(Payment.status).all()
+    
+    # إجمالي المبيعات
+    total_sales = 0
+    for payment in payment_amounts:
+        if payment[0] == 'completed':
+            total_sales = payment[1] if payment[1] else 0
+    
+    # استخراج إحصائيات الحجوزات حسب الشهر
+    monthly_bookings = []
+    current_year = datetime.now().year
+    for month in range(1, 13):
+        start_date = datetime(current_year, month, 1)
+        if month == 12:
+            end_date = datetime(current_year + 1, 1, 1)
+        else:
+            end_date = datetime(current_year, month + 1, 1)
+        
+        count = Booking.query.filter(
+            Booking.created_at >= start_date,
+            Booking.created_at < end_date
+        ).count()
+        
+        monthly_bookings.append(count)
+    
+    # استخراج إحصائيات التقييمات
+    avg_rating = db.session.query(db.func.avg(Review.rating)).scalar() or 0
+    rating_distribution = db.session.query(Review.rating, db.func.count(Review.id)).group_by(Review.rating).all()
+    rating_data = [0, 0, 0, 0, 0]  # تمثل التقييمات من 1 إلى 5
+    
+    for rating in rating_distribution:
+        if 1 <= rating[0] <= 5:
+            rating_data[rating[0]-1] = rating[1]
+    
+    # تقرير أفضل مقدمي الخدمة
+    top_providers = db.session.query(
+        ServiceProvider.id,
+        ServiceProvider.company_name,
+        ServiceProvider.rating,
+        db.func.count(Service.id).label('service_count'),
+        db.func.count(Booking.id).label('booking_count')
+    ).join(Service, ServiceProvider.id == Service.provider_id, isouter=True)\
+     .join(Booking, Service.id == Booking.service_id, isouter=True)\
+     .group_by(ServiceProvider.id)\
+     .order_by(ServiceProvider.rating.desc())\
+     .limit(5).all()
+    
+    # تقرير أكثر الخدمات حجزاً
+    top_services = db.session.query(
+        Service.id,
+        Service.name,
+        Service.category,
+        db.func.count(Booking.id).label('booking_count')
+    ).join(Booking, Service.id == Booking.service_id)\
+     .group_by(Service.id)\
+     .order_by(db.desc('booking_count'))\
+     .limit(5).all()
+    
+    return render_template('admin/reports.html', title='تقارير النظام',
+                          total_users=total_users,
+                          total_providers=total_providers,
+                          total_regular_users=total_regular_users,
+                          verified_providers=verified_providers,
+                          unverified_providers=unverified_providers,
+                          total_services=total_services,
+                          active_services=active_services,
+                          inactive_services=inactive_services,
+                          categories=categories,
+                          category_labels=category_labels,
+                          category_data=category_data,
+                          total_bookings=total_bookings,
+                          pending_bookings=pending_bookings,
+                          confirmed_bookings=confirmed_bookings,
+                          completed_bookings=completed_bookings,
+                          cancelled_bookings=cancelled_bookings,
+                          total_payments=total_payments,
+                          completed_payments=completed_payments,
+                          pending_payments=pending_payments,
+                          total_sales=total_sales,
+                          monthly_bookings=monthly_bookings,
+                          avg_rating=avg_rating,
+                          rating_data=rating_data,
+                          top_providers=top_providers,
+                          top_services=top_services)
+
 # Admin - Users
 @app.route('/admin/users')
 @login_required
@@ -867,6 +989,105 @@ def admin_export_database():
     else:
         flash('حدث خطأ أثناء تصدير قاعدة البيانات. الرجاء المحاولة مرة أخرى.', 'danger')
         return redirect(url_for('admin_dashboard'))
+
+# =============== Stripe Payment Routes =============== #
+
+# بدء عملية الدفع باستخدام Stripe
+@app.route('/stripe/checkout/<int:booking_id>', methods=['POST'])
+@login_required
+def stripe_checkout(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # التحقق من أن المستخدم هو صاحب الحجز
+    if booking.client_id != current_user.id:
+        flash('ليس لديك صلاحية الوصول إلى هذا الحجز.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # التحقق من حالة الحجز
+    if booking.status not in ['pending', 'awaiting_payment']:
+        flash('هذا الحجز غير مؤهل للدفع، ربما تم الدفع مسبقاً أو تم إلغاؤه.', 'warning')
+        return redirect(url_for('dashboard'))
+    
+    # إنشاء جلسة دفع Stripe
+    checkout_session, error = create_checkout_session(booking_id, current_user)
+    
+    if error:
+        flash(f'حدث خطأ أثناء إعداد عملية الدفع: {error}', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # تحديث حالة الحجز
+    booking.status = 'awaiting_payment'
+    db.session.commit()
+    
+    # إعادة التوجيه إلى صفحة الدفع الخاصة بـ Stripe
+    return redirect(checkout_session.url, code=303)
+
+# صفحة نجاح الدفع
+@app.route('/payment/success')
+@login_required
+def payment_success():
+    session_id = request.args.get('session_id')
+    if not session_id:
+        flash('معرّف جلسة الدفع غير متوفر.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # التحقق من حالة الدفع
+    success, message = verify_payment_session(session_id)
+    
+    if success:
+        flash('تم اكتمال عملية الدفع بنجاح!', 'success')
+    else:
+        flash(f'حدث خطأ أثناء التحقق من الدفع: {message}', 'warning')
+    
+    return redirect(url_for('dashboard'))
+
+# صفحة إلغاء الدفع
+@app.route('/payment/cancel')
+@login_required
+def payment_cancel():
+    booking_id = request.args.get('booking_id')
+    if not booking_id:
+        flash('معرّف الحجز غير متوفر.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # التحقق من أن المستخدم هو صاحب الحجز
+    if booking.client_id != current_user.id:
+        flash('ليس لديك صلاحية الوصول إلى هذا الحجز.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # التحقق من وجود دفع قيد المعالجة
+    payment = Payment.query.filter_by(booking_id=booking_id, status='processing').first()
+    if payment:
+        # إلغاء الدفع
+        cancel_payment(payment.id)
+    
+    flash('تم إلغاء عملية الدفع.', 'info')
+    return redirect(url_for('dashboard'))
+
+# عرض تفاصيل الدفع (صفحة جديدة)
+@app.route('/stripe/payment-details/<int:payment_id>')
+@login_required
+def stripe_payment_details(payment_id):
+    payment, error = get_payment_status(payment_id)
+    
+    if error:
+        flash(error, 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # التحقق من صلاحية الوصول
+    booking = Booking.query.get(payment.booking_id)
+    service = Service.query.get(booking.service_id)
+    provider = ServiceProvider.query.get(service.provider_id)
+    
+    # التحقق من أن المستخدم هو صاحب الدفع أو مزود الخدمة أو المدير
+    if payment.user_id != current_user.id and provider.user_id != current_user.id and not current_user.is_admin():
+        flash('ليس لديك صلاحية الوصول إلى تفاصيل هذا الدفع.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('payment_details.html', title='تفاصيل الدفع', 
+                          payment=payment, booking=booking, service=service)
 
 # =============== Mobile Application Routes =============== #
 

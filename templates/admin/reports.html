@@ -1,0 +1,651 @@
+{% extends 'base.html' %}
+
+{% block title %}تقارير النظام - لوحة تحكم المدير{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .stats-card {
+        transition: all 0.3s;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+    .provider-card, .service-card {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+    }
+    .provider-card:hover, .service-card:hover {
+        background-color: #f8f9fa;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .tab-pane {
+        padding: 20px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-chart-line me-2"></i> تقارير النظام</h2>
+            <p class="text-muted">عرض إحصائيات وتقارير المنصة</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-tachometer-alt me-1"></i> لوحة التحكم
+                </a>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-users me-1"></i> المستخدمين
+                </a>
+                <a href="{{ url_for('admin_services') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-cogs me-1"></i> الخدمات
+                </a>
+                <a href="{{ url_for('admin_bookings') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-calendar-alt me-1"></i> الحجوزات
+                </a>
+                <a href="{{ url_for('admin_payments') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-money-bill-wave me-1"></i> المدفوعات
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- أزرار تنقل بين أقسام التقرير -->
+    <ul class="nav nav-tabs mb-4" id="reportsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+                <i class="fas fa-home me-1"></i> نظرة عامة
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="false">
+                <i class="fas fa-users me-1"></i> المستخدمين
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button" role="tab" aria-controls="services" aria-selected="false">
+                <i class="fas fa-cogs me-1"></i> الخدمات
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings" type="button" role="tab" aria-controls="bookings" aria-selected="false">
+                <i class="fas fa-calendar-alt me-1"></i> الحجوزات
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab" aria-controls="payments" aria-selected="false">
+                <i class="fas fa-money-bill-wave me-1"></i> المدفوعات
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="leaderboards-tab" data-bs-toggle="tab" data-bs-target="#leaderboards" type="button" role="tab" aria-controls="leaderboards" aria-selected="false">
+                <i class="fas fa-trophy me-1"></i> الأفضل أداءً
+            </button>
+        </li>
+    </ul>
+    
+    <!-- محتوى التقارير -->
+    <div class="tab-content" id="reportsTabsContent">
+        <!-- نظرة عامة -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card card bg-primary text-white h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-users me-2"></i> المستخدمين</h5>
+                            <h2 class="display-4">{{ total_users }}</h2>
+                            <p class="card-text">
+                                <span class="badge bg-light text-dark">{{ total_regular_users }} مستخدم</span>
+                                <span class="badge bg-light text-dark">{{ total_providers }} مزود خدمة</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card card bg-success text-white h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-cogs me-2"></i> الخدمات</h5>
+                            <h2 class="display-4">{{ total_services }}</h2>
+                            <p class="card-text">
+                                <span class="badge bg-light text-dark">{{ active_services }} نشطة</span>
+                                <span class="badge bg-light text-dark">{{ inactive_services }} غير نشطة</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card card bg-info text-white h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-calendar-alt me-2"></i> الحجوزات</h5>
+                            <h2 class="display-4">{{ total_bookings }}</h2>
+                            <p class="card-text">
+                                <span class="badge bg-light text-dark">{{ pending_bookings }} قيد الانتظار</span>
+                                <span class="badge bg-light text-dark">{{ completed_bookings }} مكتملة</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card card bg-warning text-white h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-money-bill-wave me-2"></i> المدفوعات</h5>
+                            <h2 class="display-4">{{ total_payments }}</h2>
+                            <p class="card-text">
+                                <span class="badge bg-light text-dark">{{ total_sales }} ريال</span>
+                                <span class="badge bg-light text-dark">{{ completed_payments }} مكتملة</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i> توزيع الخدمات حسب الفئات</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="categoriesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> حالات الحجوزات</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="bookingsStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> الحجوزات الشهرية</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="monthlyBookingsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- المستخدمين -->
+        <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
+            <div class="row mb-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-users me-2"></i> توزيع المستخدمين</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="usersDistributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-certificate me-2"></i> حالة مزودي الخدمة</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="providersStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- الخدمات -->
+        <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
+            <div class="row mb-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-tag me-2"></i> توزيع الخدمات حسب الفئات</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="servicesDistributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-star me-2"></i> توزيع التقييمات</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="ratingsDistributionChart"></canvas>
+                            </div>
+                            <div class="text-center">
+                                <h4>متوسط التقييم: <span class="badge bg-warning">{{ "%.1f"|format(avg_rating) }}</span></h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- الحجوزات -->
+        <div class="tab-pane fade" id="bookings" role="tabpanel" aria-labelledby="bookings-tab">
+            <div class="row mb-4">
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i> حالات الحجوزات</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">مكتملة</h5>
+                                            <h2 class="display-5">{{ completed_bookings }}</h2>
+                                            <p class="card-text">{{ "%.1f"|format(completed_bookings / total_bookings * 100 if total_bookings > 0 else 0) }}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="card bg-warning text-white">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">قيد الانتظار</h5>
+                                            <h2 class="display-5">{{ pending_bookings }}</h2>
+                                            <p class="card-text">{{ "%.1f"|format(pending_bookings / total_bookings * 100 if total_bookings > 0 else 0) }}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="card bg-danger text-white">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">ملغية</h5>
+                                            <h2 class="display-5">{{ cancelled_bookings }}</h2>
+                                            <p class="card-text">{{ "%.1f"|format(cancelled_bookings / total_bookings * 100 if total_bookings > 0 else 0) }}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> الحجوزات الشهرية للسنة الحالية</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="bookingsMonthlyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- المدفوعات -->
+        <div class="tab-pane fade" id="payments" role="tabpanel" aria-labelledby="payments-tab">
+            <div class="row mb-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i> حالات المدفوعات</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="paymentsStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-coins me-2"></i> ملخص المبيعات</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <h2 class="display-4 text-success">{{ total_sales }} ريال</h2>
+                            <p class="text-muted">إجمالي المبيعات المكتملة</p>
+                            <div class="row mt-4">
+                                <div class="col-6">
+                                    <div class="border rounded py-3">
+                                        <h5 class="mb-0">{{ total_payments }}</h5>
+                                        <p class="text-muted mb-0">إجمالي المعاملات</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="border rounded py-3">
+                                        <h5 class="mb-0">{{ completed_payments }}</h5>
+                                        <p class="text-muted mb-0">مدفوعات مكتملة</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- الأفضل أداءً -->
+        <div class="tab-pane fade" id="leaderboards" role="tabpanel" aria-labelledby="leaderboards-tab">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-medal me-2"></i> أفضل مزودي الخدمة</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if top_providers %}
+                                {% for provider in top_providers %}
+                                <div class="provider-card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-4 me-3">{{ loop.index }}</div>
+                                        <div class="flex-grow-1">
+                                            <h5 class="mb-1">{{ provider.company_name }}</h5>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <i class="fas fa-star text-warning"></i> {{ "%.1f"|format(provider.rating) }}
+                                                </div>
+                                                <div class="me-3">
+                                                    <i class="fas fa-cog text-primary"></i> {{ provider.service_count }} خدمة
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-calendar-check text-success"></i> {{ provider.booking_count }} حجز
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info">لا توجد بيانات متاحة حالياً</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-thumbs-up me-2"></i> أكثر الخدمات حجزاً</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if top_services %}
+                                {% for service in top_services %}
+                                <div class="service-card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-4 me-3">{{ loop.index }}</div>
+                                        <div class="flex-grow-1">
+                                            <h5 class="mb-1">{{ service.name }}</h5>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <i class="fas fa-tag text-info"></i> {{ service.category }}
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-calendar-check text-success"></i> {{ service.booking_count }} حجز
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info">لا توجد بيانات متاحة حالياً</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // مخطط توزيع الخدمات حسب الفئات
+        const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+        const categoriesChart = new Chart(categoriesCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ category_labels|tojson }},
+                datasets: [{
+                    data: {{ category_data|tojson }},
+                    backgroundColor: [
+                        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#6f42c1', '#5a5c69', '#858796'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+
+        // مخطط حالات الحجوزات
+        const bookingsStatusCtx = document.getElementById('bookingsStatusChart').getContext('2d');
+        const bookingsStatusChart = new Chart(bookingsStatusCtx, {
+            type: 'bar',
+            data: {
+                labels: ['قيد الانتظار', 'مؤكدة', 'مكتملة', 'ملغية'],
+                datasets: [{
+                    label: 'عدد الحجوزات',
+                    data: [{{ pending_bookings }}, {{ confirmed_bookings }}, {{ completed_bookings }}, {{ cancelled_bookings }}],
+                    backgroundColor: [
+                        '#f6c23e', '#4e73df', '#1cc88a', '#e74a3b'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // مخطط الحجوزات الشهرية
+        const monthlyBookingsCtx = document.getElementById('monthlyBookingsChart').getContext('2d');
+        const monthlyBookingsChart = new Chart(monthlyBookingsCtx, {
+            type: 'line',
+            data: {
+                labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+                datasets: [{
+                    label: 'عدد الحجوزات',
+                    data: {{ monthly_bookings|tojson }},
+                    borderColor: '#4e73df',
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // مخطط توزيع المستخدمين
+        const usersDistributionCtx = document.getElementById('usersDistributionChart').getContext('2d');
+        const usersDistributionChart = new Chart(usersDistributionCtx, {
+            type: 'pie',
+            data: {
+                labels: ['مستخدمين عاديين', 'مزودي خدمة'],
+                datasets: [{
+                    data: [{{ total_regular_users }}, {{ total_providers }}],
+                    backgroundColor: ['#4e73df', '#1cc88a'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+
+        // مخطط حالة مزودي الخدمة
+        const providersStatusCtx = document.getElementById('providersStatusChart').getContext('2d');
+        const providersStatusChart = new Chart(providersStatusCtx, {
+            type: 'pie',
+            data: {
+                labels: ['مزودين موثّقين', 'مزودين غير موثّقين'],
+                datasets: [{
+                    data: [{{ verified_providers }}, {{ unverified_providers }}],
+                    backgroundColor: ['#1cc88a', '#f6c23e'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+
+        // مخطط توزيع الخدمات (للقسم المخصص للخدمات)
+        const servicesDistributionCtx = document.getElementById('servicesDistributionChart').getContext('2d');
+        const servicesDistributionChart = new Chart(servicesDistributionCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ category_labels|tojson }},
+                datasets: [{
+                    label: 'عدد الخدمات',
+                    data: {{ category_data|tojson }},
+                    backgroundColor: '#4e73df',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // مخطط توزيع التقييمات
+        const ratingsDistributionCtx = document.getElementById('ratingsDistributionChart').getContext('2d');
+        const ratingsDistributionChart = new Chart(ratingsDistributionCtx, {
+            type: 'bar',
+            data: {
+                labels: ['★', '★★', '★★★', '★★★★', '★★★★★'],
+                datasets: [{
+                    label: 'عدد التقييمات',
+                    data: {{ rating_data|tojson }},
+                    backgroundColor: [
+                        '#e74a3b', '#f6c23e', '#f6c23e', '#1cc88a', '#1cc88a'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // مخطط الحجوزات الشهرية (للقسم المخصص للحجوزات)
+        const bookingsMonthlyCtx = document.getElementById('bookingsMonthlyChart').getContext('2d');
+        const bookingsMonthlyChart = new Chart(bookingsMonthlyCtx, {
+            type: 'line',
+            data: {
+                labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+                datasets: [{
+                    label: 'عدد الحجوزات',
+                    data: {{ monthly_bookings|tojson }},
+                    borderColor: '#4e73df',
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // مخطط حالات المدفوعات
+        const paymentsStatusCtx = document.getElementById('paymentsStatusChart').getContext('2d');
+        const paymentsStatusChart = new Chart(paymentsStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['مكتملة', 'قيد الانتظار', 'أخرى'],
+                datasets: [{
+                    data: [{{ completed_payments }}, {{ pending_payments }}, {{ total_payments - completed_payments - pending_payments }}],
+                    backgroundColor: ['#1cc88a', '#f6c23e', '#858796'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+            }
+        });
+    });
+</script>
+{% endblock %}

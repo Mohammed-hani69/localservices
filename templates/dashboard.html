@@ -258,7 +258,22 @@
                                                     <td>
                                                         <div class="btn-group">
                                                             {% if booking.payment and booking.payment.status != 'completed' %}
-                                                                <a href="{{ url_for('payment', payment_id=booking.payment.id) }}" class="btn btn-sm btn-warning">إتمام الدفع</a>
+                                                                {% if booking.status in ["pending", "awaiting_payment"] and (not booking.payment or booking.payment.status == "pending") %}
+                                                                <form action="{{ url_for("stripe_checkout", booking_id=booking.id) }}" method="POST" class="d-inline ms-1">
+                                                                    <button type="submit" class="btn btn-sm btn-info">
+                                                                        <i class="fab fa-stripe"></i> الدفع عبر Stripe
+                                                                    </button>
+                                                                </form>
+                                                            {% endif %}
+                                                                                                                            <a href="{{ url_for('payment', payment_id=booking.payment.id) }}" class="btn btn-sm btn-warning">إتمام الدفع</a>
+                                                            {% endif %}
+                                                            
+                                                            {% if booking.status in ['pending', 'awaiting_payment'] and (not booking.payment or booking.payment.status == 'pending') %}
+                                                                <form action="{{ url_for('stripe_checkout', booking_id=booking.id) }}" method="POST" class="d-inline ms-1">
+                                                                    <button type="submit" class="btn btn-sm btn-primary">
+                                                                        <i class="fab fa-stripe"></i> الدفع عبر Stripe
+                                                                    </button>
+                                                                </form>
                                                             {% endif %}
                                                             
                                                             {% if booking.status == 'completed' and not has_review(booking.service_id, current_user.id) %}

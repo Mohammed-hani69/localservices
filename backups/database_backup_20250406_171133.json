@@ -1,0 +1,156 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "username": "zezo",
+            "email": "zezo@gmail.com",
+            "phone": "01276494250",
+            "address": "الغشام - 9 - 5",
+            "role": 1,
+            "is_active": true,
+            "created_at": "2025-04-06T14:22:00.533081"
+        },
+        {
+            "id": 2,
+            "username": "admin",
+            "email": "admin@gmail.com",
+            "phone": "0500000000",
+            "address": "عنوان المدير",
+            "role": 2,
+            "is_active": true,
+            "created_at": "2025-04-06T15:05:09.466971"
+        },
+        {
+            "id": 3,
+            "username": "Mohamed",
+            "email": "ezezo291@gmail.com",
+            "phone": "01145425207",
+            "address": "Hehia",
+            "role": 0,
+            "is_active": true,
+            "created_at": "2025-04-06T15:37:39.191888"
+        }
+    ],
+    "service_providers": [
+        {
+            "id": 1,
+            "user_id": 1,
+            "company_name": "مستشفي العبور التخصصي",
+            "description": "مستشفي العبور التخصصي",
+            "logo": null,
+            "website": "",
+            "verified": false,
+            "rating": 0.0,
+            "created_at": "2025-04-06T14:23:02.263077"
+        }
+    ],
+    "services": [
+        {
+            "id": 1,
+            "provider_id": 1,
+            "name": "كشف عيادة الاسنان",
+            "description": "كشف عيادة الاسنان",
+            "price": 200.0,
+            "duration": 30,
+            "category": "صحة",
+            "service_type": "",
+            "is_active": true,
+            "image": "uploads/services/0e009d8a97f25166.jpeg",
+            "additional_info": "",
+            "created_at": "2025-04-06T14:26:56.443509"
+        }
+    ],
+    "bookings": [
+        {
+            "id": 1,
+            "client_id": 1,
+            "service_id": 1,
+            "booking_date": "2025-04-07T16:27:00",
+            "status": "pending",
+            "notes": "",
+            "created_at": "2025-04-06T14:27:22.794522"
+        },
+        {
+            "id": 2,
+            "client_id": 3,
+            "service_id": 1,
+            "booking_date": "2025-04-07T17:49:00",
+            "status": "confirmed",
+            "notes": "ياريت الالتزام بالمواعيد",
+            "created_at": "2025-04-06T15:50:22.436005"
+        }
+    ],
+    "payments": [
+        {
+            "id": 1,
+            "booking_id": 1,
+            "user_id": 1,
+            "amount": 200.0,
+            "currency": "SAR",
+            "status": "pending",
+            "payment_method": null,
+            "transaction_id": null,
+            "payment_date": null,
+            "created_at": "2025-04-06T14:27:23.097007"
+        },
+        {
+            "id": 2,
+            "booking_id": 2,
+            "user_id": 3,
+            "amount": 200.0,
+            "currency": "SAR",
+            "status": "completed",
+            "payment_method": "credit_card",
+            "transaction_id": "TR-2-1743958641",
+            "payment_date": "2025-04-06T16:57:21.176531",
+            "created_at": "2025-04-06T15:50:22.729309"
+        }
+    ],
+    "reviews": [],
+    "notifications": [
+        {
+            "id": 3,
+            "user_id": 2,
+            "title": "حساب جديد",
+            "content": "تم إنشاء حساب جديد على المنصة، الرجاء التحقق من لوحة الإدارة",
+            "notification_type": "info",
+            "related_id": null,
+            "related_type": null,
+            "is_read": false,
+            "created_at": "2025-04-06T16:02:48.767867"
+        },
+        {
+            "id": 1,
+            "user_id": 1,
+            "title": "تم تأكيد حجزك",
+            "content": "تم تأكيد حجزك رقم #123 لخدمة \"تنظيف المنزل\" ليوم الخميس القادم",
+            "notification_type": "success",
+            "related_id": null,
+            "related_type": null,
+            "is_read": true,
+            "created_at": "2025-04-06T16:02:48.767867"
+        },
+        {
+            "id": 2,
+            "user_id": 1,
+            "title": "تذكير بموعد",
+            "content": "لديك موعد غداً لخدمة \"صيانة التكييف\" الساعة 10:00 صباحاً",
+            "notification_type": "info",
+            "related_id": null,
+            "related_type": null,
+            "is_read": true,
+            "created_at": "2025-04-06T16:02:48.767867"
+        },
+        {
+            "id": 4,
+            "user_id": 3,
+            "title": "تقييم الخدمة",
+            "content": "شكراً لاستخدامك خدماتنا، نرجو تقييم التجربة من خلال الضغط هنا",
+            "notification_type": "warning",
+            "related_id": null,
+            "related_type": null,
+            "is_read": true,
+            "created_at": "2025-04-06T16:02:48.767867"
+        }
+    ]
+}
