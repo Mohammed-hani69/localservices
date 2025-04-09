@@ -55,17 +55,17 @@
                 <i class="fas fa-home"></i>
                 <span>الرئيسية</span>
             </a>
-            <a href="{{ url_for('services') }}" class="nav-item {% if request.endpoint == 'services' %}active{% endif %}">
+            <a href="{{ url_for('services') }}" class="nav-item {% if request.endpoint == 'services' or request.endpoint == 'mobile_services' %}active{% endif %}">
                 <i class="fas fa-hands-helping"></i>
                 <span>الخدمات</span>
             </a>
             <a href="{{ url_for('mobile_notifications') }}" class="nav-item {% if request.endpoint == 'mobile_notifications' %}active{% endif %}">
-                <div class="notification-badge" data-count="{{ unread_notifications_count }}">
+                <div class="notification-badge" data-count="{{ unread_notifications_count|default(0) }}">
                     <i class="fas fa-bell"></i>
                 </div>
                 <span>الإشعارات</span>
             </a>
-            <a href="{{ url_for('mobile_dashboard') }}" class="nav-item {% if request.endpoint == 'mobile_dashboard' %}active{% endif %}">
+            <a href="{{ url_for('mobile_dashboard') }}" class="nav-item {% if request.endpoint == 'mobile_dashboard' or request.endpoint == 'mobile_edit_profile' %}active{% endif %}">
                 <i class="fas fa-user"></i>
                 <span>حسابي</span>
             </a>

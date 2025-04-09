@@ -7,22 +7,42 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('offline', updateOnlineStatus);
     updateOnlineStatus();
     
-    // Handle service cards click
-    const serviceCards = document.querySelectorAll('.mobile-card[data-href]');
+    // Handle service cards click with touch feedback
+    const serviceCards = document.querySelectorAll('.mobile-card[data-href], .card[data-href]');
     serviceCards.forEach(card => {
         card.addEventListener('click', function() {
             const href = this.getAttribute('data-href');
+            
+            // Add touch feedback animation
+            this.classList.add('card-pressed');
+            
+            // Navigate after animation completes
             if (href) {
-                window.location.href = href;
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 150);
             }
+        });
+        
+        // Remove animation class on touch end
+        card.addEventListener('touchend', function() {
+            setTimeout(() => {
+                this.classList.remove('card-pressed');
+            }, 150);
         });
     });
     
     // Initialize rating displays
     initRatingDisplays();
     
-    // Handle tab switching
+    // Handle tab switching with smooth transitions
     initTabSwitching();
+    
+    // Add smooth page transitions
+    initPageTransitions();
+    
+    // Enable pull-to-refresh
+    initPullToRefresh();
 });
 
 // Initialize mobile UI components
@@ -165,6 +185,150 @@ window.hideMobileSpinner = function() {
 window.isMobileDevice = function() {
     return (window.innerWidth <= 768);
 };
+
+// Initialize smooth page transitions
+function initPageTransitions() {
+    // Add transition container if it doesn't exist
+    if (!document.querySelector('.page-transition')) {
+        const transitionDiv = document.createElement('div');
+        transitionDiv.className = 'page-transition';
+        document.body.appendChild(transitionDiv);
+    }
+    
+    // Add CSS for page transitions
+    const style = document.createElement('style');
+    style.textContent = `
+        .page-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-color);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .page-transition.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .card-pressed {
+            transform: scale(0.97);
+            transition: transform 0.15s ease;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Intercept link clicks for smooth transitions
+    document.querySelectorAll('a:not([target="_blank"])').forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Skip if modifier keys are pressed
+            if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+            
+            const href = this.getAttribute('href');
+            // Skip for hash links or javascript: links
+            if (href.startsWith('#') || href.startsWith('javascript:')) return;
+            
+            e.preventDefault();
+            
+            // Show transition
+            const transition = document.querySelector('.page-transition');
+            transition.classList.add('active');
+            
+            // Navigate after transition
+            setTimeout(() => {
+                window.location.href = href;
+            }, 300);
+        });
+    });
+}
+
+// Initialize pull-to-refresh functionality
+function initPullToRefresh() {
+    let touchStartY = 0;
+    let touchEndY = 0;
+    const minPullDistance = 150;
+    
+    // Create refresh indicator
+    const refreshDiv = document.createElement('div');
+    refreshDiv.className = 'pull-refresh-indicator';
+    refreshDiv.innerHTML = '<i class="fas fa-sync-alt"></i>';
+    document.body.appendChild(refreshDiv);
+    
+    // Add CSS for pull-to-refresh
+    const style = document.createElement('style');
+    style.textContent = `
+        .pull-refresh-indicator {
+            position: fixed;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            transition: top 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .pull-refresh-indicator.visible {
+            top: 65px;
+        }
+        .pull-refresh-indicator.refreshing i {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Only enable on main content areas
+    if (document.querySelector('.main-content')) {
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+        }, false);
+        
+        document.addEventListener('touchmove', function(e) {
+            if (document.scrollingElement.scrollTop === 0) {
+                touchEndY = e.touches[0].clientY;
+                const distance = touchEndY - touchStartY;
+                
+                if (distance > 50 && distance < minPullDistance) {
+                    refreshDiv.style.top = (distance / 3) + 'px';
+                }
+            }
+        }, false);
+        
+        document.addEventListener('touchend', function() {
+            const distance = touchEndY - touchStartY;
+            
+            if (distance >= minPullDistance && document.scrollingElement.scrollTop === 0) {
+                // Show refreshing animation
+                refreshDiv.classList.add('visible', 'refreshing');
+                
+                // Reload page after animation
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                // Reset position
+                refreshDiv.style.top = '-60px';
+            }
+            
+            // Reset values
+            touchStartY = 0;
+            touchEndY = 0;
+        }, false);
+    }
+}
 
 // Redirect to mobile version if needed
 window.checkAndRedirectToMobile = function() {
