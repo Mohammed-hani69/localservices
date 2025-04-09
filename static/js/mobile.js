@@ -731,9 +731,9 @@ function initBannerSlider() {
             });
         }
         
-        // التمرير التلقائي
+        // التمرير التلقائي - تغيير كل 5 ثواني
         function startAutoSlide() {
-            autoSlideInterval = setInterval(nextSlide, 5000);
+            autoSlideInterval = setInterval(nextSlide, 5000); // 5000 مللي ثانية = 5 ثواني
         }
         
         // إعادة ضبط المؤقت
