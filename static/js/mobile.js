@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     // تهيئة مكونات واجهة المستخدم
     initMobileUI();
@@ -82,7 +81,7 @@ function initMobileUI() {
                             this.classList.remove('unread');
                             // إضافة تأثير انتقالي عند التحديث
                             this.style.transition = 'background-color 0.5s ease';
-                            
+
                             // تحديث إحصائيات الإشعارات
                             updateNotificationCount();
                         }
@@ -172,7 +171,7 @@ function customizePageTitles() {
     // البحث عن العنوان الحالي
     const currentPath = window.location.pathname;
     const titleElement = document.querySelector('.mobile-title');
-    
+
     if (titleElement) {
         // مطابقة الصفحة الحالية مع العناوين المعرفة
         for (const pageTitle of pageTitles) {
@@ -189,36 +188,47 @@ function customizePageTitles() {
 
 // تفعيل تأثير اللمس على البطاقات
 function initCardTouchFeedback() {
-    const touchableElements = document.querySelectorAll('.service-card[data-href], .mobile-card[data-href], .booking-card, .notification-item, .settings-item');
-    
+    const touchableElements = document.querySelectorAll('.service-card[data-href], .mobile-card[data-href], .booking-card, .notification-item, .settings-item, .category-item[data-category]');
+
     touchableElements.forEach(element => {
         element.addEventListener('touchstart', function() {
             this.classList.add('card-pressed');
         }, { passive: true });
-        
+
         element.addEventListener('touchend', function() {
             setTimeout(() => {
                 this.classList.remove('card-pressed');
             }, 150);
-            
+
             // التنقل إلى الصفحة المعنية إذا كان هناك رابط
             const href = this.getAttribute('data-href');
+            const category = this.getAttribute('data-category');
+
             if (href) {
                 setTimeout(() => {
                     window.location.href = href;
                 }, 200);
+            } else if (category) {
+                // عند النقر على فئة، توجيه المستخدم إلى صفحة البحث مع تحديد الفئة
+                setTimeout(() => {
+                    window.location.href = `/mobile/services?category=${encodeURIComponent(category)}`;
+                }, 200);
             }
         }, { passive: true });
-        
+
         element.addEventListener('touchcancel', function() {
             this.classList.remove('card-pressed');
         }, { passive: true });
-        
+
         // إضافة أيضًا لأجهزة الكمبيوتر
         element.addEventListener('click', function() {
             const href = this.getAttribute('data-href');
+            const category = this.getAttribute('data-category');
+
             if (href) {
                 window.location.href = href;
+            } else if (category) {
+                window.location.href = `/mobile/services?category=${encodeURIComponent(category)}`;
             }
         });
     });
@@ -273,7 +283,7 @@ function initTabSwitching() {
 
             const tabId = this.getAttribute('data-tab');
             const tabContents = document.querySelectorAll('.tab-pane');
-            
+
             // تحديث حالة التنشيط
             tabLinks.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
@@ -338,7 +348,7 @@ function initPageTransitions() {
         link.addEventListener('click', function(e) {
             // تخطي إذا تم الضغط على مفاتيح التعديل
             if (e.ctrlKey || e.metaKey || e.shiftKey) return;
-            
+
             const href = this.getAttribute('href');
             // تخطي الروابط الداخلية أو روابط جافا سكريبت
             if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('#')) return;
@@ -416,7 +426,7 @@ function initPullToRefresh() {
 // تحديث مؤشر اتصال الإنترنت
 function updateOnlineStatus() {
     const isOnline = navigator.onlineStatus !== undefined ? navigator.onlineStatus : navigator.onLine;
-    
+
     // إنشاء مؤشر عدم الاتصال إذا لم يكن موجودًا
     if (!document.querySelector('.mobile-offline-indicator')) {
         const offlineDiv = document.createElement('div');
@@ -426,7 +436,7 @@ function updateOnlineStatus() {
     }
 
     const offlineIndicator = document.querySelector('.mobile-offline-indicator');
-    
+
     if (!isOnline) {
         offlineIndicator.classList.add('show');
         showMobileToast('<i class="fas fa-exclamation-triangle"></i> أنت غير متصل بالإنترنت حاليًا', 'error');
@@ -529,10 +539,10 @@ function initSmoothScrolling() {
     document.querySelectorAll('a[href^="#"]:not([data-toggle]):not([data-bs-toggle])').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            
+
             const targetId = this.getAttribute('href');
             if (targetId === '#') return;
-            
+
             const targetElement = document.querySelector(targetId);
             if (targetElement) {
                 targetElement.scrollIntoView({
@@ -549,7 +559,7 @@ function initLazyLoading() {
     // إضافة مراقب تقاطع للصور
     if ('IntersectionObserver' in window) {
         const lazyImages = document.querySelectorAll('img[data-src]');
-        
+
         const imageObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -567,7 +577,7 @@ function initLazyLoading() {
     } else {
         // البديل لمتصفحات لا تدعم IntersectionObserver
         const lazyImages = document.querySelectorAll('img[data-src]');
-        
+
         lazyImages.forEach(img => {
             img.src = img.dataset.src;
         });
@@ -577,11 +587,11 @@ function initLazyLoading() {
 // تفعيل مبدّل الوضع المظلم
 function initThemeToggle() {
     const themeToggle = document.getElementById('themeToggle');
-    
+
     if (themeToggle) {
         themeToggle.addEventListener('click', function() {
             const icon = this.querySelector('i');
-            
+
             if (document.documentElement.classList.contains('dark-mode')) {
                 document.documentElement.classList.remove('dark-mode');
                 icon.classList.remove('fa-sun');
@@ -596,7 +606,7 @@ function initThemeToggle() {
                 showMobileToast('<i class="fas fa-moon"></i> تم تفعيل الوضع الليلي', 'info');
             }
         });
-        
+
         // تطبيق السمة المحفوظة عند التحميل
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
@@ -614,11 +624,11 @@ function initThemeToggle() {
 function initAnimations() {
     // إضافة فئات التأخير للعناصر المتتالية
     const contentElements = document.querySelectorAll('.mobile-card, .service-card, .booking-card, .notification-item');
-    
+
     contentElements.forEach((element, index) => {
         const delay = index % 5;
         element.classList.add('fade-in', `animate-delay-${delay}`);
-        
+
         // إزالة فئات الرسوم المتحركة بعد الانتهاء
         setTimeout(() => {
             element.classList.remove('fade-in', `animate-delay-${delay}`);
@@ -630,7 +640,7 @@ function initAnimations() {
 function updateNotificationCount() {
     const unreadItems = document.querySelectorAll('.notification-item.unread').length;
     const badges = document.querySelectorAll('.notification-badge');
-    
+
     badges.forEach(badge => {
         if (unreadItems > 0) {
             badge.textContent = unreadItems;
@@ -648,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         document.body.classList.remove('page-transition-in');
     }, 300);
-    
+
     // تشغيل تأثيرات الرسوم المتحركة بعد تحميل الصفحة
     setTimeout(initAnimations, 100);
 });

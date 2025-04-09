@@ -133,17 +133,17 @@ def dashboard():
     provider = None
     if current_user.is_provider():
         provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
-        
+
         if provider:
             services = Service.query.filter_by(provider_id=provider.id).all()
             bookings = []
             for service in services:
                 service_bookings = Booking.query.filter_by(service_id=service.id).all()
                 bookings.extend(service_bookings)
-            
+
             active_services_count = sum(1 for s in services if s.is_active)
             pending_bookings_count = sum(1 for b in bookings if b.status == 'pending')
-            
+
             return render_template('provider/dashboard.html',
                                  provider=provider,
                                  services=services,
@@ -156,7 +156,7 @@ def dashboard():
     # Regular user dashboard
     bookings = Booking.query.filter_by(client_id=current_user.id).order_by(Booking.created_at.desc()).all()
     reviews = Review.query.filter_by(user_id=current_user.id).all()
-    
+
     return render_template('dashboard.html', 
                          bookings=bookings,
                          reviews=reviews)
@@ -751,7 +751,7 @@ def edit_meal(meal_id):
 
     return render_template('meal_form.html', form=form, meal=meal, title='تعديل وجبة')
 
-# حجز طاولة في المطعم
+# حجز طاولة فيالمطعم
 @app.route('/restaurant/<int:provider_id>/reserve-table', methods=['GET', 'POST'])
 @login_required
 def reserve_table(provider_id):
@@ -1390,52 +1390,17 @@ def mobile_service_details(service_id):
 @app.route('/mobile/dashboard')
 @login_required
 def mobile_dashboard():
-    if current_user.is_provider():
-        # Provider Dashboard
-        provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
-        if not provider:
-            return redirect(url_for('create_provider_profile'))
+    # الحصول على بيانات المستخدم الحالي
+    current_user_data = User.query.get(current_user.id)
 
-        services = Service.query.filter_by(provider_id=provider.id).all()
-        active_services_count = Service.query.filter_by(provider_id=provider.id, is_active=True).count()
+    # الحصول على حجوزات المستخدم
+    bookings = Booking.query.filter_by(user_id=current_user.id).order_by(Booking.created_at.desc()).all()
 
-        # Get provider bookings
-        bookings = []
-        for service in services:
-            service_bookings = Booking.query.filter_by(service_id=service.id).all()
-            bookings.extend(service_bookings)
+    return render_template('mobile/dashboard.html', user=current_user_data, bookings=bookings)
 
-        pending_bookings_count = sum(1 for b in bookings if b.status == 'pending')
-        completed_bookings_count = sum(1 for b in bookings if b.status == 'completed')
-        recent_bookings = sorted(bookings, key=lambda x: x.booking_date, reverse=True)[:5]
-        provider_rating = provider.rating
-
-        return render_template('mobile/dashboard.html',
-                              provider=provider,
-                              services=services,
-                              bookings=bookings,
-                              active_services_count=active_services_count,
-                              pending_bookings_count=pending_bookings_count,
-                              completed_bookings_count=completed_bookings_count,
-                              recent_bookings=recent_bookings,
-                              provider_rating=provider_rating,
-                              review_form=ReviewForm())
-    else:
-        # User Dashboard
-        bookings = Booking.query.filter_by(client_id=current_user.id).order_by(Booking.booking_date.desc()).all()
-        # إضافة الحجوزات المكتملة
-        completed_bookings = Booking.query.filter_by(
-            client_id=current_user.id,
-            status='completed'
-        ).order_by(Booking.booking_date.desc()).all()
-
-        reviews = Review.query.filter_by(user_id=current_user.id).all()
-
-        return render_template('mobile/dashboard.html',
-                             bookings=bookings,
-                             completed_bookings=completed_bookings,
-                             reviews=reviews,
-                             review_form=ReviewForm())
+@app.route('/mobile/about')
+def mobile_about():
+    return render_template('mobile/about.html')
 
 # Mobile Booking Page
 @app.route('/mobile/booking/<int:service_id>')
@@ -1594,4 +1559,3 @@ def log_action(user_id, action_type, action_details, booking_id=None, payment_id
     )
     db.session.add(action)
     db.session.commit()
-

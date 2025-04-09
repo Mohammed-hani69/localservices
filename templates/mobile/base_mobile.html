@@ -99,6 +99,12 @@
                 </div>
                 <span>حسابي</span>
             </a>
+            <a href="{{ url_for('mobile_about') }}" class="nav-item {% if request.endpoint == 'mobile_about' %}active{% endif %}">
+                <div class="nav-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <span>عن المنصة</span>
+            </a>
         </div>
     </div>
 

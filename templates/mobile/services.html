@@ -32,6 +32,43 @@
     <div class="mobile-card">
         <h5 class="mb-3 text-center">تصنيفات الخدمات</h5>
         <div class="categories-scroll">
+            <div class="category-item" data-category="صيانة">
+                <div class="category-circle">
+                    <span class="emoji">🔧</span>
+                </div>
+                <div class="category-name">صيانة</div>
+            </div>
+            <div class="category-item" data-category="تنظيف">
+                <div class="category-circle">
+                    <span class="emoji">🧹</span>
+                </div>
+                <div class="category-name">تنظيف</div>
+            </div>
+            <div class="category-item" data-category="تعليم">
+                <div class="category-circle">
+                    <span class="emoji">📚</span>
+                </div>
+                <div class="category-name">تعليم</div>
+            </div>
+            <div class="category-item" data-category="صحة">
+                <div class="category-circle">
+                    <span class="emoji">⚕️</span>
+                </div>
+                <div class="category-name">صحة</div>
+            </div>
+            <div class="category-item" data-category="طعام">
+                <div class="category-circle">
+                    <span class="emoji">🍽️</span>
+                </div>
+                <div class="category-name">طعام</div>
+            </div>
+            <div class="category-item" data-category="أخرى">
+                <div class="category-circle">
+                    <span class="emoji">📦</span>
+                </div>
+                <div class="category-name">أخرى</div>
+            </div>
+        </div>iv class="categories-scroll">
             <a href="{{ url_for('mobile_services') }}" class="category-item {% if not category %}active{% endif %}">
                 <div class="category-circle">
                     <i class="fas fa-th"></i>
