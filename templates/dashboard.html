@@ -86,7 +86,7 @@
                                                 <tr>
                                                     <td>{{ service.name }}</td>
                                                     <td><span class="badge bg-info">{{ service.category }}</span></td>
-                                                    <td>{{ "%.2f"|format(service.price) }} ريال</td>
+                                                    <td>{{ "%.2f"|format(service.price) }} جنيه</td>
                                                     <td>
                                                         {% if service.is_active %}
                                                             <span class="badge bg-success">متاح</span>
@@ -150,7 +150,7 @@
                                                             {% endif %}
                                                         </span>
                                                     </td>
-                                                    <td>{{ "%.2f"|format(booking.service.price) }} ريال</td>
+                                                    <td>{{ "%.2f"|format(booking.service.price) }} جنيه</td>
                                                     <td>
                                                         {% if booking.payment %}
                                                             {% if booking.payment.status == 'completed' %}
@@ -188,15 +188,15 @@
                                                             </button>
                                                             <ul class="dropdown-menu dropdown-menu-end">
                                                                 {% if booking.status == 'pending' %}
-                                                                    <li><a class="dropdown-item booking-action" href="#" data-action="confirm" data-booking-id="{{ booking.id }}">تأكيد الحجز</a></li>
-                                                                    <li><a class="dropdown-item booking-action" href="#" data-action="cancel" data-booking-id="{{ booking.id }}">إلغاء الحجز</a></li>
+                                                                    <li><button class="dropdown-item booking-action" data-action="confirm" data-booking-id="{{ booking.id }}">تأكيد الحجز</button></li>
+                                                                    <li><button class="dropdown-item booking-action" data-action="cancel" data-booking-id="{{ booking.id }}">إلغاء الحجز</button></li>
                                                                 {% elif booking.status == 'confirmed' %}
-                                                                    <li><a class="dropdown-item booking-action" href="#" data-action="complete" data-booking-id="{{ booking.id }}">تعليم كمكتمل</a></li>
-                                                                    <li><a class="dropdown-item booking-action" href="#" data-action="cancel" data-booking-id="{{ booking.id }}">إلغاء الحجز</a></li>
+                                                                    <li><button class="dropdown-item booking-action" data-action="complete" data-booking-id="{{ booking.id }}">تعليم كمكتمل</button></li>
+                                                                    <li><button class="dropdown-item booking-action" data-action="cancel" data-booking-id="{{ booking.id }}">إلغاء الحجز</button></li>
                                                                 {% endif %}
                                                                 {% if booking.payment and booking.payment.status == 'awaiting_confirmation' %}
                                                                     <li><hr class="dropdown-divider"></li>
-                                                                    <li><a class="dropdown-item payment-action" href="#" data-action="confirm-payment" data-payment-id="{{ booking.payment.id }}">تأكيد استلام الدفع</a></li>
+                                                                    <li><button class="dropdown-item payment-action" data-action="confirm-payment" data-payment-id="{{ booking.payment.id }}" data-booking-id="{{ booking.id }}">تأكيد استلام الدفع</button></li>
                                                                 {% endif %}
                                                             </ul>
                                                         </div>
@@ -254,7 +254,7 @@
                                                             {% endif %}
                                                         </span>
                                                     </td>
-                                                    <td>{{ "%.2f"|format(booking.service.price) }} ريال</td>
+                                                    <td>{{ "%.2f"|format(booking.service.price) }} جنيه</td>
                                                     <td>
                                                         <div class="btn-group">
                                                             {% if booking.payment and booking.payment.status != 'completed' %}
@@ -358,7 +358,7 @@
                                                 <tr>
                                                     <td>#{{ payment.id }}</td>
                                                     <td>{{ payment.booking.service.name }}</td>
-                                                    <td>{{ "%.2f"|format(payment.amount) }} ريال</td>
+                                                    <td>{{ "%.2f"|format(payment.amount) }} جنيه</td>
                                                     <td>
                                                         {% if payment.payment_method == 'credit_card' %}
                                                             بطاقة ائتمان
@@ -442,125 +442,211 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // تهيئة عرض التقييمات
-        const ratingDisplays = document.querySelectorAll('.rating-display');
-        ratingDisplays.forEach(function(el) {
-            const rating = parseFloat(el.getAttribute('data-rating'));
-            let stars = '';
+document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة عرض التقييمات
+    const ratingDisplays = document.querySelectorAll('.rating-display');
+    ratingDisplays.forEach(function(el) {
+        const rating = parseFloat(el.getAttribute('data-rating'));
+        let stars = '';
+        
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                stars += '<i class="fas fa-star text-warning"></i>';
+            } else if (i - 0.5 <= rating) {
+                stars += '<i class="fas fa-star-half-alt text-warning"></i>';
+            } else {
+                stars += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        
+        el.innerHTML = stars;
+    });
+    
+    // معالجة أزرار الإجراءات
+    document.querySelectorAll('.booking-action').forEach(button => {
+        button.addEventListener('click', async function() {
+            const action = this.dataset.action;
+            const bookingId = this.dataset.bookingId;
+            const row = this.closest('tr');
             
-            for (let i = 1; i <= 5; i++) {
-                if (i <= rating) {
-                    stars += '<i class="fas fa-star text-warning"></i>';
-                } else if (i - 0.5 <= rating) {
-                    stars += '<i class="fas fa-star-half-alt text-warning"></i>';
-                } else {
-                    stars += '<i class="far fa-star text-warning"></i>';
+            if (confirm('هل أنت متأكد من تنفيذ هذا الإجراء؟')) {
+                try {
+                    const response = await fetch(`/booking/${bookingId}/${action}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showAlert('success', data.message);
+                        
+                        // تحديث حالة الحجز في الجدول
+                        const statusCell = row.querySelector('td:nth-child(4) .badge');
+                        if (statusCell) {
+                            let newStatus, newClass;
+                            switch (action) {
+                                case 'confirm':
+                                    newStatus = 'مؤكد';
+                                    newClass = 'bg-info';
+                                    break;
+                                case 'cancel':
+                                    newStatus = 'ملغي';
+                                    newClass = 'bg-danger';
+                                    break;
+                                case 'complete':
+                                    newStatus = 'مكتمل';
+                                    newClass = 'bg-success';
+                                    break;
+                            }
+                            statusCell.textContent = newStatus;
+                            statusCell.className = `badge ${newClass}`;
+                        }
+                        
+                        // تحديث قائمة الإجراءات المتاحة
+                        const actionsDropdown = this.closest('.dropdown-menu');
+                        if (actionsDropdown) {
+                            switch (action) {
+                                case 'confirm':
+                                    actionsDropdown.innerHTML = `
+                                        <li><button class="dropdown-item booking-action" data-action="complete" data-booking-id="${bookingId}">تعليم كمكتمل</button></li>
+                                        <li><button class="dropdown-item booking-action" data-action="cancel" data-booking-id="${bookingId}">إلغاء الحجز</button></li>
+                                    `;
+                                    break;
+                                case 'cancel':
+                                case 'complete':
+                                    actionsDropdown.innerHTML = ''; // إزالة جميع الإجراءات
+                                    break;
+                            }
+                        }
+                        
+                        // إعادة تهيئة معالجات الأحداث للأزرار الجديدة
+                        initializeActionButtons();
+                    } else {
+                        showAlert('danger', data.message || 'حدث خطأ أثناء تنفيذ العملية');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showAlert('danger', 'حدث خطأ في الاتصال بالخادم');
                 }
             }
-            
-            el.innerHTML = stars;
         });
-        
-        // معالجة إجراءات الحجز لمقدمي الخدمة
-        const bookingActions = document.querySelectorAll('.booking-action');
-        if (bookingActions) {
-            bookingActions.forEach(function(action) {
-                action.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const actionType = this.getAttribute('data-action');
-                    const bookingId = this.getAttribute('data-booking-id');
-                    
-                    if (confirm('هل أنت متأكد من تنفيذ هذا الإجراء؟')) {
-                        // إرسال الطلب إلى الخادم (سنقوم بإضافة هذه الوظائف)
-                        fetch(`/booking/${bookingId}/${actionType}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': getCsrfToken()
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                showAlert('success', data.message);
-                                // إعادة تحميل الصفحة بعد نجاح العملية
-                                setTimeout(() => location.reload(), 1500);
-                            } else {
-                                showAlert('danger', data.message || 'حدث خطأ أثناء تنفيذ العملية');
-                            }
-                        })
-                        .catch(error => {
-                            showAlert('danger', 'حدث خطأ في الاتصال بالخادم');
-                            console.error('Error:', error);
-                        });
-                    }
-                });
-            });
-        }
-        
-        // معالجة إجراءات الدفع لمقدمي الخدمة
-        const paymentActions = document.querySelectorAll('.payment-action');
-        if (paymentActions) {
-            paymentActions.forEach(function(action) {
-                action.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const actionType = this.getAttribute('data-action');
-                    const paymentId = this.getAttribute('data-payment-id');
-                    
-                    if (confirm('هل أنت متأكد من تأكيد استلام الدفع؟')) {
-                        // إرسال الطلب إلى الخادم (سنقوم بإضافة هذه الوظائف)
-                        fetch(`/payment/${paymentId}/${actionType}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': getCsrfToken()
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                showAlert('success', data.message);
-                                // إعادة تحميل الصفحة بعد نجاح العملية
-                                setTimeout(() => location.reload(), 1500);
-                            } else {
-                                showAlert('danger', data.message || 'حدث خطأ أثناء تنفيذ العملية');
-                            }
-                        })
-                        .catch(error => {
-                            showAlert('danger', 'حدث خطأ في الاتصال بالخادم');
-                            console.error('Error:', error);
-                        });
-                    }
-                });
-            });
-        }
-        
-        // وظيفة مساعدة للحصول على رمز CSRF
-        function getCsrfToken() {
-            return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-        }
-        
-        // وظيفة عرض رسالة تنبيه
-        function showAlert(type, message) {
-            const alertContainer = document.createElement('div');
-            alertContainer.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
-            alertContainer.setAttribute('role', 'alert');
-            alertContainer.style.zIndex = '9999';
-            
-            alertContainer.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            `;
-            
-            document.body.appendChild(alertContainer);
-            
-            // إخفاء التنبيه تلقائياً بعد فترة
-            setTimeout(() => {
-                const bsAlert = new bootstrap.Alert(alertContainer);
-                bsAlert.close();
-            }, 5000);
-        }
     });
+
+    // تحديث معالج أزرار تأكيد الدفع
+    document.querySelectorAll('.payment-action').forEach(button => {
+        button.addEventListener('click', async function() {
+            const paymentId = this.dataset.paymentId;
+            const bookingId = this.dataset.bookingId; // إضافة هذا السطر
+            const row = this.closest('tr');
+            
+            if (confirm('هل أنت متأكد من تأكيد استلام الدفع؟')) {
+                try {
+                    const response = await fetch(`/payment/${paymentId}/confirm-payment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showAlert('success', data.message);
+                        
+                        // تحديث حالة الدفع في الجدول
+                        const paymentStatusCell = row.querySelector('td:nth-child(6) .badge');
+                        if (paymentStatusCell) {
+                            paymentStatusCell.textContent = 'تم الدفع';
+                            paymentStatusCell.className = 'badge bg-success';
+                        }
+                        
+                        // تحديث حالة الحجز
+                        const bookingStatusCell = row.querySelector('td:nth-child(4) .badge');
+                        if (bookingStatusCell) {
+                            bookingStatusCell.textContent = 'مؤكد';
+                            bookingStatusCell.className = 'badge bg-info';
+                        }
+
+                        // تحديث قائمة الإجراءات
+                        const actionsDropdown = this.closest('.dropdown-menu');
+                        if (actionsDropdown) {
+                            // إزالة زر تأكيد الدفع
+                            const paymentItem = actionsDropdown.querySelector('[data-action="confirm-payment"]');
+                            if (paymentItem) {
+                                paymentItem.closest('li').remove();
+                                const divider = actionsDropdown.querySelector('.dropdown-divider');
+                                if (divider) divider.remove();
+                            }
+                            
+                            // إضافة أزرار الإجراءات الجديدة للحجز المؤكد
+                            actionsDropdown.innerHTML = `
+                                <li><button class="dropdown-item booking-action" data-action="complete" data-booking-id="${bookingId}">تعليم كمكتمل</button></li>
+                                <li><button class="dropdown-item booking-action" data-action="cancel" data-booking-id="${bookingId}">إلغاء الحجز</button></li>
+                            `;
+
+                            // تحديث معالجات الأحداث للأزرار الجديدة
+                            initializeActionButtons();
+                        }
+
+                        // تحديث تاريخ الدفع
+                        const paymentDateCell = row.querySelector('td:nth-child(7)');
+                        if (paymentDateCell && data.data.payment_date) {
+                            paymentDateCell.textContent = data.data.payment_date;
+                        }
+                    } else {
+                        showAlert('danger', data.message || 'حدث خطأ أثناء تأكيد الدفع');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showAlert('danger', 'حدث خطأ في الاتصال بالخادم');
+                }
+            }
+        });
+    });
+
+    // دالة تهيئة معالجات الأحداث للأزرار
+    function initializeActionButtons() {
+        document.querySelectorAll('.booking-action').forEach(button => {
+            button.addEventListener('click', handleBookingAction);
+        });
+        document.querySelectorAll('.payment-action').forEach(button => {
+            button.addEventListener('click', handlePaymentAction);
+        });
+    }
+
+    // دالة مساعدة للحصول على CSRF token
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    }
+
+    // وظيفة عرض رسالة تنبيه
+    function showAlert(type, message) {
+        const alertContainer = document.createElement('div');
+        alertContainer.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+        alertContainer.setAttribute('role', 'alert');
+        alertContainer.style.zIndex = '9999';
+        
+        alertContainer.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        document.body.appendChild(alertContainer);
+        
+        // إخفاء التنبيه تلقائياً بعد فترة
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alertContainer);
+            bsAlert.close();
+        }, 5000);
+    }
+
+    // تهيئة أولية للأزرار
+    initializeActionButtons();
+});
 </script>
 {% endblock %}

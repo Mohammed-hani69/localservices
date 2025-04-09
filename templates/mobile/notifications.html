@@ -1,156 +1,113 @@
 {% extends "mobile/base_mobile.html" %}
 
-{% block title %}الإشعارات - منصة الخدمات المحلية{% endblock %}
+{% block title %}الإشعارات{% endblock %}
 
 {% block content %}
-<div class="mobile-notifications-page">
-    <div class="container py-4">
-        <h1 class="text-center mb-4">الإشعارات</h1>
-        
-        {% if notifications %}
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">إشعاراتك</h5>
-                    
-                    <div class="notification-list">
-                        {% for notification in notifications %}
-                            <div class="notification-item {% if not notification.is_read %}unread-notification{% endif %} {% if not loop.last %}mb-3 pb-3 border-bottom{% endif %}" data-id="{{ notification.id }}">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="me-3">
-                                        <span class="bg-primary bg-opacity-10 p-2 rounded-circle d-inline-block">
-                                            {% if notification.notification_type == 'success' %}
-                                                <i class="fas fa-check-circle text-success"></i>
-                                            {% elif notification.notification_type == 'warning' %}
-                                                <i class="fas fa-exclamation-triangle text-warning"></i>
-                                            {% elif notification.notification_type == 'danger' %}
-                                                <i class="fas fa-times-circle text-danger"></i>
-                                            {% else %}
-                                                <i class="fas fa-info-circle text-info"></i>
-                                            {% endif %}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-1">{{ notification.title }}</h6>
-                                        <p class="mb-0 small text-muted">{{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                                    </div>
-                                </div>
-                                <p class="mb-0 notification-text ps-5">{{ notification.content }}</p>
-                            </div>
-                        {% endfor %}
+<!-- Mobile Header -->
+<header class="mobile-header">
+    <button class="back-button" onclick="history.back()">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <h1 class="header-title">الإشعارات</h1>
+    <div style="width: 36px"></div>
+</header>
+
+<div class="main-content">
+    {% if notifications %}
+        <div class="notifications-wrapper">
+            {% for notification in notifications %}
+                <div class="notification-item {% if not notification.is_read %}unread{% endif %}" 
+                     data-id="{{ notification.id }}">
+                    <div class="notification-icon-wrapper {{ notification.notification_type }}">
+                        {% if notification.notification_type == 'success' %}
+                            <i class="fas fa-check-circle"></i>
+                        {% elif notification.notification_type == 'warning' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% elif notification.notification_type == 'danger' %}
+                            <i class="fas fa-times-circle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
                     </div>
-                    
-                    <div class="d-grid mt-3">
-                        <a href="{{ url_for('delete_all_notifications') }}" class="btn btn-outline-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف جميع الإشعارات؟')">
-                            <i class="fas fa-trash-alt me-1"></i> حذف جميع الإشعارات
-                        </a>
+                    <div class="notification-content">
+                        <h6 class="notification-title">{{ notification.title }}</h6>
+                        <p class="notification-text">{{ notification.content }}</p>
+                        <span class="notification-time">{{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
                     </div>
                 </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-bell-slash"></i>
             </div>
-        {% else %}
-            <div class="card shadow-sm mb-4">
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
-                    <h5>لا توجد إشعارات</h5>
-                    <p class="text-muted">ستظهر هنا الإشعارات المتعلقة بحسابك والخدمات التي تستخدمها.</p>
-                </div>
-            </div>
-        {% endif %}
-    </div>
+            <h3>لا توجد إشعارات</h3>
+            <p>ستظهر هنا الإشعارات المتعلقة بحسابك والخدمات التي تستخدمها</p>
+        </div>
+    {% endif %}
 </div>
 
-<!-- قالب تفاصيل الإشعار -->
-<div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4">
-            <div class="modal-header border-0">
-                <h5 class="modal-title" id="notificationTitle"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="notificationContent">
-            </div>
-            <div class="modal-footer justify-content-between border-0">
-                <small class="text-muted" id="notificationDate"></small>
-                <div>
-                    <a href="#" id="deleteNotificationBtn" class="btn btn-sm btn-outline-danger">حذف</a>
-                    <a href="#" id="relatedItemBtn" class="btn btn-sm btn-primary d-none">عرض التفاصيل</a>
-                </div>
-            </div>
-        </div>
+<!-- Bottom Navigation -->
+<nav class="mobile-bottom-nav">
+    <div class="nav-wrapper">
+        <a href="{{ url_for('mobile_index') }}" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="{{ url_for('services') }}" class="nav-item">
+            <i class="fas fa-hands-helping"></i>
+            <span>الخدمات</span>
+        </a>
+        <a href="{{ url_for('mobile_notifications') }}" class="nav-item active">
+            <i class="fas fa-bell"></i>
+            <span>الإشعارات</span>
+        </a>
+        <a href="{{ url_for('mobile_dashboard') }}" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>حسابي</span>
+        </a>
     </div>
-</div>
+</nav>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // إضافة معالج النقر على الإشعارات
-        const notificationItems = document.querySelectorAll('.notification-item');
-        const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
-        
-        notificationItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // استخراج بيانات الإشعار
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationItems = document.querySelectorAll('.notification-item');
+    
+    notificationItems.forEach(item => {
+        item.addEventListener('click', function() {
+            if (this.classList.contains('unread')) {
                 const notificationId = this.dataset.id;
-                const title = this.querySelector('h6').textContent;
-                const content = this.querySelector('.notification-text').textContent;
-                const date = this.querySelector('.text-muted.small').textContent;
-                
-                // تعبئة المودال بالبيانات
-                document.getElementById('notificationTitle').textContent = title;
-                document.getElementById('notificationContent').textContent = content;
-                document.getElementById('notificationDate').textContent = date;
-                
-                // تعيين رابط الحذف
-                document.getElementById('deleteNotificationBtn').href = `/notifications/delete/${notificationId}`;
-                
-                // عرض المودال
-                notificationModal.show();
-                
-                // تعليم الإشعار كمقروء إذا لم يكن مقروءًا
-                if (this.classList.contains('unread-notification')) {
-                    fetch(`/notifications/mark-read/${notificationId}`)
-                    .then(response => {
-                        if (response.ok) {
-                            this.classList.remove('unread-notification');
-                        }
-                    });
-                }
-            });
+                fetch(`/notifications/mark-read/${notificationId}`)
+                .then(response => {
+                    if (response.ok) {
+                        this.classList.remove('unread');
+                    }
+                });
+            }
         });
     });
-</script>
-{% endblock %}
 
-{% block styles %}
-<style>
-    .notification-item {
-        cursor: pointer;
-        transition: all 0.2s;
+    // إضافة وظيفة الوضع الليلي
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    
+    // تحقق من حالة الوضع الليلي المحفوظة
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        darkModeToggle.checked = true;
     }
     
-    .notification-item:active {
-        transform: scale(0.98);
-    }
-    
-    .unread-notification {
-        position: relative;
-    }
-    
-    .unread-notification::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: -15px;
-        width: 4px;
-        height: 100%;
-        background-color: #e63946;
-        border-radius: 2px;
-    }
-    
-    .notification-text {
-        color: #666;
-    }
-</style>
+    darkModeToggle.addEventListener('change', function() {
+        if (this.checked) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('darkMode', 'true');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('darkMode', 'false');
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -7,8 +7,8 @@
     --dark-text-secondary: #aaaaaa;
     --dark-text-muted: #888888;
     --dark-border-color: #444444;
-    --dark-primary: #e63946;
-    --dark-primary-hover: #d32535;
+    --dark-primary: #1a73e8;
+    --dark-primary-hover: #0f62d6;
     --dark-success: #42b883;
     --dark-warning: #e9c46a;
     --dark-danger: #e76f51;
@@ -189,7 +189,7 @@ body.dark-mode {
     border-color: var(--dark-border-color);
 }
 
-.dark-mode .modal-header, 
+.dark-mode .modal-header,
 .dark-mode .modal-footer {
     border-color: var(--dark-border-color);
 }

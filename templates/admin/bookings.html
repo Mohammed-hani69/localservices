@@ -96,7 +96,7 @@
                                         <td>{{ booking.service.name }}</td>
                                         <td>{{ booking.service.provider.company_name }}</td>
                                         <td>{{ booking.booking_date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                        <td class="text-primary fw-bold">{{ "%.2f"|format(booking.service.price) }} ريال</td>
+                                        <td class="text-primary fw-bold">{{ "%.2f"|format(booking.service.price) }} جنيه</td>
                                         <td>
                                             {% if booking.status == 'pending' %}
                                                 <span class="badge bg-warning">قيد الانتظار</span>

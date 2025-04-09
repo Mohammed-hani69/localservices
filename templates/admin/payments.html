@@ -46,7 +46,7 @@
                         <h3 class="card-title">
                             {{ "%.0f"|format(payments|selectattr('status', 'equalto', 'completed')|sum(attribute='amount') or 0) }}
                         </h3>
-                        <p class="card-text text-muted">إجمالي المبلغ (ريال)</p>
+                        <p class="card-text text-muted">إجمالي المبلغ (جنيه)</p>
                     </div>
                 </div>
             </div>

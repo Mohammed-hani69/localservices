@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header text-white" style="background-color: var(--primary-color);">
+                        <h4 class="mb-0">حجز طاولة في {{ provider.company_name }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="restaurant-info mb-4">
+                            <h5>معلومات المطعم</h5>
+                            <p><i class="fas fa-building me-2"></i> {{ provider.company_name }}</p>
+                            <p><i class="fas fa-info-circle me-2"></i> {{ provider.description }}</p>
+                            {% if provider.website %}
+                                <p><i class="fas fa-globe me-2"></i> <a href="{{ provider.website }}" target="_blank">{{ provider.website }}</a></p>
+                            {% endif %}
+                            <p><i class="fas fa-star me-2"></i> التقييم: {{ "%.1f"|format(provider.rating) }} من 5</p>
+                        </div>
+                        
+                        <hr>
+                        
+                        <form method="post" class="needs-validation" novalidate>
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="reservation_date" class="form-label">{{ form.reservation_date.label }}</label>
+                                    {{ form.reservation_date(class="form-control", id="reservation_date", placeholder="YYYY-MM-DD HH:MM") }}
+                                    <small class="text-muted">صيغة التاريخ: YYYY-MM-DD HH:MM</small>
+                                    {% if form.reservation_date.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.reservation_date.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="guests_number" class="form-label">{{ form.guests_number.label }}</label>
+                                    {{ form.guests_number(class="form-control", id="guests_number", placeholder="عدد الضيوف") }}
+                                    {% if form.guests_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.guests_number.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="contact_phone" class="form-label">{{ form.contact_phone.label }}</label>
+                                {{ form.contact_phone(class="form-control", id="contact_phone", placeholder="رقم الهاتف للتواصل") }}
+                                {% if form.contact_phone.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.contact_phone.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="special_requests" class="form-label">{{ form.special_requests.label }}</label>
+                                {{ form.special_requests(class="form-control", id="special_requests", rows=3, placeholder="أي طلبات خاصة؟") }}
+                                {% if form.special_requests.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.special_requests.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                {{ form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // تنسيق حقل التاريخ
+    document.addEventListener('DOMContentLoaded', function() {
+        // يمكن إضافة مكتبة لاختيار التاريخ والوقت هنا إذا لزم الأمر
+    });
+</script>
+{% endblock %}

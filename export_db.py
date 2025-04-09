@@ -1,8 +1,8 @@
-import os
 import json
+import os
 from datetime import datetime
-from app import db
 from models import User, ServiceProvider, Service, Booking, Payment, Review, Notification
+from database import db
 
 def export_database():
     """إنشاء نسخة احتياطية من قاعدة البيانات كملف JSON"""

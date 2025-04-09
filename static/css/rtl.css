@@ -137,7 +137,7 @@
 
 /* الإشعارات غير المقروءة */
 [dir="rtl"] .unread-notification {
-    border-right: 4px solid #e63946;
+    border-right: 4px solid #1a73e8;
     border-left: none;
 }
 
@@ -156,7 +156,7 @@
     [dir="rtl"] .navbar-brand {
         margin-right: 0;
     }
-    
+
     [dir="rtl"] .dropdown-menu-end {
         left: 10px;
         right: auto;

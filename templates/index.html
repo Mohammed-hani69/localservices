@@ -3,35 +3,438 @@
 {% block title %}منصة الخدمات المحلية - الصفحة الرئيسية{% endblock %}
 
 {% block content %}
+<style>
+    /* Global Styles */
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+
+    body {
+        font-family: 'Tajawal', sans-serif;
+    }
+
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #1a73e8 0%, #164ec0 100%);
+        border: none;
+        box-shadow: 0 4px 14px rgba(26, 115, 232, 0.4);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(26, 115, 232, 0.5);
+        background: linear-gradient(135deg, #0f62d6 0%, #0c44b0 100%);
+    }
+
+    .btn-light {
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-light:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .section-title {
+        position: relative;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+        font-weight: 700;
+    }
+
+    .section-title:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 70px;
+        height: 4px;
+        background: linear-gradient(90deg, #1a73e8, #164ec0);
+        border-radius: 2px;
+    }
+
+    /* Hero Section Styles */
+    .hero {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #1a73e8 0%, #164ec0 100%);
+        padding: 150px 0 200px;
+        clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+        margin-bottom: 30px;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('/static/images/pattern.svg');
+        opacity: 0.1;
+        animation: moveBackground 30s linear infinite;
+    }
+
+    .hero .container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        animation: fadeInDown 1s ease;
+    }
+
+    .hero p {
+        font-size: 1.25rem;
+        max-width: 90%;
+        animation: fadeInUp 1s ease 0.3s both;
+    }
+
+    .hero .btn-group {
+        animation: fadeInUp 1s ease 0.6s both;
+    }
+
+    /* Services Icons Grid */
+    .services-icons-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        padding: 2rem;
+    }
+
+    .icon-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 2rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        backdrop-filter: blur(8px);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .icon-box:hover {
+        transform: translateY(-10px);
+        background: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .icon-label {
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    /* Search Section */
+    .search-section {
+        margin-top: -100px;
+        margin-bottom: 60px;
+    }
+
+    .search-section .card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+        transform: translateY(0);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .search-section .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .search-section .card-body {
+        padding: 2.5rem;
+    }
+
+    .search-section .form-floating .form-control,
+    .search-section .form-floating .form-select {
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 1.25rem 1rem;
+        height: 60px;
+    }
+
+    .search-section .btn {
+        height: 60px;
+        font-size: 1.1rem;
+    }
+
+    /* Featured Services Section */
+    .featured-services {
+        padding: 80px 0;
+        background-color: #f8f9fa;
+    }
+
+    .featured-services .card {
+        border-radius: 12px;
+        overflow: hidden;
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .featured-services .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .featured-services .card-body {
+        padding: 1.8rem;
+    }
+
+    .featured-services .card-title {
+        font-weight: 700;
+        font-size: 1.4rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .featured-services .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .featured-services .card-footer {
+        padding: 1rem 1.8rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .rating-display {
+        color: gold;
+        font-size: 1.2rem;
+    }
+
+    /* How It Works Section */
+    .how-it-works {
+        padding: 100px 0;
+        background-color: white;
+    }
+
+    .how-it-works .step-box {
+        position: relative;
+        padding: 30px 20px;
+        border-radius: 16px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .how-it-works .step-box:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .how-it-works .step-number {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #1a73e8 0%, #164ec0 100%);
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        box-shadow: 0 5px 15px rgba(26, 115, 232, 0.4);
+    }
+
+    .how-it-works .icon-box {
+        background: rgba(26, 115, 232, 0.1);
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+    }
+
+    .how-it-works h4 {
+        font-weight: 700;
+        margin-bottom: 15px;
+        font-size: 1.4rem;
+    }
+
+    /* Join Us Section */
+    .join-us {
+        padding: 100px 0;
+        background: linear-gradient(135deg, #1a73e8 0%, #164ec0 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .join-us::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('/static/images/pattern.svg');
+        opacity: 0.1;
+    }
+
+    .join-us .container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .join-us h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+
+    .join-us p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .provider-icon {
+        animation: pulse 2s infinite;
+    }
+
+    /* Animations */
+    @keyframes moveBackground {
+        0% { background-position: 0 0; }
+        100% { background-position: 100% 100%; }
+    }
+
+    .floating {
+        animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.8; }
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .hero {
+            padding: 100px 0 150px;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .search-section {
+            margin-top: -70px;
+        }
+
+        .search-section .card-body {
+            padding: 1.5rem;
+        }
+
+        .how-it-works .step-box {
+            margin-bottom: 40px;
+        }
+    }
+</style>
+
 <!-- Hero Section -->
-<section class="hero bg-primary">
+<section class="hero">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6">
                 <h1 class="text-white mb-4">اكتشف أفضل الخدمات المحلية</h1>
-                <p class="text-white mb-4 lead">منصتنا تربط بين مقدمي الخدمات المتميزين والعملاء، لتوفير تجربة سهلة وموثوقة للجميع. احجز خدمتك الآن بضغطة زر!</p>
-                <div class="d-flex mt-4">
-                    <a href="{{ url_for('services') }}" class="btn btn-light btn-lg me-3">تصفح الخدمات</a>
+                <p class="text-white-50 mb-4">منصتنا تربط بين مقدمي الخدمات المتميزين والعملاء، لتوفير تجربة سهلة وموثوقة للجميع. احجز خدمتك الآن بضغطة زر!</p>
+                <div class="d-flex mt-4 gap-3 btn-group">
+                    <a href="{{ url_for('services') }}" class="btn btn-light btn-lg px-4 py-2">
+                        <i class="fas fa-search me-2"></i>تصفح الخدمات
+                    </a>
                     {% if not current_user.is_authenticated %}
-                        <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">انضم إلينا</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg px-4 py-2">
+                            <i class="fas fa-user-plus me-2"></i>انضم إلينا
+                        </a>
                     {% endif %}
                 </div>
             </div>
             <div class="col-lg-6 text-center d-none d-lg-block">
-                <i class="fas fa-hands-helping fa-10x text-white-50 mt-4"></i>
+                <div class="services-icons-grid">
+                    <div class="icon-box floating" style="animation-delay: 0s">
+                        <i class="fas fa-tools fa-3x text-white"></i>
+                        <span class="icon-label">صيانة</span>
+                    </div>
+                    <div class="icon-box floating" style="animation-delay: 1s">
+                        <i class="fas fa-broom fa-3x text-white"></i>
+                        <span class="icon-label">تنظيف</span>
+                    </div>
+                    <div class="icon-box floating" style="animation-delay: 0.5s">
+                        <i class="fas fa-graduation-cap fa-3x text-white"></i>
+                        <span class="icon-label">تعليم</span>
+                    </div>
+                    <div class="icon-box floating" style="animation-delay: 1.5s">
+                        <i class="fas fa-heartbeat fa-3x text-white"></i>
+                        <span class="icon-label">صحة</span>
+                    </div>
+                    <div class="icon-box floating" style="animation-delay: 0.7s">
+                        <i class="fas fa-utensils fa-3x text-white"></i>
+                        <span class="icon-label">طعام</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Search Section -->
-<section class="search-section py-5 bg-white">
+<section class="search-section">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8">
+            <div class="col-md-10">
                 <div class="card shadow">
                     <div class="card-body">
-                        <h3 class="card-title text-center mb-4">ابحث عن الخدمة التي تحتاجها</h3>
+                        <h3 class="text-center mb-4 fw-bold">ابحث عن الخدمة التي تحتاجها</h3>
                         <form action="{{ url_for('services') }}" method="get" id="search-form">
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -55,7 +458,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-2">
-                                    <button type="submit" class="btn btn-primary w-100 h-100">
+                                    <button type="submit" class="btn btn-primary w-100">
                                         <i class="fas fa-search"></i> بحث
                                     </button>
                                 </div>
@@ -69,7 +472,7 @@
 </section>
 
 <!-- Featured Services Section -->
-<section class="featured-services py-5 bg-light">
+<section class="featured-services">
     <div class="container">
         <div class="row">
             <div class="col-12 text-center mb-5">
@@ -77,44 +480,70 @@
                 <p class="lead text-muted">اكتشف أبرز الخدمات المتاحة على منصتنا</p>
             </div>
         </div>
-        
+
         <div class="row">
             {% if services %}
                 {% for service in services %}
                     <div class="col-md-4 mb-4">
-                        <div class="card h-100 shadow-sm">
+                        <div class="card h-100">
+                            {% if service.image %}
+                                <img src="{{ url_for('static', filename='' + service.image) }}" 
+                                     class="card-img-top" 
+                                     alt="{{ service.name }}"
+                                     style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/default-service.jpg') }}" 
+                                     class="card-img-top" 
+                                     alt="Default service image"
+                                     style="height: 200px; object-fit: cover;">
+                            {% endif %}
                             <div class="card-body">
+                                <span class="badge bg-primary mb-3">{{ service.category }}</span>
                                 <h5 class="card-title">{{ service.name }}</h5>
-                                <div class="rating-display mb-2" data-rating="{{ service.provider.rating }}"></div>
-                                <p class="card-text text-muted">{{ service.description|truncate(100) }}</p>
-                                <p class="card-text">
-                                    <span class="badge bg-primary mb-2">{{ service.category }}</span>
-                                    <span class="d-block text-primary fw-bold">{{ "%.2f"|format(service.price) }} ريال</span>
-                                </p>
+                                <div class="rating-display mb-2">
+                                    {% for i in range(5) %}
+                                        {% if i < service.provider.rating|int %}
+                                            <i class="fas fa-star"></i>
+                                        {% elif i < service.provider.rating|float %}
+                                            <i class="fas fa-star-half-alt"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="text-muted ms-2">({{ service.provider.rating }})</span>
+                                </div>
+                                <p class="card-text text-muted mb-3">{{ service.description|truncate(100) }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-light text-dark"><i class="fas fa-tag me-1"></i> {{ service.category }}</span>
+                                    <span class="text-primary fw-bold fs-4">{{ "%.2f"|format(service.price) }} جنيه</span>
+                                </div>
                             </div>
                             <div class="card-footer bg-white">
-                                <a href="{{ url_for('service_details', service_id=service.id) }}" class="btn btn-sm btn-outline-primary">عرض التفاصيل</a>
+                                <a href="{{ url_for('service_details', service_id=service.id) }}" class="btn btn-primary w-100">عرض التفاصيل</a>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             {% else %}
                 <div class="col-12 text-center">
-                    <p class="text-muted">لا توجد خدمات متاحة حالياً.</p>
+                    <div class="p-5 bg-white rounded-3 shadow-sm">
+                        <i class="fas fa-info-circle fa-3x text-primary mb-3"></i>
+                        <p class="text-muted mb-0">لا توجد خدمات متاحة حالياً.</p>
+                    </div>
                 </div>
             {% endif %}
         </div>
-        
-        <div class="row mt-4">
+
+        <div class="row mt-5">
             <div class="col-12 text-center">
-                <a href="{{ url_for('services') }}" class="btn btn-primary">عرض جميع الخدمات</a>
+                <a href="{{ url_for('services') }}" class="btn btn-primary btn-lg">عرض جميع الخدمات</a>
             </div>
         </div>
     </div>
 </section>
 
 <!-- How It Works Section -->
-<section class="how-it-works py-5 bg-white">
+<section class="how-it-works">
     <div class="container">
         <div class="row">
             <div class="col-12 text-center mb-5">
@@ -122,58 +551,108 @@
                 <p class="lead text-muted">خطوات بسيطة للحصول على الخدمة التي تحتاجها</p>
             </div>
         </div>
-        
+
         <div class="row">
-            <div class="col-md-3 text-center">
-                <div class="mb-3">
-                    <i class="fas fa-search fa-3x text-primary"></i>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="step-box">
+                    <div class="step-number">1</div>
+                    <div class="icon-box mb-4">
+                        <i class="fas fa-search fa-2x text-primary"></i>
+                    </div>
+                    <h4 class="text-center">ابحث</h4>
+                    <p class="text-muted text-center">ابحث عن الخدمة التي تناسب احتياجاتك من بين مجموعة متنوعة من الخدمات المحلية</p>
                 </div>
-                <h4>ابحث</h4>
-                <p class="text-muted">ابحث عن الخدمة التي تناسب احتياجاتك من بين مجموعة متنوعة من الخدمات المحلية</p>
             </div>
-            
-            <div class="col-md-3 text-center">
-                <div class="mb-3">
-                    <i class="fas fa-calendar-alt fa-3x text-primary"></i>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="step-box">
+                    <div class="step-number">2</div>
+                    <div class="icon-box mb-4">
+                        <i class="fas fa-calendar-alt fa-2x text-primary"></i>
+                    </div>
+                    <h4 class="text-center">احجز</h4>
+                    <p class="text-muted text-center">اختر الوقت المناسب لك واحجز الخدمة مباشرة من خلال المنصة</p>
                 </div>
-                <h4>احجز</h4>
-                <p class="text-muted">اختر الوقت المناسب لك واحجز الخدمة مباشرة من خلال المنصة</p>
             </div>
-            
-            <div class="col-md-3 text-center">
-                <div class="mb-3">
-                    <i class="fas fa-credit-card fa-3x text-primary"></i>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="step-box">
+                    <div class="step-number">3</div>
+                    <div class="icon-box mb-4">
+                        <i class="fas fa-credit-card fa-2x text-primary"></i>
+                    </div>
+                    <h4 class="text-center">ادفع</h4>
+                    <p class="text-muted text-center">أتمم عملية الدفع بطريقة آمنة وسهلة باستخدام وسائل الدفع المتاحة</p>
                 </div>
-                <h4>ادفع</h4>
-                <p class="text-muted">أتمم عملية الدفع بطريقة آمنة وسهلة باستخدام وسائل الدفع المتاحة</p>
             </div>
-            
-            <div class="col-md-3 text-center">
-                <div class="mb-3">
-                    <i class="fas fa-thumbs-up fa-3x text-primary"></i>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="step-box">
+                    <div class="step-number">4</div>
+                    <div class="icon-box mb-4">
+                        <i class="fas fa-thumbs-up fa-2x text-primary"></i>
+                    </div>
+                    <h4 class="text-center">استمتع</h4>
+                    <p class="text-muted text-center">احصل على الخدمة في الوقت المحدد وشارك تجربتك مع الآخرين</p>
                 </div>
-                <h4>استمتع</h4>
-                <p class="text-muted">احصل على الخدمة في الوقت المحدد وشارك تجربتك مع الآخرين</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Join Us Section -->
-<section class="join-us py-5 bg-primary">
+<section class="join-us">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-md-7">
+            <div class="col-lg-7 col-md-8">
                 <h2 class="text-white mb-3">هل أنت مقدم خدمة؟</h2>
                 <p class="text-white mb-4">انضم إلى منصتنا وابدأ في الوصول إلى عملاء جدد وتنمية أعمالك. نحن نوفر لك منصة سهلة ومريحة لإدارة خدماتك والحجوزات والمدفوعات.</p>
                 {% if not current_user.is_authenticated %}
-                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">انضم كمقدم خدمة</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-rocket me-2"></i>
+                        انضم كمقدم خدمة
+                    </a>
                 {% endif %}
             </div>
-            <div class="col-md-5 text-center d-none d-md-block">
-                <i class="fas fa-user-tie fa-10x text-white-50"></i>
+            <div class="col-lg-5 col-md-4 text-center d-none d-md-block">
+                <i class="fas fa-user-tie fa-10x text-white-50 provider-icon"></i>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize ratings display
+    document.querySelectorAll('.rating-display').forEach(function(el) {
+        if (!el.innerHTML.includes('fa-star')) {
+            const rating = parseFloat(el.dataset.rating || 0);
+            let starsHtml = '';
+
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(rating)) {
+                    starsHtml += '<i class="fas fa-star"></i>';
+                } else if (i - 0.5 <= rating) {
+                    starsHtml += '<i class="fas fa-star-half-alt"></i>';
+                } else {
+                    starsHtml += '<i class="far fa-star"></i>';
+                }
+            }
+
+            starsHtml += '<span class="text-muted ms-2">(' + rating + ')</span>';
+            el.innerHTML = starsHtml;
+        }
+    });
+
+    // Add smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

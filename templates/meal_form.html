@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header text-white" style="background-color: var(--primary-color);">
+                        <h4 class="mb-0">{{ title }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="name" class="form-label">{{ form.name.label }}</label>
+                                    {{ form.name(class="form-control", id="name", placeholder="أدخل اسم الوجبة") }}
+                                    {% if form.name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="price" class="form-label">{{ form.price.label }}</label>
+                                    {{ form.price(class="form-control", id="price", placeholder="أدخل السعر") }}
+                                    {% if form.price.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.price.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="meal_type" class="form-label">{{ form.meal_type.label }}</label>
+                                    {{ form.meal_type(class="form-select", id="meal_type") }}
+                                    {% if form.meal_type.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.meal_type.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="preparation_time" class="form-label">{{ form.preparation_time.label }}</label>
+                                    {{ form.preparation_time(class="form-control", id="preparation_time", placeholder="وقت التحضير بالدقائق") }}
+                                    {% if form.preparation_time.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.preparation_time.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">{{ form.description.label }}</label>
+                                {{ form.description(class="form-control", id="description", rows=4, placeholder="وصف الوجبة") }}
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.description.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="calories" class="form-label">{{ form.calories.label }}</label>
+                                    {{ form.calories(class="form-control", id="calories", placeholder="السعرات الحرارية (اختياري)") }}
+                                    {% if form.calories.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.calories.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="image" class="form-label">{{ form.image.label }}</label>
+                                    {{ form.image(class="form-control", id="image") }}
+                                    {% if form.image.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.image.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if meal and meal.image %}
+                                        <div class="mt-2">
+                                            <img src="{{ url_for('static', filename=meal.image) }}" alt="{{ meal.name }}" class="img-thumbnail" style="max-height: 100px;">
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        {{ form.is_vegetarian(class="form-check-input", id="is_vegetarian") }}
+                                        <label class="form-check-label" for="is_vegetarian">{{ form.is_vegetarian.label }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        {{ form.is_vegan(class="form-check-input", id="is_vegan") }}
+                                        <label class="form-check-label" for="is_vegan">{{ form.is_vegan.label }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        {{ form.is_gluten_free(class="form-check-input", id="is_gluten_free") }}
+                                        <label class="form-check-label" for="is_gluten_free">{{ form.is_gluten_free.label }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    {{ form.is_available(class="form-check-input", id="is_available") }}
+                                    <label class="form-check-label" for="is_available">{{ form.is_available.label }}</label>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                {{ form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

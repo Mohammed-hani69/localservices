@@ -7,6 +7,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_login import LoginManager
+from flask_migrate import Migrate
+from database import db
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -14,9 +16,6 @@ logging.basicConfig(level=logging.DEBUG)
 # Create base class for SQLAlchemy models
 class Base(DeclarativeBase):
     pass
-
-# Initialize SQLAlchemy
-db = SQLAlchemy(model_class=Base)
 
 # Create Flask app
 app = Flask(__name__)
@@ -35,6 +34,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initialize SQLAlchemy with app
 db.init_app(app)
+migrate = Migrate(app, db)
 
 # Initialize LoginManager
 login_manager = LoginManager()

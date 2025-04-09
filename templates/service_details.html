@@ -60,7 +60,7 @@
                         
                         <div class="d-flex justify-content-between align-items-center mt-4">
                             <div>
-                                <h4 class="text-primary mb-0">{{ "%.0f"|format(service.price) }} ريال</h4>
+                                <h4 class="text-primary mb-0">{{ "%.0f"|format(service.price) }} جنيه</h4>
                                 <small class="text-muted">المدة: {{ service.duration }} دقيقة</small>
                             </div>
                             {% if current_user.is_authenticated and service.is_active and not current_user.is_admin() and current_user.id != service.provider.user_id %}
@@ -166,7 +166,7 @@
                                         <a href="{{ url_for('service_details', service_id=similar.id) }}" class="list-group-item list-group-item-action">
                                             <div class="d-flex w-100 justify-content-between">
                                                 <h6 class="mb-1">{{ similar.name }}</h6>
-                                                <small class="text-primary">{{ "%.0f"|format(similar.price) }} ريال</small>
+                                                <small class="text-primary">{{ "%.0f"|format(similar.price) }} جنيه</small>
                                             </div>
                                             <small class="text-muted">{{ similar.category }}</small>
                                         </a>

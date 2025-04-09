@@ -34,6 +34,14 @@ class ServiceProviderForm(FlaskForm):
     company_name = StringField('اسم الشركة/المؤسسة', validators=[DataRequired()])
     description = TextAreaField('وصف الخدمات', validators=[DataRequired()])
     website = StringField('الموقع الإلكتروني')
+    specialization = SelectField('التخصص', choices=[
+        ('صيانة', 'صيانة'),
+        ('تنظيف', 'تنظيف'),
+        ('تعليم', 'تعليم'),
+        ('صحة', 'صحة'),
+        ('طعام', 'طعام'),
+        ('أخرى', 'أخرى')
+    ], validators=[DataRequired()])
     submit = SubmitField('حفظ المعلومات')
 
 class ServiceForm(FlaskForm):
@@ -56,7 +64,7 @@ class ServiceForm(FlaskForm):
     additional_info = TextAreaField('معلومات إضافية')
     is_active = BooleanField('متاح', default=True)
     submit = SubmitField('إضافة الخدمة')
-    
+
     def __init__(self, *args, **kwargs):
         super(ServiceForm, self).__init__(*args, **kwargs)
         # قائمة أنواع الخدمات حسب التصنيف
@@ -116,7 +124,7 @@ class ServiceForm(FlaskForm):
                 ('أخرى', 'أنواع أخرى')
             ]
         }
-        
+
         # تحديث اختيارات نوع الخدمة المحدد بناءً على التصنيف المحدد
         if 'category' in kwargs.get('data', {}) and kwargs['data']['category']:
             selected_category = kwargs['data']['category']
@@ -169,3 +177,36 @@ class SearchForm(FlaskForm):
         ('أخرى', 'أخرى')
     ])
     submit = SubmitField('بحث')
+
+# نموذج إضافة وجبة لمقدمي خدمات الطعام
+class MealForm(FlaskForm):
+    name = StringField('اسم الوجبة', validators=[DataRequired()])
+    description = TextAreaField('وصف الوجبة', validators=[DataRequired()])
+    price = FloatField('السعر', validators=[DataRequired(), NumberRange(min=0)])
+    meal_type = SelectField('نوع الوجبة', choices=[
+        ('فطور', 'فطور'),
+        ('غداء', 'غداء'),
+        ('عشاء', 'عشاء'),
+        ('حلويات', 'حلويات'),
+        ('مشروبات', 'مشروبات'),
+        ('وجبات سريعة', 'وجبات سريعة'),
+        ('أخرى', 'أخرى')
+    ])
+    preparation_time = IntegerField('وقت التحضير (بالدقائق)', validators=[DataRequired(), NumberRange(min=1)])
+    calories = IntegerField('السعرات الحرارية', validators=[Optional()])
+    is_vegetarian = BooleanField('وجبة نباتية')
+    is_vegan = BooleanField('وجبة نباتية صرفة')
+    is_gluten_free = BooleanField('خالية من الغلوتين')
+    image = FileField('صورة الوجبة', validators=[
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'يُسمح فقط بملفات الصور')
+    ])
+    is_available = BooleanField('متاحة', default=True)
+    submit = SubmitField('إضافة الوجبة')
+
+# نموذج حجز طاولة في المطعم
+class TableReservationForm(FlaskForm):
+    reservation_date = DateTimeField('تاريخ ووقت الحجز', validators=[DataRequired()], format='%Y-%m-%d %H:%M')
+    guests_number = IntegerField('عدد الضيوف', validators=[DataRequired(), NumberRange(min=1, max=20)])
+    special_requests = TextAreaField('طلبات خاصة')
+    contact_phone = StringField('رقم الهاتف للتواصل', validators=[DataRequired()])
+    submit = SubmitField('تأكيد الحجز')

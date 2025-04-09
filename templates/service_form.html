@@ -62,7 +62,7 @@
                                         <label for="price" class="form-label">{{ form.price.label }}</label>
                                         <div class="input-group">
                                             {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else "")) }}
-                                            <span class="input-group-text">ريال</span>
+                                            <span class="input-group-text">جنيه</span>
                                             {% for error in form.price.errors %}
                                                 <div class="invalid-feedback">{{ error }}</div>
                                             {% endfor %}
@@ -171,25 +171,39 @@
             // إعادة تعيين حقل النوع والنص الإرشادي
             additionalInfoHint.textContent = '';
             
-            // الحصول على أنواع الخدمات للفئة المحددة
-            fetch(`/api/service-types/${selectedCategory}`)
-                .then(response => response.json())
-                .then(data => {
-                    // تفريغ القائمة الحالية
-                    serviceTypeSelect.innerHTML = '';
-                    
-                    // إضافة الخيارات الجديدة
-                    data.forEach(option => {
-                        const optElement = document.createElement('option');
-                        optElement.value = option[0];
-                        optElement.textContent = option[1];
-                        serviceTypeSelect.appendChild(optElement);
-                    });
-                    
-                    // تشغيل حدث التغيير لتحديث النص الإرشادي
-                    serviceTypeSelect.dispatchEvent(new Event('change'));
-                })
-                .catch(error => console.error('Error fetching service types:', error));
+            if (selectedCategory) {
+                // الحصول على أنواع الخدمات للفئة المحددة
+                fetch(`/api/service-types/${selectedCategory}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // تفريغ القائمة الحالية
+                        serviceTypeSelect.innerHTML = '';
+                        
+                        // إضافة خيار افتراضي
+                        const defaultOption = document.createElement('option');
+                        defaultOption.value = '';
+                        defaultOption.textContent = 'اختر نوع الخدمة';
+                        serviceTypeSelect.appendChild(defaultOption);
+                        
+                        // إضافة الخيارات الجديدة
+                        data.forEach(option => {
+                            const optElement = document.createElement('option');
+                            optElement.value = option[0];  // القيمة الفعلية
+                            optElement.textContent = option[1];  // النص المعروض
+                            if ({% if service %}option[0] === "{{ service.service_type }}"{% else %}false{% endif %}) {
+                                optElement.selected = true;
+                            }
+                            serviceTypeSelect.appendChild(optElement);
+                        });
+                        
+                        // تشغيل حدث التغيير لتحديث النص الإرشادي
+                        serviceTypeSelect.dispatchEvent(new Event('change'));
+                    })
+                    .catch(error => console.error('Error fetching service types:', error));
+            } else {
+                // إذا لم يتم اختيار فئة، قم بتفريغ قائمة أنواع الخدمات
+                serviceTypeSelect.innerHTML = '<option value="">اختر نوع الخدمة</option>';
+            }
         });
         
         // عند تغيير نوع الخدمة، قم بتحديث النص الإرشادي
@@ -206,9 +220,9 @@
             }
         });
         
-        // تشغيل الحدث الأولي لتعيين القيم الافتراضية
+        // تشغيل الحدث الأولي لتحميل القيم الافتراضية
         if (categorySelect.value) {
-            serviceTypeSelect.dispatchEvent(new Event('change'));
+            categorySelect.dispatchEvent(new Event('change'));
         }
     });
 </script>

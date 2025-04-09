@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم - مقدم خدمات الطعام{% endblock %}
+
+{% block content %}
+<section class="dashboard py-5">
+    <div class="container">
+        <div class="dashboard-header">
+            <h2 class="dashboard-title">مرحباً، {{ current_user.username }}</h2>
+            <p class="text-muted">لوحة تحكم مقدم خدمات الطعام</p>
+        </div>
+        
+        <div class="row mb-4">
+            <!-- ملف الشركة -->
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">ملف المطعم</h5>
+                        {% if provider %}
+                            <p><strong>اسم المطعم:</strong> {{ provider.company_name }}</p>
+                            <p><strong>الوصف:</strong> {{ provider.description|truncate(100) }}</p>
+                            <p><strong>التقييم:</strong> <span class="rating-display" data-rating="{{ provider.rating }}"></span> ({{ "%.1f"|format(provider.rating) }})</p>
+                            <p><strong>الحالة:</strong> {% if provider.verified %}<span class="badge bg-success">موثّق</span>{% else %}<span class="badge bg-warning">قيد المراجعة</span>{% endif %}</p>
+                            
+                            <div class="mt-3">
+                                <a href="{{ url_for('edit_provider_profile') }}" class="btn btn-sm btn-outline-primary">تعديل الملف</a>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">لم يتم إنشاء ملف مقدم الخدمة بعد.</p>
+                            <a href="{{ url_for('create_provider_profile') }}" class="btn btn-sm btn-primary">إنشاء ملف مقدم الخدمة</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- إحصائيات -->
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">إحصائيات</h5>
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <div class="text-center mb-3">
+                                    <h3 class="text-primary mb-0">{{ meals|selectattr('is_available', 'equalto', True)|list|length }}</h3>
+                                    <span class="text-muted">وجبات متاحة</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center mb-3">
+                                    <h3 class="text-info mb-0">{{ table_reservations|selectattr('status', 'equalto', 'pending')|list|length }}</h3>
+                                    <span class="text-muted">حجوزات معلقة</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-center">
+                            <a href="{{ url_for('add_meal') }}" class="btn btn-primary">إضافة وجبة جديدة</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- روابط سريعة -->
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">روابط سريعة</h5>
+                        <div class="list-group mt-3">
+                            <a href="#meals" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-utensils me-2"></i> قائمة الوجبات</span>
+                                <span class="badge bg-primary rounded-pill">{{ meals|length }}</span>
+                            </a>
+                            <a href="#orders" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-shopping-cart me-2"></i> طلبات الوجبات</span>
+                                <span class="badge bg-primary rounded-pill">{{ meal_orders|length }}</span>
+                            </a>
+                            <a href="#reservations" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-calendar-check me-2"></i> حجوزات الطاولات</span>
+                                <span class="badge bg-primary rounded-pill">{{ table_reservations|length }}</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- قائمة الوجبات -->
+        <div class="card shadow-sm mb-4" id="meals">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">قائمة الوجبات</h5>
+                <a href="{{ url_for('add_meal') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus me-1"></i> إضافة وجبة
+                </a>
+            </div>
+            <div class="card-body">
+                {% if meals %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>الوجبة</th>
+                                    <th>النوع</th>
+                                    <th>السعر</th>
+                                    <th>وقت التحضير</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for meal in meals %}
+                                    <tr>
+                                        <td>
+                                            {% if meal.image %}
+                                                <img src="{{ url_for('static', filename=meal.image) }}" alt="{{ meal.name }}" class="img-thumbnail me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% else %}
+                                                <i class="fas fa-utensils me-2 text-primary"></i>
+                                            {% endif %}
+                                            {{ meal.name }}
+                                        </td>
+                                        <td>{{ meal.meal_type }}</td>
+                                        <td>{{ "%.2f"|format(meal.price) }} ريال</td>
+                                        <td>{{ meal.preparation_time }} دقيقة</td>
+                                        <td>
+                                            {% if meal.is_available %}
+                                                <span class="badge bg-success">متاحة</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">غير متاحة</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('edit_meal', meal_id=meal.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> تعديل
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> لا توجد وجبات مضافة بعد. <a href="{{ url_for('add_meal') }}">أضف وجبة جديدة</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- طلبات الوجبات -->
+        <div class="card shadow-sm mb-4" id="orders">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">طلبات الوجبات</h5>
+            </div>
+            <div class="card-body">
+                {% if meal_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>رقم الطلب</th>
+                                    <th>العميل</th>
+                                    <th>الوجبة</th>
+                                    <th>الكمية</th>
+                                    <th>تاريخ الطلب</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in meal_orders %}
+                                    <tr>
+                                        <td>#{{ order.id }}</td>
+                                        <td>{{ order.user.username }}</td>
+                                        <td>{{ order.meal.name }}</td>
+                                        <td>{{ order.quantity }}</td>
+                                        <td>{{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            {% if order.status == 'pending' %}
+                                                <span class="badge bg-warning">قيد الانتظار</span>
+                                            {% elif order.status == 'preparing' %}
+                                                <span class="badge bg-info">قيد التحضير</span>
+                                            {% elif order.status == 'ready' %}
+                                                <span class="badge bg-primary">جاهز</span>
+                                            {% elif order.status == 'delivered' %}
+                                                <span class="badge bg-success">تم التسليم</span>
+                                            {% elif order.status == 'cancelled' %}
+                                                <span class="badge bg-danger">ملغي</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="orderActions{{ order.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    إجراءات
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="orderActions{{ order.id }}">
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i> عرض التفاصيل</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-check me-2"></i> تحديث الحالة</a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> لا توجد طلبات وجبات حالياً.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- حجوزات الطاولات -->
+        <div class="card shadow-sm mb-4" id="reservations">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">حجوزات الطاولات</h5>
+            </div>
+            <div class="card-body">
+                {% if table_reservations %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>رقم الحجز</th>
+                                    <th>العميل</th>
+                                    <th>تاريخ الحجز</th>
+                                    <th>عدد الضيوف</th>
+                                    <th>رقم الهاتف</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reservation in table_reservations %}
+                                    <tr>
+                                        <td>#{{ reservation.id }}</td>
+                                        <td>{{ reservation.user.username }}</td>
+                                        <td>{{ reservation.reservation_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>{{ reservation.guests_number }}</td>
+                                        <td>{{ reservation.contact_phone }}</td>
+                                        <td>
+                                            {% if reservation.status == 'pending' %}
+                                                <span class="badge bg-warning">قيد الانتظار</span>
+                                            {% elif reservation.status == 'confirmed' %}
+                                                <span class="badge bg-success">مؤكد</span>
+                                            {% elif reservation.status == 'cancelled' %}
+                                                <span class="badge bg-danger">ملغي</span>
+                                            {% elif reservation.status == 'completed' %}
+                                                <span class="badge bg-info">مكتمل</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="reservationActions{{ reservation.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    إجراءات
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="reservationActions{{ reservation.id }}">
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i> عرض التفاصيل</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-check me-2"></i> تأكيد الحجز</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-times me-2"></i> إلغاء الحجز</a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> لا توجد حجوزات طاولات حالياً.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // تنسيق عرض التقييمات
+    document.addEventListener('DOMContentLoaded', function() {
+        const ratingElements = document.querySelectorAll('.rating-display');
+        ratingElements.forEach(function(element) {
+            const rating = parseFloat(element.getAttribute('data-rating'));
+            let starsHtml = '';
+            
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    starsHtml += '<i class="fas fa-star text-warning"></i>';
+                } else if (i - 0.5 <= rating) {
+                    starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
+                } else {
+                    starsHtml += '<i class="far fa-star text-warning"></i>';
+                }
+            }
+            
+            element.innerHTML = starsHtml;
+        });
+    });
+</script>
+{% endblock %}
