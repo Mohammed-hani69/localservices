@@ -1394,9 +1394,37 @@ def mobile_dashboard():
     current_user_data = User.query.get(current_user.id)
 
     # الحصول على حجوزات المستخدم
-    bookings = Booking.query.filter_by(user_id=current_user.id).order_by(Booking.created_at.desc()).all()
+    bookings = Booking.query.filter_by(client_id=current_user.id).order_by(Booking.created_at.desc()).all()
+    
+    # مقدم خدمة؟
+    provider = None
+    active_services_count = 0
+    pending_bookings_count = 0
+    
+    if current_user.is_provider():
+        provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
+        if provider:
+            services = Service.query.filter_by(provider_id=provider.id).all()
+            active_services_count = sum(1 for s in services if s.is_active)
+            
+            # الحصول على حجوزات الخدمات الخاصة بالمزود
+            provider_bookings = []
+            for service in services:
+                service_bookings = Booking.query.filter_by(service_id=service.id, status='pending').all()
+                provider_bookings.extend(service_bookings)
+            
+            pending_bookings_count = len(provider_bookings)
 
-    return render_template('mobile/dashboard.html', user=current_user_data, bookings=bookings)
+    completed_bookings = [b for b in bookings if b.status == 'completed']
+    review_form = ReviewForm()
+
+    return render_template('mobile/dashboard.html', 
+                          user=current_user_data, 
+                          bookings=bookings,
+                          completed_bookings=completed_bookings,
+                          active_services_count=active_services_count,
+                          pending_bookings_count=pending_bookings_count,
+                          review_form=review_form)
 
 @app.route('/mobile/about')
 def mobile_about():
