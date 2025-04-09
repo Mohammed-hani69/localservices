@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the mobile UI components
     initMobileUI();
@@ -275,21 +276,21 @@ function renderRatingStars(element, rating) {
     // Add full stars
     for (let i = 0; i < fullStars; i++) {
         const star = document.createElement('i');
-        star.className = 'fas fa-star';
+        star.className = 'fas fa-star text-warning';
         element.appendChild(star);
     }
 
     // Add half star if needed
     if (hasHalfStar) {
         const halfStar = document.createElement('i');
-        halfStar.className = 'fas fa-star-half-alt';
+        halfStar.className = 'fas fa-star-half-alt text-warning';
         element.appendChild(halfStar);
     }
 
     // Add empty stars
     for (let i = 0; i < emptyStars; i++) {
         const emptyStar = document.createElement('i');
-        emptyStar.className = 'far fa-star';
+        emptyStar.className = 'far fa-star text-warning';
         element.appendChild(emptyStar);
     }
 }
@@ -327,7 +328,7 @@ function initPageTransitions() {
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: var(--background-color);
+            background-color: #f7f7f7;
             z-index: 9999;
             opacity: 0;
             pointer-events: none;
@@ -353,7 +354,7 @@ function initPageTransitions() {
 
             const href = this.getAttribute('href');
             // Skip for hash links or javascript: links
-            if (href.startsWith('#') || href.startsWith('javascript:')) return;
+            if (href && (href.startsWith('#') || href.startsWith('javascript:'))) return;
 
             e.preventDefault();
 
@@ -415,7 +416,7 @@ function initPullToRefresh() {
     document.head.appendChild(style);
 
     // Only enable on main content areas
-    if (document.querySelector('.main-content')) {
+    if (document.querySelector('.main-content') || document.querySelector('.mobile-content')) {
         document.addEventListener('touchstart', function(e) {
             touchStartY = e.touches[0].clientY;
         }, false);
