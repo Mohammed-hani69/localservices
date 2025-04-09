@@ -2,135 +2,121 @@
 
 {% block title %}تصفح الخدمات - منصة الخدمات المحلية{% endblock %}
 
+{% block header_title %}تصفح الخدمات{% endblock %}
+
 {% block content %}
 <div class="mobile-services-page">
-    <div class="container py-4">
-        <h1 class="text-center mb-4">تصفح الخدمات</h1>
-        
-        <!-- Search and Filter -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <form action="{{ url_for('mobile_services') }}" method="get">
-                    <div class="input-group">
-                        <input type="text" name="query" class="form-control" placeholder="ابحث عن خدمة..." value="{{ request.args.get('query', '') }}">
-                        <select name="category" class="form-select" style="max-width: 120px;">
-                            <option value="" {% if not category %}selected{% endif %}>الكل</option>
-                            <option value="صيانة" {% if category == 'صيانة' %}selected{% endif %}>صيانة</option>
-                            <option value="تنظيف" {% if category == 'تنظيف' %}selected{% endif %}>تنظيف</option>
-                            <option value="تعليم" {% if category == 'تعليم' %}selected{% endif %}>تعليم</option>
-                            <option value="صحة" {% if category == 'صحة' %}selected{% endif %}>صحة</option>
-                            <option value="طعام" {% if category == 'طعام' %}selected{% endif %}>طعام</option>
-                            <option value="أخرى" {% if category == 'أخرى' %}selected{% endif %}>أخرى</option>
-                        </select>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </form>
+    <!-- Search and Filter -->
+    <div class="mobile-card">
+        <form action="{{ url_for('mobile_services') }}" method="get">
+            <div class="input-group">
+                <input type="text" name="query" class="form-control" placeholder="ابحث عن خدمة..." value="{{ request.args.get('query', '') }}">
+                <select name="category" class="form-select" style="max-width: 120px;">
+                    <option value="" {% if not category %}selected{% endif %}>الكل</option>
+                    <option value="صيانة" {% if category == 'صيانة' %}selected{% endif %}>صيانة</option>
+                    <option value="تنظيف" {% if category == 'تنظيف' %}selected{% endif %}>تنظيف</option>
+                    <option value="تعليم" {% if category == 'تعليم' %}selected{% endif %}>تعليم</option>
+                    <option value="صحة" {% if category == 'صحة' %}selected{% endif %}>صحة</option>
+                    <option value="طعام" {% if category == 'طعام' %}selected{% endif %}>طعام</option>
+                    <option value="أخرى" {% if category == 'أخرى' %}selected{% endif %}>أخرى</option>
+                </select>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                </button>
             </div>
-        </div>
-
-        <!-- Category Pills (if no search) -->
-        {% if not request.args.get('query') %}
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0 text-center">تصنيفات الخدمات</h5>
-            </div>
-            <div class="card-body">
-                <div class="categories-scroll">
-                    <a href="{{ url_for('mobile_services') }}" class="category-item {% if not category %}active{% endif %}">
-                        <div class="category-circle">
-                            <i class="fas fa-th"></i>
-                        </div>
-                        <span>الكل</span>
-                    </a>
-                    <a href="{{ url_for('mobile_services', category='صيانة') }}" class="category-item {% if category == 'صيانة' %}active{% endif %}">
-                        <div class="category-circle">
-                            <i class="fas fa-tools"></i>
-                        </div>
-                        <span>صيانة</span>
-                    </a>
-                    <a href="{{ url_for('mobile_services', category='تنظيف') }}" class="category-item {% if category == 'تنظيف' %}active{% endif %}">
-                        <div class="category-circle">
-                            <i class="fas fa-broom"></i>
-                        </div>
-                        <span>تنظيف</span>
-                    </a>
-                    <a href="{{ url_for('mobile_services', category='تعليم') }}" class="category-item {% if category == 'تعليم' %}active{% endif %}">
-                        <div class="category-circle">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <span>تعليم</span>
-                    </a>
-                    <a href="{{ url_for('mobile_services', category='صحة') }}" class="category-item {% if category == 'صحة' %}active{% endif %}">
-                        <div class="category-circle">
-                            <i class="fas fa-heartbeat"></i>
-                        </div>
-                        <span>صحة</span>
-                    </a>
-                    <a href="{{ url_for('mobile_services', category='طعام') }}" class="category-item {% if category == 'طعام' %}active{% endif %}">
-                        <div class="category-circle">
-                            <i class="fas fa-utensils"></i>
-                        </div>
-                        <span>طعام</span>
-                    </a>
-                    <a href="{{ url_for('mobile_services', category='أخرى') }}" class="category-item {% if category == 'أخرى' %}active{% endif %}">
-                        <div class="category-circle">
-                            <i class="fas fa-ellipsis-h"></i>
-                        </div>
-                        <span>أخرى</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Services List -->
-        {% if services %}
-            {% for service in services %}
-            <div class="card shadow-sm mb-4 service-card" data-href="{{ url_for('mobile_service_details', service_id=service.id) }}">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-4">
-                            <div class="service-image-container">
-                                {% if service.image %}
-                                <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" class="img-fluid rounded">
-                                {% else %}
-                                <div class="d-flex align-items-center justify-content-center h-100 bg-light rounded">
-                                    <i class="fas fa-concierge-bell fa-2x text-muted"></i>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-8">
-                            <h5 class="card-title mb-1">{{ service.name }}</h5>
-                            <p class="text-muted small mb-1">{{ service.category }} - {{ service.provider.company_name }}</p>
-                            <div class="rating-display mb-2" data-rating="{{ service.provider.rating }}"></div>
-                            <p class="fw-bold text-primary mb-1">{{ "%.2f"|format(service.price) }} ر.س</p>
-                            <a href="{{ url_for('mobile_service_details', service_id=service.id) }}" class="btn btn-sm btn-outline-primary mt-1">عرض التفاصيل</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-        <div class="card shadow-sm mb-4">
-            <div class="card-body text-center py-5">
-                <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                <h5>لا توجد خدمات</h5>
-                <p class="text-muted">
-                    {% if request.args.get('query') %}
-                    لم يتم العثور على نتائج تطابق بحثك "{{ request.args.get('query') }}"
-                    {% elif category %}
-                    لا توجد خدمات في فئة "{{ category }}" حاليًا
-                    {% else %}
-                    لا توجد خدمات متاحة حاليًا
-                    {% endif %}
-                </p>
-            </div>
-        </div>
-        {% endif %}
+        </form>
     </div>
+
+    <!-- Category Pills (if no search) -->
+    {% if not request.args.get('query') %}
+    <div class="mobile-card">
+        <h5 class="mb-3 text-center">تصنيفات الخدمات</h5>
+        <div class="categories-scroll">
+            <a href="{{ url_for('mobile_services') }}" class="category-item {% if not category %}active{% endif %}">
+                <div class="category-circle">
+                    <i class="fas fa-th"></i>
+                </div>
+                <span>الكل</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='صيانة') }}" class="category-item {% if category == 'صيانة' %}active{% endif %}">
+                <div class="category-circle">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <span>صيانة</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='تنظيف') }}" class="category-item {% if category == 'تنظيف' %}active{% endif %}">
+                <div class="category-circle">
+                    <i class="fas fa-broom"></i>
+                </div>
+                <span>تنظيف</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='تعليم') }}" class="category-item {% if category == 'تعليم' %}active{% endif %}">
+                <div class="category-circle">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <span>تعليم</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='صحة') }}" class="category-item {% if category == 'صحة' %}active{% endif %}">
+                <div class="category-circle">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <span>صحة</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='طعام') }}" class="category-item {% if category == 'طعام' %}active{% endif %}">
+                <div class="category-circle">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <span>طعام</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='أخرى') }}" class="category-item {% if category == 'أخرى' %}active{% endif %}">
+                <div class="category-circle">
+                    <i class="fas fa-ellipsis-h"></i>
+                </div>
+                <span>أخرى</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Services List -->
+    {% if services %}
+        {% for service in services %}
+        <div class="service-card" data-href="{{ url_for('mobile_service_details', service_id=service.id) }}">
+            <div class="service-image-container">
+                {% if service.image %}
+                <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" class="img-fluid">
+                {% else %}
+                <div class="d-flex align-items-center justify-content-center h-100">
+                    <i class="fas fa-concierge-bell fa-2x text-muted"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="p-3">
+                <h5 class="card-title mb-1">{{ service.name }}</h5>
+                <p class="text-muted small mb-1">{{ service.category }} - {{ service.provider.company_name }}</p>
+                <div class="rating-display mb-2" data-rating="{{ service.provider.rating }}"></div>
+                <p class="fw-bold text-primary mb-1">{{ "%.2f"|format(service.price) }} ر.س</p>
+                <a href="{{ url_for('mobile_service_details', service_id=service.id) }}" class="btn btn-sm btn-outline-primary mt-1">عرض التفاصيل</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="mobile-card">
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h5>لا توجد خدمات</h5>
+            <p class="text-muted">
+                {% if request.args.get('query') %}
+                لم يتم العثور على نتائج تطابق بحثك "{{ request.args.get('query') }}"
+                {% elif category %}
+                لا توجد خدمات في فئة "{{ category }}" حاليًا
+                {% else %}
+                لا توجد خدمات متاحة حاليًا
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
 
@@ -139,7 +125,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize rating displays
     initRatingDisplays();
-    
+
     // Make the whole service card clickable
     const serviceCards = document.querySelectorAll('.service-card');
     serviceCards.forEach(card => {

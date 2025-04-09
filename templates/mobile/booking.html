@@ -1,162 +1,149 @@
+
 {% extends "mobile/base_mobile.html" %}
 
 {% block title %}حجز خدمة - منصة الخدمات المحلية{% endblock %}
 
+{% block header_title %}حجز خدمة{% endblock %}
+
 {% block content %}
 <div class="mobile-booking-page">
-    <div class="container py-4">
-        <h1 class="text-center mb-4">حجز خدمة</h1>
-        
-        <!-- Service Summary -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">تفاصيل الخدمة</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        {% if service.image %}
-                        <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" width="60" height="60" class="rounded">
-                        {% else %}
-                        <div class="d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: #f0f0f0; border-radius: 8px;">
-                            <i class="fas fa-concierge-bell fa-2x text-muted"></i>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div>
-                        <h5 class="mb-1">{{ service.name }}</h5>
-                        <p class="mb-0 text-muted small">{{ service.provider.company_name }}</p>
-                        <p class="mb-0 text-primary fw-bold">{{ "%.2f"|format(service.price) }} ر.س</p>
-                        <p class="mb-0 text-muted small">المدة: {{ service.duration }} دقيقة</p>
-                    </div>
+    <!-- Service Summary -->
+    <div class="mobile-card">
+        <h5 class="mb-3">تفاصيل الخدمة</h5>
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                {% if service.image %}
+                <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" width="60" height="60" class="rounded">
+                {% else %}
+                <div class="d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: #f0f0f0; border-radius: 8px;">
+                    <i class="fas fa-concierge-bell fa-2x text-muted"></i>
                 </div>
+                {% endif %}
+            </div>
+            <div>
+                <h5 class="mb-1">{{ service.name }}</h5>
+                <p class="mb-0 text-muted small">{{ service.provider.company_name }}</p>
+                <p class="mb-0 text-primary fw-bold">{{ "%.2f"|format(service.price) }} ر.س</p>
+                <p class="mb-0 text-muted small">المدة: {{ service.duration }} دقيقة</p>
             </div>
         </div>
+    </div>
 
-        <!-- Booking Form -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">تفاصيل الحجز</h5>
+    <!-- Booking Form -->
+    <div class="mobile-card">
+        <h5 class="mb-3">تفاصيل الحجز</h5>
+        <form action="{{ url_for('book_service') }}" method="post">
+            {{ booking_form.csrf_token }}
+            {{ booking_form.service_id }}
+
+            <div class="mb-3">
+                <label for="booking_date" class="form-label">التاريخ والوقت</label>
+                <input type="datetime-local" class="form-control" id="booking_date" name="booking_date" required min="{{ min_date }}">
+                <div class="form-text">يرجى اختيار التاريخ والوقت المناسبين</div>
             </div>
-            <div class="card-body">
-                <form action="{{ url_for('book_service') }}" method="post">
-                    {{ booking_form.csrf_token }}
-                    {{ booking_form.service_id }}
 
-                    <div class="mb-3">
-                        <label for="booking_date" class="form-label">التاريخ والوقت</label>
-                        <input type="datetime-local" class="form-control" id="booking_date" name="booking_date" required min="{{ min_date }}">
-                        <div class="form-text">يرجى اختيار التاريخ والوقت المناسبين</div>
-                    </div>
+            <div class="mb-3">
+                <label for="notes" class="form-label">ملاحظات إضافية (اختياري)</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">طريقة الدفع</label>
+                <div class="list-group">
+                    <label class="list-group-item d-flex align-items-center">
+                        <input class="form-check-input me-2" type="radio" name="payment_method" value="credit_card" checked>
+                        <span>
+                            <i class="fas fa-credit-card me-2 text-primary"></i>
+                            بطاقة ائتمان
+                        </span>
+                    </label>
+                    <label class="list-group-item d-flex align-items-center">
+                        <input class="form-check-input me-2" type="radio" name="payment_method" value="debit_card">
+                        <span>
+                            <i class="fas fa-credit-card me-2 text-primary"></i>
+                            بطاقة مدين
+                        </span>
+                    </label>
+                    <label class="list-group-item d-flex align-items-center">
+                        <input class="form-check-input me-2" type="radio" name="payment_method" value="bank_transfer">
+                        <span>
+                            <i class="fas fa-university me-2 text-primary"></i>
+                            تحويل بنكي
+                        </span>
+                    </label>
+                    <label class="list-group-item d-flex align-items-center">
+                        <input class="form-check-input me-2" type="radio" name="payment_method" value="cash">
+                        <span>
+                            <i class="fas fa-money-bill-wave me-2 text-primary"></i>
+                            نقدًا عند الاستلام
+                        </span>
+                    </label>
+                </div>
+            </div>
 
-                    <div class="mb-3">
-                        <label for="notes" class="form-label">ملاحظات إضافية (اختياري)</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label">طريقة الدفع</label>
-                        <div class="list-group">
-                            <label class="list-group-item d-flex align-items-center">
-                                <input class="form-check-input me-2" type="radio" name="payment_method" value="credit_card" checked>
-                                <span>
-                                    <i class="fas fa-credit-card me-2 text-primary"></i>
-                                    بطاقة ائتمان
-                                </span>
-                            </label>
-                            <label class="list-group-item d-flex align-items-center">
-                                <input class="form-check-input me-2" type="radio" name="payment_method" value="debit_card">
-                                <span>
-                                    <i class="fas fa-credit-card me-2 text-primary"></i>
-                                    بطاقة مدين
-                                </span>
-                            </label>
-                            <label class="list-group-item d-flex align-items-center">
-                                <input class="form-check-input me-2" type="radio" name="payment_method" value="bank_transfer">
-                                <span>
-                                    <i class="fas fa-university me-2 text-primary"></i>
-                                    تحويل بنكي
-                                </span>
-                            </label>
-                            <label class="list-group-item d-flex align-items-center">
-                                <input class="form-check-input me-2" type="radio" name="payment_method" value="cash">
-                                <span>
-                                    <i class="fas fa-money-bill-wave me-2 text-primary"></i>
-                                    نقدًا عند الاستلام
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="card card-body bg-light mb-4" id="payment-details">
+            <div class="mobile-card" id="payment-details">
+                <div class="mb-3">
+                    <label for="card_number" class="form-label">رقم البطاقة</label>
+                    <input type="text" class="form-control" id="card_number" name="card_number" placeholder="1234 5678 9012 3456">
+                </div>
+                <div class="row">
+                    <div class="col-6">
                         <div class="mb-3">
-                            <label for="card_number" class="form-label">رقم البطاقة</label>
-                            <input type="text" class="form-control" id="card_number" name="card_number" placeholder="1234 5678 9012 3456">
-                        </div>
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="mb-3">
-                                    <label for="card_expiry" class="form-label">تاريخ الانتهاء</label>
-                                    <input type="text" class="form-control" id="card_expiry" name="card_expiry" placeholder="MM/YY">
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="mb-3">
-                                    <label for="card_cvv" class="form-label">رمز CVV</label>
-                                    <input type="text" class="form-control" id="card_cvv" name="card_cvv" placeholder="123">
-                                </div>
-                            </div>
+                            <label for="card_expiry" class="form-label">تاريخ الانتهاء</label>
+                            <input type="text" class="form-control" id="card_expiry" name="card_expiry" placeholder="MM/YY">
                         </div>
                     </div>
-
-                    <div class="d-flex flex-column">
-                        <h6 class="mb-3">ملخص الحجز:</h6>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>سعر الخدمة:</span>
-                            <span class="fw-bold">{{ "%.2f"|format(service.price) }} ر.س</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>رسوم الخدمة:</span>
-                            <span class="fw-bold">{{ "%.2f"|format(service.price * 0.05) }} ر.س</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>المجموع:</span>
-                            <span class="fw-bold">{{ "%.2f"|format(service.price * 1.05) }} ر.س</span>
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label for="card_cvv" class="form-label">رمز CVV</label>
+                            <input type="text" class="form-control" id="card_cvv" name="card_cvv" placeholder="123">
                         </div>
                     </div>
-
-                    <div class="alert alert-info mt-3">
-                        <small>سيتم توجيهك إلى صفحة تأكيد الحجز بعد إتمام العملية</small>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">تأكيد الحجز</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Available Times (Future Enhancement) -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">الأوقات المتاحة</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted small mb-3">اختر أحد الأوقات المتاحة أدناه أو حدد وقتًا مخصصًا من النموذج أعلاه</p>
-                
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="09:00">09:00</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="10:00">10:00</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="11:00">11:00</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="12:00">12:00</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="13:00">13:00</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="14:00">14:00</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="15:00">15:00</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="16:00">16:00</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="17:00">17:00</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="18:00">18:00</button>
                 </div>
             </div>
+
+            <div class="mobile-card">
+                <h6 class="mb-3">ملخص الحجز:</h6>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>سعر الخدمة:</span>
+                    <span class="fw-bold">{{ "%.2f"|format(service.price) }} ر.س</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>رسوم الخدمة:</span>
+                    <span class="fw-bold">{{ "%.2f"|format(service.price * 0.05) }} ر.س</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>المجموع:</span>
+                    <span class="fw-bold">{{ "%.2f"|format(service.price * 1.05) }} ر.س</span>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-3">
+                <small>سيتم توجيهك إلى صفحة تأكيد الحجز بعد إتمام العملية</small>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">تأكيد الحجز</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Available Times -->
+    <div class="mobile-card">
+        <h5 class="mb-3">الأوقات المتاحة</h5>
+        <p class="text-muted small mb-3">اختر أحد الأوقات المتاحة أدناه أو حدد وقتًا مخصصًا من النموذج أعلاه</p>
+        
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="09:00">09:00</button>
+            <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="10:00">10:00</button>
+            <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="11:00">11:00</button>
+            <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="12:00">12:00</button>
+            <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="13:00">13:00</button>
+            <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="14:00">14:00</button>
+            <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="15:00">15:00</button>
+            <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="16:00">16:00</button>
+            <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="17:00">17:00</button>
+            <button type="button" class="btn btn-outline-primary btn-sm time-slot" data-time="18:00">18:00</button>
         </div>
     </div>
 </div>

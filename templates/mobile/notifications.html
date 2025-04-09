@@ -2,17 +2,10 @@
 
 {% block title %}الإشعارات{% endblock %}
 
-{% block content %}
-<!-- Mobile Header -->
-<header class="mobile-header">
-    <button class="back-button" onclick="history.back()">
-        <i class="fas fa-chevron-left"></i>
-    </button>
-    <h1 class="header-title">الإشعارات</h1>
-    <div style="width: 36px"></div>
-</header>
+{% block header_title %}الإشعارات{% endblock %}
 
-<div class="main-content">
+{% block content %}
+<div class="mobile-notifications-page">
     {% if notifications %}
         <div class="notifications-wrapper">
             {% for notification in notifications %}
@@ -47,35 +40,13 @@
         </div>
     {% endif %}
 </div>
-
-<!-- Bottom Navigation -->
-<nav class="mobile-bottom-nav">
-    <div class="nav-wrapper">
-        <a href="{{ url_for('mobile_index') }}" class="nav-item">
-            <i class="fas fa-home"></i>
-            <span>الرئيسية</span>
-        </a>
-        <a href="{{ url_for('services') }}" class="nav-item">
-            <i class="fas fa-hands-helping"></i>
-            <span>الخدمات</span>
-        </a>
-        <a href="{{ url_for('mobile_notifications') }}" class="nav-item active">
-            <i class="fas fa-bell"></i>
-            <span>الإشعارات</span>
-        </a>
-        <a href="{{ url_for('mobile_dashboard') }}" class="nav-item">
-            <i class="fas fa-user"></i>
-            <span>حسابي</span>
-        </a>
-    </div>
-</nav>
 {% endblock %}
 
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const notificationItems = document.querySelectorAll('.notification-item');
-    
+
     notificationItems.forEach(item => {
         item.addEventListener('click', function() {
             if (this.classList.contains('unread')) {
@@ -88,25 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-    });
-
-    // إضافة وظيفة الوضع الليلي
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    
-    // تحقق من حالة الوضع الليلي المحفوظة
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        darkModeToggle.checked = true;
-    }
-    
-    darkModeToggle.addEventListener('change', function() {
-        if (this.checked) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            localStorage.setItem('darkMode', 'true');
-        } else {
-            document.documentElement.setAttribute('data-theme', 'light');
-            localStorage.setItem('darkMode', 'false');
-        }
     });
 });
 </script>

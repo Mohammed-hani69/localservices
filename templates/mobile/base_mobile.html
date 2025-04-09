@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -21,56 +22,63 @@
     {% block styles %}{% endblock %}
 </head>
 <body>
-    <!-- Mobile Header -->
-    <header class="mobile-header">
-        {% block header_back %}
-        <button onclick="history.back()" class="back-button">
-            <i class="fas fa-arrow-right"></i>
-        </button>
-        {% endblock %}
-        <h1 class="header-title">{% block header_title %}منصة الخدمات المحلية{% endblock %}</h1>
-        {% block header_action %}{% endblock %}
-    </header>
+    <!-- Mobile Container -->
+    <div class="mobile-container">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            {% block header_back %}
+            <a href="javascript:history.back()" class="back-button">
+                <i class="fas fa-arrow-right"></i>
+            </a>
+            {% endblock %}
+            <h1 class="mobile-title">{% block header_title %}منصة الخدمات المحلية{% endblock %}</h1>
+            {% block header_action %}{% endblock %}
+        </div>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        <!-- Main Content -->
+        <div class="mobile-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        {% block content %}{% endblock %}
-    </main>
+            {% block content %}{% endblock %}
+        </div>
 
-    <!-- Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <div class="nav-wrapper">
+        <!-- Bottom Navigation -->
+        <div class="mobile-navbar">
             <a href="{{ url_for('mobile_index') }}" class="nav-item {% if request.endpoint == 'mobile_index' %}active{% endif %}">
                 <i class="fas fa-home"></i>
                 <span>الرئيسية</span>
             </a>
-            <a href="{{ url_for('services') }}" class="nav-item {% if request.endpoint == 'services' or request.endpoint == 'mobile_services' %}active{% endif %}">
+            <a href="{{ url_for('mobile_services') }}" class="nav-item {% if request.endpoint == 'mobile_services' or request.endpoint == 'services' %}active{% endif %}">
                 <i class="fas fa-hands-helping"></i>
                 <span>الخدمات</span>
             </a>
             <a href="{{ url_for('mobile_notifications') }}" class="nav-item {% if request.endpoint == 'mobile_notifications' %}active{% endif %}">
-                <div class="notification-badge" data-count="{{ unread_notifications_count|default(0) }}">
+                <div class="notification-icon">
                     <i class="fas fa-bell"></i>
+                    {% if unread_notifications_count > 0 %}
+                    <span class="notification-badge">{{ unread_notifications_count }}</span>
+                    {% endif %}
                 </div>
                 <span>الإشعارات</span>
             </a>
-            <a href="{{ url_for('mobile_dashboard') }}" class="nav-item {% if request.endpoint == 'mobile_dashboard' or request.endpoint == 'mobile_edit_profile' %}active{% endif %}">
+            <a href="{{ url_for('mobile_dashboard') }}" class="nav-item {% if request.endpoint == 'mobile_dashboard' or request.endpoint == 'edit_user_profile' %}active{% endif %}">
                 <i class="fas fa-user"></i>
                 <span>حسابي</span>
             </a>
         </div>
-    </nav>
+    </div>
+
+    <!-- Floating Toast Container -->
+    <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1100"></div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
