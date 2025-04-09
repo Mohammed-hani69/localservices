@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // تفعيل تأثيرات الرسوم المتحركة
     initAnimations();
-    
+
     // تهيئة البنرات المتحركة
     initBannerSlider();
 });
@@ -658,24 +658,24 @@ function updateNotificationCount() {
 function initBannerSlider() {
     const bannerSliders = document.querySelectorAll('.banner-slider');
     if (bannerSliders.length === 0) return;
-    
+
     bannerSliders.forEach(slider => {
         const slides = slider.querySelectorAll('.banner-slide');
         if (slides.length <= 1) return; // لا داعي للتمرير إذا كان هناك شريحة واحدة أو أقل
-        
+
         const slidesContainer = slider.querySelector('.banner-slides');
         const indicators = slider.querySelectorAll('.banner-indicator');
         const prevButton = slider.querySelector('.banner-prev');
         const nextButton = slider.querySelector('.banner-next');
-        
+
         let currentSlide = 0;
         const slideCount = slides.length;
         let autoSlideInterval;
-        
+
         // تحديث مؤشرات الشرائح
         function updateIndicators() {
             if (!indicators.length) return;
-            
+
             indicators.forEach((indicator, index) => {
                 if (index === currentSlide) {
                     indicator.classList.add('active');
@@ -684,7 +684,7 @@ function initBannerSlider() {
                 }
             });
         }
-        
+
         // الانتقال إلى الشريحة
         function goToSlide(slideIndex) {
             currentSlide = slideIndex;
@@ -693,19 +693,19 @@ function initBannerSlider() {
                 updateIndicators();
             }
         }
-        
+
         // الانتقال للشريحة التالية
         function nextSlide() {
             currentSlide = (currentSlide + 1) % slideCount;
             goToSlide(currentSlide);
         }
-        
+
         // الانتقال للشريحة السابقة
         function prevSlide() {
             currentSlide = (currentSlide - 1 + slideCount) % slideCount;
             goToSlide(currentSlide);
         }
-        
+
         // إضافة أحداث النقر للمؤشرات
         if (indicators.length) {
             indicators.forEach((indicator, index) => {
@@ -715,7 +715,7 @@ function initBannerSlider() {
                 });
             });
         }
-        
+
         // إضافة أحداث للأزرار
         if (nextButton) {
             nextButton.addEventListener('click', () => {
@@ -723,62 +723,62 @@ function initBannerSlider() {
                 resetAutoSlide();
             });
         }
-        
+
         if (prevButton) {
             prevButton.addEventListener('click', () => {
                 prevSlide();
                 resetAutoSlide();
             });
         }
-        
+
         // التمرير التلقائي - تغيير كل 5 ثواني
         function startAutoSlide() {
             autoSlideInterval = setInterval(nextSlide, 5000); // 5000 مللي ثانية = 5 ثواني
         }
-        
+
         // إعادة ضبط المؤقت
         function resetAutoSlide() {
             clearInterval(autoSlideInterval);
             startAutoSlide();
         }
-        
+
         // بدء التمرير التلقائي
         startAutoSlide();
-        
+
         // إيقاف التمرير التلقائي عند التفاعل
         slider.addEventListener('mouseenter', () => {
             clearInterval(autoSlideInterval);
         });
-        
+
         // استئناف التمرير التلقائي بعد انتهاء التفاعل
         slider.addEventListener('mouseleave', () => {
             startAutoSlide();
         });
-        
+
         // دعم السحب للأجهزة اللمسية
         let touchStartX = 0;
         let touchEndX = 0;
-        
+
         if (slidesContainer) {
             slidesContainer.addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
                 clearInterval(autoSlideInterval);
             }, { passive: true });
-            
+
             slidesContainer.addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].screenX;
                 handleSwipe();
                 startAutoSlide();
             }, { passive: true });
         }
-        
+
         function handleSwipe() {
             // حساب الفرق بين نقطة البداية ونقطة النهاية
             const difference = touchStartX - touchEndX;
             const threshold = 50; // الحد الأدنى للمسافة للاعتراف بالسحب
-            
+
             if (Math.abs(difference) < threshold) return;
-            
+
             if (difference > 0) {
                 nextSlide(); // سحب لليسار
             } else {
