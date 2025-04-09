@@ -1,133 +1,253 @@
+
 {% extends "mobile/base_mobile.html" %}
 
 {% block title %}عن منصتنا{% endblock %}
 
+{% block header_title %}عن منصتنا{% endblock %}
+
 {% block content %}
 <div class="mobile-about-page">
-    <div class="container py-4">
-        <h1 class="text-center mb-4">عن منصتنا</h1>
-        
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-3">من نحن</h5>
-                <p class="card-text">
-                    منصة متخصصة في توفير الخدمات المحلية وربط مقدمي الخدمات بالعملاء، نسعى لتسهيل الوصول للخدمات التي تحتاجها في حياتك اليومية.
-                </p>
+    <!-- من نحن -->
+    <div class="mobile-card slide-in-up">
+        <div class="mb-3 d-flex align-items-center">
+            <div class="feature-icon bg-primary-light me-3">
+                <span class="emoji">🏢</span>
             </div>
+            <h5 class="card-title mb-0">من نحن</h5>
         </div>
-        
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-3">رؤيتنا</h5>
-                <p class="card-text">
-                    نسعى لتكون منصتنا الخيار الأول والأمثل في مجال خدمات الصيانة والتنظيف والتعليم والصحة والطعام، من خلال توفير أفضل مقدمي الخدمات وأجود خدمة للعملاء.
-                </p>
-                <p class="card-text">
-                    نهدف إلى بناء مجتمع خدمي متكامل يلبي احتياجات العملاء بأعلى معايير الجودة والاحترافية، مع توفير فرص عمل لأصحاب المهارات والكفاءات.
-                </p>
+        <p class="card-text">
+            منصة متخصصة في توفير الخدمات المحلية وربط مقدمي الخدمات بالعملاء، نسعى لتسهيل الوصول للخدمات التي تحتاجها في حياتك اليومية.
+        </p>
+    </div>
+    
+    <!-- رؤيتنا -->
+    <div class="mobile-card slide-in-up animate-delay-1">
+        <div class="mb-3 d-flex align-items-center">
+            <div class="feature-icon bg-success-light me-3">
+                <span class="emoji">🚀</span>
             </div>
+            <h5 class="card-title mb-0">رؤيتنا</h5>
         </div>
-        
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-3">رسالتنا</h5>
-                <p class="card-text">
-                    تسهيل الوصول للخدمات المحلية وتوفير تجربة سلسة ومميزة لكل من العملاء ومقدمي الخدمات، من خلال منصة رقمية سهلة الاستخدام وآمنة.
-                </p>
-                <p class="card-text">
-                    تقديم خدمات ذات جودة عالية، مع ضمان الشفافية والمصداقية في جميع تعاملاتنا، والالتزام بتطوير المنصة بشكل مستمر لتواكب احتياجات المستخدمين.
-                </p>
+        <p class="card-text">
+            نسعى لتكون منصتنا الخيار الأول والأمثل في مجال خدمات الصيانة والتنظيف والتعليم والصحة والطعام، من خلال توفير أفضل مقدمي الخدمات وأجود خدمة للعملاء.
+        </p>
+    </div>
+    
+    <!-- مميزاتنا -->
+    <div class="mobile-card slide-in-up animate-delay-2">
+        <div class="mb-3 d-flex align-items-center">
+            <div class="feature-icon bg-info-light me-3">
+                <span class="emoji">✨</span>
             </div>
+            <h5 class="card-title mb-0">مميزاتنا</h5>
         </div>
-        
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-3 text-center">قيمنا</h5>
-                
-                <div class="d-flex align-items-center mb-3">
-                    <div class="me-3">
-                        <span class="bg-primary bg-opacity-10 p-2 rounded-circle d-inline-block">
-                            <i class="fas fa-award text-primary"></i>
-                        </span>
-                    </div>
-                    <div>
-                        <h6 class="mb-1">الجودة</h6>
-                        <p class="mb-0 small text-muted">نسعى دائماً لتقديم خدمات ذات جودة عالية.</p>
-                    </div>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <span class="emoji">⚡</span>
                 </div>
-                
-                <div class="d-flex align-items-center mb-3">
-                    <div class="me-3">
-                        <span class="bg-primary bg-opacity-10 p-2 rounded-circle d-inline-block">
-                            <i class="fas fa-lock text-primary"></i>
-                        </span>
-                    </div>
-                    <div>
-                        <h6 class="mb-1">الأمان والموثوقية</h6>
-                        <p class="mb-0 small text-muted">نوفر بيئة آمنة لجميع المستخدمين ونضمن موثوقية مقدمي الخدمات.</p>
-                    </div>
-                </div>
-                
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <span class="bg-primary bg-opacity-10 p-2 rounded-circle d-inline-block">
-                            <i class="fas fa-handshake text-primary"></i>
-                        </span>
-                    </div>
-                    <div>
-                        <h6 class="mb-1">النزاهة والشفافية</h6>
-                        <p class="mb-0 small text-muted">نلتزم بالنزاهة والشفافية في جميع تعاملاتنا.</p>
-                    </div>
+                <div class="feature-text">
+                    <h6>سرعة التنفيذ</h6>
+                    <p>نضمن لك تنفيذ الخدمة بأسرع وقت ممكن</p>
                 </div>
             </div>
-        </div>
-        
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-3 text-center">كيف نعمل</h5>
-                
-                <div class="mb-3">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="step-number bg-primary text-white rounded-circle text-center me-2 flex-shrink-0" style="width: 25px; height: 25px; line-height: 25px;">1</div>
-                        <h6 class="mb-0">تسجيل مقدمي الخدمات</h6>
-                    </div>
-                    <p class="ms-4 mb-0 small text-muted">نقوم بالتحقق من هوية ومؤهلات مقدمي الخدمات للتأكد من جودة الخدمات المقدمة.</p>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <span class="emoji">👨‍🔧</span>
                 </div>
-                
-                <div class="mb-3">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="step-number bg-primary text-white rounded-circle text-center me-2 flex-shrink-0" style="width: 25px; height: 25px; line-height: 25px;">2</div>
-                        <h6 class="mb-0">البحث عن الخدمات</h6>
-                    </div>
-                    <p class="ms-4 mb-0 small text-muted">يمكن للعملاء البحث عن الخدمات المطلوبة حسب النوع والمنطقة والتقييمات.</p>
-                </div>
-                
-                <div class="mb-3">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="step-number bg-primary text-white rounded-circle text-center me-2 flex-shrink-0" style="width: 25px; height: 25px; line-height: 25px;">3</div>
-                        <h6 class="mb-0">حجز الخدمة</h6>
-                    </div>
-                    <p class="ms-4 mb-0 small text-muted">يحدد العميل الموعد المناسب ويقوم بإتمام عملية الحجز ودفع الرسوم المطلوبة.</p>
-                </div>
-                
-                <div>
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="step-number bg-primary text-white rounded-circle text-center me-2 flex-shrink-0" style="width: 25px; height: 25px; line-height: 25px;">4</div>
-                        <h6 class="mb-0">تقديم الخدمة والتقييم</h6>
-                    </div>
-                    <p class="ms-4 mb-0 small text-muted">بعد تقديم الخدمة، يمكن للعميل تقييم الخدمة وترك تعليق لمساعدة المستخدمين الآخرين.</p>
+                <div class="feature-text">
+                    <h6>مقدمي خدمات محترفين</h6>
+                    <p>نختار بعناية كل مقدمي الخدمات ليقدموا لك أفضل تجربة</p>
                 </div>
             </div>
-        </div>
-        
-        <div class="text-center mb-4">
-            <h5 class="mb-3">انضم إلينا اليوم</h5>
-            <p class="mb-3">سواء كنت تبحث عن خدمة أو ترغب في تقديم خدماتك، منصتنا هي الخيار الأمثل لك.</p>
-            <div class="d-grid gap-2">
-                <a href="{{ url_for('register') }}" class="btn btn-primary">سجل حساب جديد</a>
-                <a href="{{ url_for('mobile_services') }}" class="btn btn-outline-primary">استعرض الخدمات</a>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <span class="emoji">🔒</span>
+                </div>
+                <div class="feature-text">
+                    <h6>ضمان الخدمة</h6>
+                    <p>نضمن لك الحصول على الخدمة بأعلى جودة أو استرداد أموالك</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <span class="emoji">💰</span>
+                </div>
+                <div class="feature-text">
+                    <h6>أسعار تنافسية</h6>
+                    <p>أفضل الأسعار المناسبة لجميع الفئات</p>
+                </div>
             </div>
         </div>
     </div>
+    
+    <!-- تواصل معنا -->
+    <div class="mobile-card slide-in-up animate-delay-3">
+        <div class="mb-3 d-flex align-items-center">
+            <div class="feature-icon bg-warning-light me-3">
+                <span class="emoji">📞</span>
+            </div>
+            <h5 class="card-title mb-0">تواصل معنا</h5>
+        </div>
+        <div class="contact-info">
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="contact-text">
+                    <p>support@localservices.com</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-phone-alt"></i>
+                </div>
+                <div class="contact-text">
+                    <p>+966 55 123 4567</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="contact-text">
+                    <p>الرياض، المملكة العربية السعودية</p>
+                </div>
+            </div>
+        </div>
+        <div class="social-links mt-3">
+            <a href="#" class="social-link">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="social-link">
+                <i class="fab fa-facebook"></i>
+            </a>
+            <a href="#" class="social-link">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="social-link">
+                <i class="fab fa-linkedin"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- الإصدار -->
+    <div class="version-info text-center py-3">
+        <p class="text-muted small">الإصدار 1.0.2 © 2023 منصة الخدمات المحلية</p>
+    </div>
 </div>
+
+<style>
+    .feature-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    
+    .bg-primary-light {
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary-color);
+    }
+    
+    .bg-success-light {
+        background-color: rgba(46, 196, 182, 0.1);
+        color: var(--success-color);
+    }
+    
+    .bg-info-light {
+        background-color: rgba(76, 201, 240, 0.1);
+        color: var(--info-color);
+    }
+    
+    .bg-warning-light {
+        background-color: rgba(255, 159, 28, 0.1);
+        color: var(--warning-color);
+    }
+    
+    .features-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: flex-start;
+        background-color: var(--light-color);
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    .feature-item .feature-icon {
+        margin-left: 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .feature-text h6 {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .feature-text p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 0;
+    }
+    
+    .contact-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .contact-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .contact-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: var(--light-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 1rem;
+        color: var(--primary-color);
+    }
+    
+    .contact-text p {
+        margin-bottom: 0;
+    }
+    
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .social-link {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--light-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .social-link:hover {
+        background-color: var(--primary-color);
+        color: white;
+        transform: translateY(-3px);
+    }
+</style>
 {% endblock %}
