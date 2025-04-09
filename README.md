@@ -24,7 +24,7 @@ Local Services Hub is a comprehensive web application designed to connect servic
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/LocalServicesHub.git
+git clone https://github.com/Mohammed-hani69/LocalServicesHub.git
 cd LocalServicesHub
 ```
 
