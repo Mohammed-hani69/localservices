@@ -36,8 +36,15 @@ body {
     height: var(--header-height);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 0.75rem 1rem;
     box-shadow: var(--card-shadow);
+}
+
+.main-content {
+    padding-top: calc(var(--header-height) + 1rem);
+    padding-bottom: calc(var(--header-height) + 1rem);
+    min-height: 100vh;
 }
 
 .edit-profile-button {
@@ -698,6 +705,38 @@ input[type="datetime-local"] {
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     z-index: 1000;
     padding: 0.75rem 0;
+    height: var(--header-height);
+}
+
+.nav-wrapper {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: color var(--transition-speed);
+    gap: 0.3rem;
+}
+
+.nav-item.active {
+    color: var(--primary-color);
+}
+
+.nav-item i {
+    font-size: 1.4rem;
+}
+
+.nav-item span {
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
 .nav-wrapper {

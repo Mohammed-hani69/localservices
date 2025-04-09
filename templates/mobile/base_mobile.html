@@ -5,153 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#e63946">
+    <meta name="theme-color" content="#2563eb">
     <title>{% block title %}منصة الخدمات المحلية{% endblock %}</title>
-    
+
     <!-- Bootstrap 5 RTL CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
-    
-    <style>
-        body {
-            padding-bottom: 70px;
-            background-color: #f8f9fa;
-        }
-        
-        .navbar-brand {
-            font-weight: bold;
-        }
-        
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background-color: white;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            z-index: 1000;
-        }
-        
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            color: #6c757d;
-            text-decoration: none;
-            padding: 8px 0;
-        }
-        
-        .nav-item.active {
-            color: #e63946;
-        }
-        
-        .nav-item i {
-            font-size: 1.2rem;
-            margin-bottom: 4px;
-        }
-        
-        .badge-notification {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            padding: 0.25rem 0.4rem;
-            font-size: 0.6rem;
-            border-radius: 50%;
-        }
-        
-        .online-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
-        
-        .online {
-            background-color: #28a745;
-        }
-        
-        .offline {
-            background-color: #dc3545;
-        }
-    </style>
-    
+
     {% block styles %}{% endblock %}
 </head>
 <body>
-    
-    
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        {% block header_back %}
+        <button onclick="history.back()" class="back-button">
+            <i class="fas fa-arrow-right"></i>
+        </button>
+        {% endblock %}
+        <h1 class="header-title">{% block header_title %}منصة الخدمات المحلية{% endblock %}</h1>
+        {% block header_action %}{% endblock %}
+    </header>
+
     <!-- Main Content -->
-    <main>
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         {% block content %}{% endblock %}
     </main>
-    
+
     <!-- Bottom Navigation -->
-<nav class="mobile-bottom-nav">
-    <div class="nav-wrapper">
-        <a href="{{ url_for('mobile_index') }}" class="nav-item">
-            <i class="fas fa-home"></i>
-            <span>الرئيسية</span>
-        </a>
-        <a href="{{ url_for('services') }}" class="nav-item">
-            <i class="fas fa-hands-helping"></i>
-            <span>الخدمات</span>
-        </a>
-        <a href="{{ url_for('mobile_notifications') }}" class="nav-item">
-            <div class="notification-badge" data-count="{{ unread_notifications_count }}">
-                <i class="fas fa-bell"></i>
-            </div>
-            <span>الإشعارات</span>
-            {% if unread_notifications_count > 0 %}
-            <span class="position-absolute top-0 start-50 badge-notification bg-danger">
-                {{ unread_notifications_count }}
-            </span>
-            {% endif %}
-        </a>
-        <a href="{{ url_for('mobile_dashboard') }}" class="nav-item">
-            <i class="fas fa-user"></i>
-            <span>حسابي</span>
-        </a>
-    </div>
-</nav>
+    <nav class="mobile-bottom-nav">
+        <div class="nav-wrapper">
+            <a href="{{ url_for('mobile_index') }}" class="nav-item {% if request.endpoint == 'mobile_index' %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </a>
+            <a href="{{ url_for('services') }}" class="nav-item {% if request.endpoint == 'services' %}active{% endif %}">
+                <i class="fas fa-hands-helping"></i>
+                <span>الخدمات</span>
+            </a>
+            <a href="{{ url_for('mobile_notifications') }}" class="nav-item {% if request.endpoint == 'mobile_notifications' %}active{% endif %}">
+                <div class="notification-badge" data-count="{{ unread_notifications_count }}">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <span>الإشعارات</span>
+            </a>
+            <a href="{{ url_for('mobile_dashboard') }}" class="nav-item {% if request.endpoint == 'mobile_dashboard' %}active{% endif %}">
+                <i class="fas fa-user"></i>
+                <span>حسابي</span>
+            </a>
+        </div>
+    </nav>
+
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/mobile.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
-    
-    <script>
-        // تهيئة واجهة المستخدم المحمولة
-        document.addEventListener('DOMContentLoaded', function() {
-            // فحص حالة الاتصال بالإنترنت
-            const networkStatus = document.getElementById('networkStatus');
-            
-            function updateOnlineStatus() {
-                if (navigator.onLine) {
-                    networkStatus.classList.add('d-none');
-                } else {
-                    networkStatus.classList.remove('d-none');
-                }
-            }
-            
-            window.addEventListener('online', updateOnlineStatus);
-            window.addEventListener('offline', updateOnlineStatus);
-            updateOnlineStatus();
-        });
-    </script>
-    
+
     {% block scripts %}{% endblock %}
 </body>
 </html>
