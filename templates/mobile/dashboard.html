@@ -1,4 +1,3 @@
-
 {% extends "mobile/base_mobile.html" %}
 
 {% block title %}لوحة التحكم{% endblock %}
@@ -6,53 +5,78 @@
 {% block header_title %}حسابي{% endblock %}
 
 {% block content %}
-<div class="dashboard-page">
+<div class="mobile-dashboard-page">
+    <!-- البنرات المتحركة -->
+    <div class="banner-slider">
+        <div class="banner-slides">
+            <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1584717286204-0a1babd2ae5a?q=80&w=2070&auto=format&fit=crop');">
+                <div class="banner-slide-content">
+                    <h3 class="banner-slide-title">خصم 20% على خدمات الصيانة</h3>
+                    <p class="banner-slide-text">احصل على خصم خاص لفترة محدودة</p>
+                </div>
+            </div>
+            <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop');">
+                <div class="banner-slide-content">
+                    <h3 class="banner-slide-title">خدمات التنظيف المنزلي</h3>
+                    <p class="banner-slide-text">جدولة مواعيد التنظيف بسهولة</p>
+                </div>
+            </div>
+            <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=2069&auto=format&fit=crop');">
+                <div class="banner-slide-content">
+                    <h3 class="banner-slide-title">خدمات صحية متميزة</h3>
+                    <p class="banner-slide-text">استشارات طبية عن بُعد متاحة الآن</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="banner-indicators">
+            <div class="banner-indicator active"></div>
+            <div class="banner-indicator"></div>
+            <div class="banner-indicator"></div>
+        </div>
+
+        <div class="banner-nav banner-prev">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+        <div class="banner-nav banner-next">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+    </div>
+
     <!-- ملخص الملف الشخصي -->
     <div class="mobile-card profile-card">
         <div class="user-profile-summary">
+            <button class="profile-edit-button" onclick="window.location.href='{{ url_for('edit_user_profile') }}'">
+                <i class="fas fa-pencil-alt"></i>
+            </button>
             <div class="user-avatar">
                 <i class="fas fa-user"></i>
             </div>
-            <h3 class="user-name">{{ current_user.username }}</h3>
+            <h4 class="user-name">{{ current_user.name }}</h4>
             <p class="user-email">{{ current_user.email }}</p>
             <div class="user-role">
-                {% if current_user.is_provider() %}
-                <span class="badge bg-primary">مقدم خدمة</span>
-                {% else %}
-                <span class="badge bg-info">مستخدم</span>
-                {% endif %}
+                <span class="badge bg-primary">
+                    {% if current_user.is_admin %}
+                        مدير
+                    {% elif current_user.is_provider %}
+                        مزود خدمة
+                    {% else %}
+                        مستخدم
+                    {% endif %}
+                </span>
             </div>
-            <a href="{{ url_for('edit_user_profile', mobile=1) }}" class="btn btn-outline-primary btn-sm mt-3">
-                <i class="fas fa-edit me-1"></i> تعديل الملف الشخصي
-            </a>
-        </div>
-        
-        {% if current_user.is_provider() %}
-        <div class="row g-2 mt-3">
-            <div class="col-6">
-                <div class="stats-card">
-                    <div class="stats-icon bg-primary-light">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <div class="stats-info">
-                        <h3 class="stats-value">{{ active_services_count }}</h3>
-                        <div class="stats-label">خدمات نشطة</div>
-                    </div>
+
+            <div class="user-stats">
+                <div class="user-stat">
+                    <span class="user-stat-value">{{ bookings|length }}</span>
+                    <span class="user-stat-label">حجوزاتي</span>
                 </div>
-            </div>
-            <div class="col-6">
-                <div class="stats-card">
-                    <div class="stats-icon bg-info-light">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stats-info">
-                        <h3 class="stats-value">{{ pending_bookings_count }}</h3>
-                        <div class="stats-label">حجوزات معلقة</div>
-                    </div>
+                <div class="user-stat">
+                    <span class="user-stat-value">{{ '%.1f'|format(user_rating if user_rating else 0) }}</span>
+                    <span class="user-stat-label">تقييمي</span>
                 </div>
             </div>
         </div>
-        {% endif %}
     </div>
 
     <!-- تبويبات -->
@@ -105,7 +129,7 @@
                                 {{ booking.status }}
                             </span>
                         </div>
-                        
+
                         <div class="booking-details">
                             <p class="details-label"><i class="fas fa-tag"></i> الفئة: <span>{{ booking.service.category }}</span></p>
                             <p class="details-label"><i class="fas fa-money-bill-wave"></i> السعر: <span>{{ "%.2f"|format(booking.service.price) }} ر.س</span></p>
@@ -113,7 +137,7 @@
                             <p class="details-label"><i class="fas fa-comment-alt"></i> ملاحظات: <span>{{ booking.notes }}</span></p>
                             {% endif %}
                         </div>
-                        
+
                         <div class="booking-actions">
                             {% if booking.status == 'pending' %}
                             <a href="{{ url_for('payment', payment_id=booking.payment.id) if booking.payment else '#' }}" class="btn btn-primary">
@@ -156,7 +180,7 @@
                         <i class="fas fa-plus me-1"></i> إضافة خدمة
                     </a>
                 </div>
-                
+
                 {% if services %}
                 <div class="services-list">
                     {% for service in services %}
@@ -287,7 +311,7 @@
                 <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
                     <input type="hidden" name="service_id" id="reviewServiceId">
                     {{ review_form.csrf_token if review_form else "" }}
-                    
+
                     <div class="mb-3">
                         <label class="form-label">التقييم</label>
                         <div class="rating-input">
@@ -299,12 +323,12 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">التعليق</label>
                         <textarea class="form-control" name="comment" rows="3" required></textarea>
                     </div>
-                    
+
                     <button type="submit" class="btn btn-primary w-100">إرسال التقييم</button>
                 </form>
             </div>
@@ -319,15 +343,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // تفعيل التبويبات
     const tabs = document.querySelectorAll('.mobile-tab');
     const tabContents = document.querySelectorAll('.tab-content');
-    
+
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             const target = this.getAttribute('data-target');
-            
+
             // تحديث حالة النشاط
             tabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
-            
+
             // إظهار/إخفاء المحتوى
             tabContents.forEach(content => {
                 if (content.id === target) {
@@ -338,11 +362,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-    
+
     // تصفية الحجوزات
     const bookingFilters = document.querySelectorAll('.booking-filter');
     const bookingItems = document.querySelectorAll('.booking-item');
-    
+
     bookingFilters.forEach(filter => {
         filter.addEventListener('click', function() {
             // تحديث حالة النشاط
@@ -352,10 +376,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             this.classList.remove('btn-outline-primary');
             this.classList.add('active', 'btn-primary');
-            
+
             // تصفية الحجوزات
             const filterValue = this.getAttribute('data-filter');
-            
+
             bookingItems.forEach(item => {
                 if (filterValue === 'all' || item.getAttribute('data-status') === filterValue) {
                     item.style.display = 'block';
@@ -365,11 +389,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-    
+
     // معالجة أزرار إضافة التقييم
     const reviewButtons = document.querySelectorAll('.add-review');
     const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
-    
+
     reviewButtons.forEach(button => {
         button.addEventListener('click', function() {
             const serviceId = this.getAttribute('data-service-id');
@@ -377,14 +401,14 @@ document.addEventListener('DOMContentLoaded', function() {
             reviewModal.show();
         });
     });
-    
+
     // معالجة أزرار إلغاء الحجز
     const cancelButtons = document.querySelectorAll('.cancel-booking');
-    
+
     cancelButtons.forEach(button => {
         button.addEventListener('click', function() {
             const bookingId = this.getAttribute('data-booking-id');
-            
+
             if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
                 // هنا يمكن إضافة طلب الـ AJAX لإلغاء الحجز
                 fetch(`/booking/${bookingId}/cancel`, {
@@ -413,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     // تهيئة عرض التقييمات
     const ratingDisplays = document.querySelectorAll('.rating-display');
     ratingDisplays.forEach(display => {
@@ -438,15 +462,15 @@ function showMobileToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `mobile-toast ${type}`;
     toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
-    
+
     // إضافة التوست إلى الصفحة
     document.body.appendChild(toast);
-    
+
     // إظهار التوست
     setTimeout(() => {
         toast.classList.add('show');
     }, 100);
-    
+
     // إخفاء وإزالة التوست بعد فترة
     setTimeout(() => {
         toast.classList.remove('show');

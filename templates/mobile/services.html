@@ -7,6 +7,43 @@
 
 {% block content %}
 <div class="mobile-services-page">
+    <!-- البنرات المتحركة -->
+    <div class="banner-slider">
+        <div class="banner-slides">
+            <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1616444543692-1072ece0696d?q=80&w=2070&auto=format&fit=crop');">
+                <div class="banner-slide-content">
+                    <h3 class="banner-slide-title">خدمات متميزة</h3>
+                    <p class="banner-slide-text">تصفح أفضل الخدمات في منطقتك</p>
+                </div>
+            </div>
+            <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop');">
+                <div class="banner-slide-content">
+                    <h3 class="banner-slide-title">خدمات منزلية</h3>
+                    <p class="banner-slide-text">حلول منزلية متكاملة بأسعار تنافسية</p>
+                </div>
+            </div>
+            <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop');">
+                <div class="banner-slide-content">
+                    <h3 class="banner-slide-title">خدمات مهنية</h3>
+                    <p class="banner-slide-text">استشارات وخدمات احترافية</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="banner-indicators">
+            <div class="banner-indicator active"></div>
+            <div class="banner-indicator"></div>
+            <div class="banner-indicator"></div>
+        </div>
+        
+        <div class="banner-nav banner-prev">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+        <div class="banner-nav banner-next">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+    </div>
+
     <!-- بحث وتصفية -->
     <div class="mobile-card">
         <form action="{{ url_for('mobile_services') }}" method="get" class="mb-2">
