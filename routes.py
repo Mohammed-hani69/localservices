@@ -1499,9 +1499,33 @@ def mobile_services():
 @app.route('/mobile/services/<int:service_id>')
 def mobile_service_details(service_id):
     service = Service.query.get_or_404(service_id)
-    review_form = ReviewForm()
+    provider = ServiceProvider.query.get(service.provider_id)
+    reviews = Review.query.filter_by(service_id=service_id).all()
+    
+    # Get similar services from the same category
+    similar_services = Service.query.filter_by(category=service.category).filter(Service.id != service_id).limit(5).all()
+    
+    booking_form = BookingForm()
+    booking_form.service_id.data = service_id
+    
+    review_form = None
+    if current_user.is_authenticated:
+        # Check if user has booked this service before
+        user_bookings = Booking.query.filter_by(client_id=current_user.id, service_id=service_id).all()
+        if user_bookings:
+            # Check if user has already reviewed this service
+            user_review = Review.query.filter_by(user_id=current_user.id, service_id=service_id).first()
+            if not user_review:
+                review_form = ReviewForm()
+                review_form.service_id.data = service_id
 
-    return render_template('mobile/service_details.html', service=service, review_form=review_form)
+    return render_template('mobile/service_details.html', 
+                          service=service, 
+                          provider=provider,
+                          reviews=reviews, 
+                          booking_form=booking_form,
+                          review_form=review_form,
+                          similar_services=similar_services)
 
 # Mobile Dashboard
 @app.route('/mobile/dashboard')

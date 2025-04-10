@@ -308,6 +308,12 @@
         color: white;
         border: none;
     }
+    
+    .btn-admin-dashboard {
+        background: linear-gradient(135deg, #e53935 0%, #e35d5b 100%);
+        color: white;
+        border: none;
+    }
 
     .empty-state {
         text-align: center;
@@ -430,149 +436,37 @@
                 </div>
             </div>
 
-            <!-- إحصائيات -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value">{{ active_services_count }}</div>
-                    <div class="stat-label">خدمات نشطة</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">{{ pending_bookings_count }}</div>
-                    <div class="stat-label">حجوزات معلقة</div>
-                </div>
-            </div>
-
-            <!-- أزرار الإجراءات لمزود الخدمة -->
+            <!-- أزرار الإجراءات -->
             <div class="action-buttons">
-                <a href="{{ url_for('dashboard') }}" class="btn btn-provider-dashboard">
-                    <i class="fas fa-tachometer-alt"></i> لوحة تحكم مزود الخدمة
-                </a>
-                <a href="{{ url_for('add_service') }}?mobile=true" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> إضافة خدمة جديدة
-                </a>
+                {% if provider.specialization == 'صحة' %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-provider-dashboard">
+                        <i class="fas fa-tachometer-alt"></i> لوحة تحكم الخدمات الصحية
+                    </a>
+                {% elif provider.specialization == 'تعليم' %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-provider-dashboard">
+                        <i class="fas fa-tachometer-alt"></i> لوحة تحكم خدمات التعليم
+                    </a>
+                {% elif provider.specialization == 'صيانة' %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-provider-dashboard">
+                        <i class="fas fa-tachometer-alt"></i> لوحة تحكم خدمات الصيانة
+                    </a>
+                {% elif provider.specialization == 'تنظيف' %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-provider-dashboard">
+                        <i class="fas fa-tachometer-alt"></i> لوحة تحكم خدمات التنظيف
+                    </a>
+                {% elif provider.specialization == 'طعام' %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-provider-dashboard">
+                        <i class="fas fa-tachometer-alt"></i> لوحة تحكم خدمات الطعام
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-provider-dashboard">
+                        <i class="fas fa-tachometer-alt"></i> لوحة تحكم مزود الخدمة
+                    </a>
+                {% endif %}
+
                 <a href="{{ url_for('edit_user_profile') }}?mobile=true" class="btn btn-outline-primary">
                     <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
                 </a>
-            </div>
-
-            <!-- التبويبات -->
-            <div class="mobile-tabs">
-                <button class="mobile-tab active" data-target="services">
-                    <i class="fas fa-cogs"></i> الخدمات
-                </button>
-                <button class="mobile-tab" data-target="bookings">
-                    <i class="fas fa-calendar-alt"></i> الحجوزات
-                </button>
-            </div>
-
-            <!-- محتوى الخدمات -->
-            <div class="tab-content active" id="services">
-                <div class="mobile-card">
-                    {% set services = provider.services.all() %}
-                    {% if services %}
-                    <div class="services-list">
-                        {% for service in services %}
-                        <div class="service-item">
-                            {% if service.image %}
-                            <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}">
-                            {% else %}
-                            <div class="service-icon">
-                                <i class="fas fa-concierge-bell"></i>
-                            </div>
-                            {% endif %}
-                            <div class="service-details">
-                                <h6>{{ service.name }}</h6>
-                                <p class="price">{{ "%.2f"|format(service.price) }} ر.س</p>
-                                <p class="category">{{ service.category }}</p>
-                                <div class="status-badge {{ 'active' if service.is_active else 'inactive' }}">
-                                    {{ 'نشط' if service.is_active else 'غير نشط' }}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-box-open"></i>
-                        </div>
-                        <h4>لا توجد خدمات</h4>
-                        <p>لم تقم بإضافة أي خدمات بعد</p>
-                        <a href="{{ url_for('add_service') }}?mobile=true" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> إضافة خدمة جديدة
-                        </a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- محتوى الحجوزات -->
-            <div class="tab-content" id="bookings" style="display: none;">
-                <div class="mobile-card">
-                    {% set provider_bookings = [] %}
-                    {% for service in services %}
-                        {% set service_bookings = service.bookings.all() %}
-                        {% if service_bookings %}
-                            {% for booking in service_bookings %}
-                                {% set _ = provider_bookings.append(booking) %}
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if provider_bookings %}
-                    <div class="bookings-list">
-                        {% for booking in provider_bookings %}
-                        <div class="booking-item">
-                            <div class="booking-header">
-                                <h6>{{ booking.service.name }}</h6>
-                                <span class="badge bg-{{ get_status_color(booking.status) }}">
-                                    {% if booking.status == 'pending' %}
-                                        معلق
-                                    {% elif booking.status == 'confirmed' %}
-                                        مؤكد
-                                    {% elif booking.status == 'completed' %}
-                                        مكتمل
-                                    {% elif booking.status == 'cancelled' %}
-                                        ملغي
-                                    {% else %}
-                                        {{ booking.status }}
-                                    {% endif %}
-                                </span>
-                            </div>
-                            <div class="booking-details">
-                                <p><i class="fas fa-user"></i> {{ booking.client.username }}</p>
-                                <p><i class="fas fa-calendar"></i> {{ booking.booking_date.strftime('%Y-%m-%d') }}</p>
-                                <p><i class="fas fa-clock"></i> {{ booking.booking_date.strftime('%H:%M') }}</p>
-                            </div>
-                            <div class="booking-actions">
-                                {% if booking.status == 'pending' %}
-                                <button class="btn btn-sm btn-success confirm-booking" data-booking-id="{{ booking.id }}">
-                                    <i class="fas fa-check"></i> تأكيد
-                                </button>
-                                {% elif booking.status == 'confirmed' %}
-                                <button class="btn btn-sm btn-info complete-booking" data-booking-id="{{ booking.id }}">
-                                    <i class="fas fa-check-double"></i> إكمال
-                                </button>
-                                {% endif %}
-                                {% if booking.status in ['pending', 'confirmed'] %}
-                                <button class="btn btn-sm btn-danger cancel-booking" data-booking-id="{{ booking.id }}">
-                                    <i class="fas fa-times"></i> إلغاء
-                                </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-calendar-times"></i>
-                        </div>
-                        <h4>لا توجد حجوزات</h4>
-                        <p>لم يتم تسجيل أي حجوزات حتى الآن</p>
-                    </div>
-                    {% endif %}
-                </div>
             </div>
         {% else %}
             <div class="user-card">
@@ -587,7 +481,35 @@
                 </div>
             </div>
         {% endif %}
+    {% elif current_user.is_admin() %}
+        <!-- معلومات المدير -->
+        <div class="user-card">
+            <div class="user-info">
+                <h4>بيانات مدير النظام</h4>
+                <p>لديك إمكانية الوصول إلى جميع وظائف النظام والتحكم الكامل</p>
+            </div>
+        </div>
+
+        <!-- أزرار الإجراءات للمدير -->
+        <div class="action-buttons">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-admin-dashboard">
+                <i class="fas fa-tachometer-alt"></i> لوحة تحكم المدير
+            </a>
+            <a href="{{ url_for('edit_user_profile') }}?mobile=true" class="btn btn-outline-primary">
+                <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
+            </a>
+        </div>
     {% else %}
+        <!-- معلومات المستخدم العادي -->
+        <div class="user-card">
+            <div class="user-info">
+                <h4>معلومات إضافية</h4>
+                <p><i class="fas fa-phone"></i> الهاتف: {{ user.phone or 'غير محدد' }}</p>
+                <p><i class="fas fa-map-marker-alt"></i> العنوان: {{ user.address or 'غير محدد' }}</p>
+                <p><i class="fas fa-calendar-alt"></i> تاريخ التسجيل: {{ user.created_at.strftime('%Y-%m-%d') }}</p>
+            </div>
+        </div>
+
         <!-- الإحصائيات للمستخدم العادي -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -602,105 +524,21 @@
 
         <!-- أزرار الإجراءات للمستخدم العادي -->
         <div class="action-buttons">
-            <a href="{{ url_for('services') }}?mobile=true" class="btn btn-primary">
+            <a href="{{ url_for('mobile_services') }}" class="btn btn-primary">
                 <i class="fas fa-search"></i> تصفح الخدمات
             </a>
             <a href="{{ url_for('edit_user_profile') }}?mobile=true" class="btn btn-outline-primary">
                 <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
             </a>
         </div>
-
-        <!-- التبويبات -->
-        <div class="mobile-tabs">
-            <button class="mobile-tab active" data-target="bookings">
-                <i class="fas fa-calendar-alt"></i> حجوزاتي
-            </button>
-            <button class="mobile-tab" data-target="reviews">
-                <i class="fas fa-star"></i> تقييماتي
-            </button>
-        </div>
-
-        <!-- محتوى الحجوزات -->
-        <div class="tab-content active" id="bookings">
-            {% if bookings %}
-                <div class="bookings-list">
-                    {% for booking in bookings %}
-                        <div class="booking-item">
-                            <div class="booking-header">
-                                <h6>{{ booking.service.name }}</h6>
-                                <span class="badge bg-{{ get_status_color(booking.status) }}">
-                                    {% if booking.status == 'pending' %}
-                                        معلق
-                                    {% elif booking.status == 'confirmed' %}
-                                        مؤكد
-                                    {% elif booking.status == 'completed' %}
-                                        مكتمل
-                                    {% elif booking.status == 'cancelled' %}
-                                        ملغي
-                                    {% else %}
-                                        {{ booking.status }}
-                                    {% endif %}
-                                </span>
-                            </div>
-                            <div class="booking-details">
-                                <p><i class="fas fa-building"></i> {{ booking.service.provider.company_name }}</p>
-                                <p><i class="fas fa-calendar"></i> {{ booking.booking_date.strftime('%Y-%m-%d') }}</p>
-                                <p><i class="fas fa-clock"></i> {{ booking.booking_date.strftime('%H:%M') }}</p>
-                                <p><i class="fas fa-money-bill-wave"></i> {{ booking.service.price }} ر.س</p>
-                            </div>
-                            
-                            {% if booking.status == 'completed' and not has_review(booking.service_id, current_user.id) %}
-                                <form class="review-form" action="{{ url_for('add_review') }}" method="post">
-                                    {{ review_form.hidden_tag() }}
-                                    {{ review_form.service_id(value=booking.service_id) }}
-                                    
-                                    <div class="form-group">
-                                        <label>التقييم:</label>
-                                        <div class="rating-input">
-                                            {% for i in range(5, 0, -1) %}
-                                                <input type="radio" id="star{{ i }}-{{ booking.service_id }}" name="rating" value="{{ i }}" {% if i == 5 %}checked{% endif %}>
-                                                <label for="star{{ i }}-{{ booking.service_id }}"></label>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="comment-{{ booking.service_id }}">التعليق:</label>
-                                        <textarea class="form-control" id="comment-{{ booking.service_id }}" name="comment" rows="3" required></textarea>
-                                    </div>
-                                    
-                                    <button type="submit" class="btn btn-sm btn-primary w-100">إرسال التقييم</button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="fas fa-calendar-times"></i>
-                    </div>
-                    <h4>لا توجد حجوزات</h4>
-                    <p>لم تقم بإجراء أي حجوزات بعد</p>
-                    <a href="{{ url_for('services') }}?mobile=true" class="btn btn-primary">
-                        <i class="fas fa-search"></i> تصفح الخدمات
-                    </a>
-                </div>
-            {% endif %}
-        </div>
-
-        <!-- محتوى التقييمات -->
-        <div class="tab-content" id="reviews" style="display: none;">
-            <!-- يمكن إضافة محتوى التقييمات هنا -->
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i class="fas fa-star"></i>
-                </div>
-                <h4>لا توجد تقييمات</h4>
-                <p>لم تقم بإضافة أي تقييمات بعد</p>
-            </div>
-        </div>
     {% endif %}
+
+    <!-- زر تسجيل الخروج -->
+    <div class="action-buttons mt-4">
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">
+            <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+        </a>
+    </div>
 </div>
 {% endblock %}
 

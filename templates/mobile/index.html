@@ -40,10 +40,10 @@
             <i class="fas fa-chevron-left"></i>
         </div>
     </div>
-    
+
     <div class="container py-4">
         <h1 class="text-center mb-4">الخدمات المحلية</h1>
-        
+
         <!-- Search Box -->
         <div class="card shadow-sm mb-4">
             <div class="card-body">
@@ -107,10 +107,10 @@
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <h5 class="card-title mb-3">خدمات مميزة</h5>
-                
+
                 {% if featured_services %}
                     {% for service in featured_services %}
-                    <div class="service-card mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}" data-href="{{ url_for('service_details', service_id=service.id) }}">
+                    <div class="service-card mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}" data-href="{{ url_for('mobile_service_details', service_id=service.id) }}">
                         <div class="row">
                             <div class="col-4">
                                 <div class="service-image-container">
@@ -142,10 +142,10 @@
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <h5 class="card-title mb-3">أحدث الخدمات</h5>
-                
+
                 {% if recent_services %}
                     {% for service in recent_services %}
-                    <div class="service-card mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}" data-href="{{ url_for('service_details', service_id=service.id) }}">
+                    <div class="service-card mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}" data-href="{{ url_for('mobile_service_details', service_id=service.id) }}">
                         <div class="row">
                             <div class="col-4">
                                 <div class="service-image-container">
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         display.innerHTML = stars;
     });
-    
+
     // Make the whole service card clickable
     const serviceCards = document.querySelectorAll('.service-card');
     serviceCards.forEach(card => {
@@ -252,16 +252,16 @@ document.addEventListener('DOMContentLoaded', function() {
         justify-content: center;
         overflow: hidden;
     }
-    
+
     .service-card {
         cursor: pointer;
         transition: all 0.2s;
     }
-    
+
     .service-card:active {
         transform: scale(0.98);
     }
-    
+
     .categories-scroll {
         display: flex;
         overflow-x: auto;
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
         gap: 15px;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     .category-item {
         display: flex;
         flex-direction: column;
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
         color: #212529;
         text-decoration: none;
     }
-    
+
     .category-circle {
         width: 50px;
         height: 50px;
@@ -292,13 +292,13 @@ document.addEventListener('DOMContentLoaded', function() {
         font-size: 1.25rem;
         transition: all 0.2s;
     }
-    
+
     .category-item:hover .category-circle,
     .category-item.active .category-circle {
         background-color: #e63946;
         color: white;
     }
-    
+
     .rating-display i {
         font-size: 0.8rem;
     }
