@@ -1,0 +1,653 @@
+
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}لوحة التحكم - مقدم خدمات الطعام{% endblock %}
+
+{% block header_title %}لوحة تحكم مقدم خدمات الطعام{% endblock %}
+
+{% block styles %}
+<style>
+    .mobile-dashboard-page {
+        padding: 15px;
+        background-color: #f5f5f5;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .profile-info h4 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #3498db;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        margin-top: 5px;
+    }
+
+    .mobile-tabs {
+        display: flex;
+        background: white;
+        border-radius: 12px;
+        padding: 5px;
+        margin: 20px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .mobile-tab {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        background: none;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-tab.active {
+        background: #3498db;
+        color: white;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .meal-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .meal-icon, .meal-item img {
+        width: 70px;
+        height: 70px;
+        border-radius: 10px;
+        object-fit: cover;
+        margin-left: 15px;
+    }
+
+    .meal-icon {
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3498db;
+        font-size: 1.5rem;
+    }
+
+    .meal-details {
+        flex: 1;
+    }
+
+    .meal-details h6 {
+        margin: 0 0 5px 0;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .meal-details .price {
+        color: #27ae60;
+        font-weight: bold;
+        margin: 0 0 5px 0;
+    }
+
+    .meal-details .type {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin: 0 0 5px 0;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+    }
+
+    .status-badge.available {
+        background: #e8f5e9;
+        color: #27ae60;
+    }
+
+    .status-badge.unavailable {
+        background: #ffebee;
+        color: #e74c3c;
+    }
+
+    .meal-actions {
+        margin-right: 15px;
+    }
+
+    .meal-actions .btn {
+        padding: 8px 12px;
+        border-radius: 8px;
+    }
+
+    .reservation-item {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .reservation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .reservation-header h6 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .reservation-details {
+        margin-bottom: 10px;
+    }
+
+    .reservation-details p {
+        margin: 5px 0;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .reservation-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .reservation-actions .btn {
+        flex: 1;
+        font-size: 0.9rem;
+    }
+
+    .order-item {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .order-header h6 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .order-details {
+        margin-bottom: 10px;
+    }
+
+    .order-details p {
+        margin: 5px 0;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .order-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .order-actions .btn {
+        flex: 1;
+        font-size: 0.9rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        color: #bdc3c7;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mobile-dashboard-page">
+    <!-- ملخص الملف الشخصي -->
+    <div class="mobile-card profile-card">
+        <div class="profile-header">
+            <div class="profile-info">
+                <h4>{{ provider.company_name }}</h4>
+                <div class="rating">
+                    <span class="rating-display" data-rating="{{ provider.rating }}"></span>
+                    <span class="rating-value">({{ "%.1f"|format(provider.rating) }})</span>
+                </div>
+                <div class="provider-status">
+                    {% if provider.verified %}
+                    <span class="badge bg-success">موثّق</span>
+                    {% else %}
+                    <span class="badge bg-warning">قيد المراجعة</span>
+                    {% endif %}
+                </div>
+            </div>
+            <a href="{{ url_for('edit_user_profile') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i> تعديل الملف
+            </a>
+        </div>
+    </div>
+
+    <!-- إحصائيات -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ meals|selectattr('is_available', 'equalto', true)|list|length }}</div>
+            <div class="stat-label">وجبات متاحة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ table_reservations|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+            <div class="stat-label">حجوزات معلقة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ "%.1f"|format(provider.rating) }}</div>
+            <div class="stat-label">التقييم العام</div>
+        </div>
+    </div>
+
+    <!-- التبويبات -->
+    <div class="mobile-tabs">
+        <button class="mobile-tab active" data-target="meals">
+            <i class="fas fa-utensils"></i> الوجبات
+        </button>
+        <button class="mobile-tab" data-target="reservations">
+            <i class="fas fa-calendar-alt"></i> الحجوزات
+        </button>
+        <button class="mobile-tab" data-target="orders">
+            <i class="fas fa-shopping-cart"></i> الطلبات
+        </button>
+    </div>
+
+    <!-- محتوى الوجبات -->
+    <div class="tab-content active" id="meals">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>قائمة الوجبات</h5>
+                <a href="{{ url_for('add_meal') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> إضافة وجبة
+                </a>
+            </div>
+            {% if meals %}
+            <div class="meals-list">
+                {% for meal in meals %}
+                <div class="meal-item">
+                    {% if meal.image %}
+                    <img src="{{ url_for('static', filename=meal.image) }}" alt="{{ meal.name }}">
+                    {% else %}
+                    <div class="meal-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    {% endif %}
+                    <div class="meal-details">
+                        <h6>{{ meal.name }}</h6>
+                        <p class="price">{{ "%.2f"|format(meal.price) }} ر.س</p>
+                        <p class="type">{{ meal.meal_type }}</p>
+                        <div class="status-badge {{ 'available' if meal.is_available else 'unavailable' }}">
+                            {{ 'متاحة' if meal.is_available else 'غير متاحة' }}
+                        </div>
+                    </div>
+                    <div class="meal-actions">
+                        <a href="{{ url_for('edit_meal', meal_id=meal.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h4>لا توجد وجبات</h4>
+                <p>لم تقم بإضافة أي وجبات بعد</p>
+                <a href="{{ url_for('add_meal') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إضافة وجبة جديدة
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- محتوى الحجوزات -->
+    <div class="tab-content" id="reservations" style="display: none;">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>حجوزات الطاولات</h5>
+            </div>
+            {% if table_reservations %}
+            <div class="reservations-list">
+                {% for reservation in table_reservations %}
+                <div class="reservation-item" data-status="{{ reservation.status }}">
+                    <div class="reservation-header">
+                        <h6>حجز #{{ reservation.id }}</h6>
+                        <span class="badge bg-{{ get_status_color(reservation.status) }}">
+                            {{ reservation.status }}
+                        </span>
+                    </div>
+                    <div class="reservation-details">
+                        <p><i class="fas fa-user"></i> {{ reservation.user.username }}</p>
+                        <p><i class="fas fa-calendar"></i> {{ reservation.reservation_date.strftime('%Y-%m-%d') }}</p>
+                        <p><i class="fas fa-clock"></i> {{ reservation.reservation_date.strftime('%H:%M') }}</p>
+                        <p><i class="fas fa-users"></i> {{ reservation.guests_number }} أشخاص</p>
+                        <p><i class="fas fa-phone"></i> {{ reservation.contact_phone }}</p>
+                        {% if reservation.special_requests %}
+                        <p><i class="fas fa-comment"></i> {{ reservation.special_requests }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="reservation-actions">
+                        {% if reservation.status == 'pending' %}
+                        <button class="btn btn-sm btn-success confirm-reservation" data-reservation-id="{{ reservation.id }}">
+                            <i class="fas fa-check"></i> تأكيد
+                        </button>
+                        {% elif reservation.status == 'confirmed' %}
+                        <button class="btn btn-sm btn-info complete-reservation" data-reservation-id="{{ reservation.id }}">
+                            <i class="fas fa-check-double"></i> إكمال
+                        </button>
+                        {% endif %}
+                        {% if reservation.status in ['pending', 'confirmed'] %}
+                        <button class="btn btn-sm btn-danger cancel-reservation" data-reservation-id="{{ reservation.id }}">
+                            <i class="fas fa-times"></i> إلغاء
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h4>لا توجد حجوزات</h4>
+                <p>لم يتم تسجيل أي حجوزات طاولات حتى الآن</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- محتوى الطلبات -->
+    <div class="tab-content" id="orders" style="display: none;">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>طلبات الوجبات</h5>
+            </div>
+            {% if meal_orders %}
+            <div class="orders-list">
+                {% for order in meal_orders %}
+                <div class="order-item" data-status="{{ order.status }}">
+                    <div class="order-header">
+                        <h6>طلب #{{ order.id }}</h6>
+                        <span class="badge bg-{{ get_status_color(order.status) }}">
+                            {{ order.status }}
+                        </span>
+                    </div>
+                    <div class="order-details">
+                        <p><i class="fas fa-user"></i> {{ order.user.username }}</p>
+                        <p><i class="fas fa-utensils"></i> {{ order.meal.name }}</p>
+                        <p><i class="fas fa-sort-numeric-up"></i> {{ order.quantity }} وحدة</p>
+                        <p><i class="fas fa-calendar"></i> {{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                        {% if order.special_instructions %}
+                        <p><i class="fas fa-comment"></i> {{ order.special_instructions }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="order-actions">
+                        {% if order.status == 'pending' %}
+                        <button class="btn btn-sm btn-primary prepare-order" data-order-id="{{ order.id }}">
+                            <i class="fas fa-check"></i> تحضير
+                        </button>
+                        {% elif order.status == 'preparing' %}
+                        <button class="btn btn-sm btn-success ready-order" data-order-id="{{ order.id }}">
+                            <i class="fas fa-check-double"></i> جاهز
+                        </button>
+                        {% elif order.status == 'ready' %}
+                        <button class="btn btn-sm btn-info deliver-order" data-order-id="{{ order.id }}">
+                            <i class="fas fa-truck"></i> تسليم
+                        </button>
+                        {% endif %}
+                        {% if order.status in ['pending', 'preparing', 'ready'] %}
+                        <button class="btn btn-sm btn-danger cancel-order" data-order-id="{{ order.id }}">
+                            <i class="fas fa-times"></i> إلغاء
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h4>لا توجد طلبات</h4>
+                <p>لم يتم تسجيل أي طلبات وجبات حتى الآن</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل التبويبات
+    const tabs = document.querySelectorAll('.mobile-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            tabContents.forEach(content => {
+                if (content.id === target) {
+                    content.style.display = 'block';
+                } else {
+                    content.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // تنسيق عرض التقييمات
+    const ratingElements = document.querySelectorAll('.rating-display');
+    ratingElements.forEach(function(element) {
+        const rating = parseFloat(element.getAttribute('data-rating'));
+        let starsHtml = '';
+        
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                starsHtml += '<i class="fas fa-star text-warning"></i>';
+            } else if (i - 0.5 <= rating) {
+                starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
+            } else {
+                starsHtml += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        
+        element.innerHTML = starsHtml;
+    });
+
+    // معالجة أزرار الحجوزات
+    const handleReservationAction = async (action, reservationId) => {
+        try {
+            const response = await fetch(`/reservation/${reservationId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showMobileToast(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showMobileToast(data.message || 'حدث خطأ أثناء تنفيذ العملية', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMobileToast('حدث خطأ في الاتصال بالخادم', 'error');
+        }
+    };
+
+    document.querySelectorAll('.confirm-reservation').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const reservationId = btn.getAttribute('data-reservation-id');
+            handleReservationAction('confirm', reservationId);
+        });
+    });
+
+    document.querySelectorAll('.complete-reservation').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const reservationId = btn.getAttribute('data-reservation-id');
+            handleReservationAction('complete', reservationId);
+        });
+    });
+
+    document.querySelectorAll('.cancel-reservation').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const reservationId = btn.getAttribute('data-reservation-id');
+            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
+                handleReservationAction('cancel', reservationId);
+            }
+        });
+    });
+
+    // معالجة أزرار الطلبات
+    const handleOrderAction = async (action, orderId) => {
+        try {
+            const response = await fetch(`/meal-order/${orderId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showMobileToast(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showMobileToast(data.message || 'حدث خطأ أثناء تنفيذ العملية', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMobileToast('حدث خطأ في الاتصال بالخادم', 'error');
+        }
+    };
+
+    document.querySelectorAll('.prepare-order').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const orderId = btn.getAttribute('data-order-id');
+            handleOrderAction('prepare', orderId);
+        });
+    });
+
+    document.querySelectorAll('.ready-order').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const orderId = btn.getAttribute('data-order-id');
+            handleOrderAction('ready', orderId);
+        });
+    });
+
+    document.querySelectorAll('.deliver-order').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const orderId = btn.getAttribute('data-order-id');
+            handleOrderAction('deliver', orderId);
+        });
+    });
+
+    document.querySelectorAll('.cancel-order').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const orderId = btn.getAttribute('data-order-id');
+            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟')) {
+                handleOrderAction('cancel', orderId);
+            }
+        });
+    });
+});
+
+// دالة لعرض رسائل الإشعارات
+function showMobileToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `mobile-toast ${type}`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+</script>
+{% endblock %}

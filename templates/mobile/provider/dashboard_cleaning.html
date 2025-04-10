@@ -1,0 +1,646 @@
+
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}لوحة التحكم - مقدم خدمات التنظيف{% endblock %}
+
+{% block header_title %}لوحة تحكم مقدم خدمات التنظيف{% endblock %}
+
+{% block styles %}
+<style>
+    .mobile-dashboard-page {
+        padding: 15px;
+        background-color: #f5f5f5;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .profile-info h4 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #3498db;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        margin-top: 5px;
+    }
+
+    .mobile-tabs {
+        display: flex;
+        background: white;
+        border-radius: 12px;
+        padding: 5px;
+        margin: 20px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .mobile-tab {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        background: none;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-tab.active {
+        background: #3498db;
+        color: white;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .service-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .service-icon, .service-item img {
+        width: 70px;
+        height: 70px;
+        border-radius: 10px;
+        object-fit: cover;
+        margin-left: 15px;
+    }
+
+    .service-icon {
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3498db;
+        font-size: 1.5rem;
+    }
+
+    .service-details {
+        flex: 1;
+    }
+
+    .service-details h6 {
+        margin: 0 0 5px 0;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .service-details .price {
+        color: #27ae60;
+        font-weight: bold;
+        margin: 0 0 5px 0;
+    }
+
+    .service-details .type {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin: 0 0 5px 0;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+    }
+
+    .status-badge.active {
+        background: #e8f5e9;
+        color: #27ae60;
+    }
+
+    .status-badge.inactive {
+        background: #ffebee;
+        color: #e74c3c;
+    }
+
+    .service-actions {
+        margin-right: 15px;
+    }
+
+    .service-actions .btn {
+        padding: 8px 12px;
+        border-radius: 8px;
+    }
+
+    .booking-item {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .booking-header h6 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .booking-details {
+        margin-bottom: 10px;
+    }
+
+    .booking-details p {
+        margin: 5px 0;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .booking-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .booking-actions .btn {
+        flex: 1;
+        font-size: 0.9rem;
+    }
+
+    .cleaning-packages {
+        margin-top: 15px;
+    }
+
+    .package-item {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .package-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .package-title {
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .package-price {
+        color: #27ae60;
+        font-weight: bold;
+    }
+
+    .package-content {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+
+    .package-features {
+        margin-top: 10px;
+    }
+
+    .package-feature {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .package-feature i {
+        margin-left: 8px;
+        color: #27ae60;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        color: #bdc3c7;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mobile-dashboard-page">
+    <!-- ملخص الملف الشخصي -->
+    <div class="mobile-card profile-card">
+        <div class="profile-header">
+            <div class="profile-info">
+                <h4>{{ provider.company_name }}</h4>
+                <div class="rating">
+                    <span class="rating-display" data-rating="{{ provider.rating }}"></span>
+                    <span class="rating-value">({{ "%.1f"|format(provider.rating) }})</span>
+                </div>
+                <div class="provider-status">
+                    {% if provider.verified %}
+                    <span class="badge bg-success">موثّق</span>
+                    {% else %}
+                    <span class="badge bg-warning">قيد المراجعة</span>
+                    {% endif %}
+                </div>
+            </div>
+            <a href="{{ url_for('edit_user_profile') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i> تعديل الملف
+            </a>
+        </div>
+    </div>
+
+    <!-- إحصائيات -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ active_services_count }}</div>
+            <div class="stat-label">خدمات نشطة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ pending_bookings_count }}</div>
+            <div class="stat-label">طلبات معلقة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ "%.1f"|format(provider.rating) }}</div>
+            <div class="stat-label">التقييم العام</div>
+        </div>
+    </div>
+
+    <!-- التبويبات -->
+    <div class="mobile-tabs">
+        <button class="mobile-tab active" data-target="services">
+            <i class="fas fa-spray-can"></i> الخدمات
+        </button>
+        <button class="mobile-tab" data-target="bookings">
+            <i class="fas fa-calendar-alt"></i> الطلبات
+        </button>
+        <button class="mobile-tab" data-target="packages">
+            <i class="fas fa-box"></i> الباقات
+        </button>
+    </div>
+
+    <!-- محتوى الخدمات -->
+    <div class="tab-content active" id="services">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>خدمات التنظيف</h5>
+                <a href="{{ url_for('add_service') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> إضافة خدمة
+                </a>
+            </div>
+            {% if services %}
+            <div class="services-list">
+                {% for service in services %}
+                <div class="service-item">
+                    {% if service.image %}
+                    <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}">
+                    {% else %}
+                    <div class="service-icon">
+                        <i class="fas fa-broom"></i>
+                    </div>
+                    {% endif %}
+                    <div class="service-details">
+                        <h6>{{ service.name }}</h6>
+                        <p class="price">{{ "%.2f"|format(service.price) }} ر.س</p>
+                        <p class="type">{{ service.service_type }}</p>
+                        <div class="status-badge {{ 'active' if service.is_active else 'inactive' }}">
+                            {{ 'نشط' if service.is_active else 'غير نشط' }}
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-broom"></i>
+                </div>
+                <h4>لا توجد خدمات</h4>
+                <p>لم تقم بإضافة أي خدمات تنظيف بعد</p>
+                <a href="{{ url_for('add_service') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إضافة خدمة جديدة
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- محتوى الطلبات -->
+    <div class="tab-content" id="bookings" style="display: none;">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>طلبات التنظيف</h5>
+            </div>
+            {% if bookings %}
+            <div class="bookings-list">
+                {% for booking in bookings %}
+                <div class="booking-item" data-status="{{ booking.status }}">
+                    <div class="booking-header">
+                        <h6>{{ booking.service.name }}</h6>
+                        <span class="badge bg-{{ get_status_color(booking.status) }}">
+                            {{ booking.status }}
+                        </span>
+                    </div>
+                    <div class="booking-details">
+                        <p><i class="fas fa-user"></i> {{ booking.client.username }}</p>
+                        <p><i class="fas fa-map-marker-alt"></i> {{ booking.client.address }}</p>
+                        <p><i class="fas fa-phone"></i> {{ booking.client.phone }}</p>
+                        <p><i class="fas fa-calendar"></i> {{ booking.booking_date.strftime('%Y-%m-%d') }}</p>
+                        <p><i class="fas fa-clock"></i> {{ booking.booking_date.strftime('%H:%M') }}</p>
+                        {% if booking.notes %}
+                        <p><i class="fas fa-comment"></i> {{ booking.notes }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="booking-actions">
+                        {% if booking.status == 'pending' %}
+                        <button class="btn btn-success confirm-booking" data-booking-id="{{ booking.id }}">
+                            <i class="fas fa-check"></i> تأكيد
+                        </button>
+                        {% elif booking.status == 'confirmed' %}
+                        <button class="btn btn-info complete-booking" data-booking-id="{{ booking.id }}">
+                            <i class="fas fa-check-double"></i> إكمال
+                        </button>
+                        {% endif %}
+                        {% if booking.status in ['pending', 'confirmed'] %}
+                        <button class="btn btn-danger cancel-booking" data-booking-id="{{ booking.id }}">
+                            <i class="fas fa-times"></i> إلغاء
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h4>لا توجد طلبات</h4>
+                <p>لم يتم تسجيل أي طلبات تنظيف حتى الآن</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- محتوى الباقات -->
+    <div class="tab-content" id="packages" style="display: none;">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>باقات التنظيف</h5>
+                <button class="btn btn-primary btn-sm" id="add-package-btn">
+                    <i class="fas fa-plus"></i> إضافة باقة
+                </button>
+            </div>
+            <div class="cleaning-packages">
+                <div class="package-item">
+                    <div class="package-header">
+                        <h6 class="package-title">باقة التنظيف الأساسية</h6>
+                        <span class="package-price">199 ر.س</span>
+                    </div>
+                    <p class="package-content">خدمة تنظيف شاملة للمنازل بمساحة حتى 100 متر مربع</p>
+                    <div class="package-features">
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>تنظيف جميع الغرف</span>
+                        </div>
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>تنظيف المطبخ والحمامات</span>
+                        </div>
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>كنس وتلميع الأرضيات</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="package-item">
+                    <div class="package-header">
+                        <h6 class="package-title">باقة التنظيف الشاملة</h6>
+                        <span class="package-price">349 ر.س</span>
+                    </div>
+                    <p class="package-content">خدمة تنظيف شاملة للمنازل بمساحة حتى 200 متر مربع</p>
+                    <div class="package-features">
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>تنظيف جميع الغرف</span>
+                        </div>
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>تنظيف المطبخ والحمامات</span>
+                        </div>
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>كنس وتلميع الأرضيات</span>
+                        </div>
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>تنظيف النوافذ</span>
+                        </div>
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>تنظيف الأثاث</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="package-item">
+                    <div class="package-header">
+                        <h6 class="package-title">باقة التنظيف العميق</h6>
+                        <span class="package-price">599 ر.س</span>
+                    </div>
+                    <p class="package-content">خدمة تنظيف عميقة للمنازل والفلل الكبيرة</p>
+                    <div class="package-features">
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>جميع خدمات الباقة الشاملة</span>
+                        </div>
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>تنظيف المفروشات بالبخار</span>
+                        </div>
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>تنظيف الستائر</span>
+                        </div>
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>تنظيف الخزانات</span>
+                        </div>
+                        <div class="package-feature">
+                            <i class="fas fa-check"></i>
+                            <span>تعطير المنزل</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل التبويبات
+    const tabs = document.querySelectorAll('.mobile-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            tabContents.forEach(content => {
+                if (content.id === target) {
+                    content.style.display = 'block';
+                } else {
+                    content.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // تنسيق عرض التقييمات
+    const ratingElements = document.querySelectorAll('.rating-display');
+    ratingElements.forEach(function(element) {
+        const rating = parseFloat(element.getAttribute('data-rating'));
+        let starsHtml = '';
+        
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                starsHtml += '<i class="fas fa-star text-warning"></i>';
+            } else if (i - 0.5 <= rating) {
+                starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
+            } else {
+                starsHtml += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        
+        element.innerHTML = starsHtml;
+    });
+
+    // معالجة أزرار الطلبات
+    const handleBookingAction = async (action, bookingId) => {
+        try {
+            const response = await fetch(`/booking/${bookingId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showMobileToast(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showMobileToast(data.message || 'حدث خطأ أثناء تنفيذ العملية', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMobileToast('حدث خطأ في الاتصال بالخادم', 'error');
+        }
+    };
+
+    document.querySelectorAll('.confirm-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('confirm', bookingId);
+        });
+    });
+
+    document.querySelectorAll('.complete-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('complete', bookingId);
+        });
+    });
+
+    document.querySelectorAll('.cancel-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟')) {
+                handleBookingAction('cancel', bookingId);
+            }
+        });
+    });
+
+    // إضافة باقة جديدة (زر إنشاء)
+    document.getElementById('add-package-btn').addEventListener('click', () => {
+        showMobileToast('سيتم توفير هذه الميزة قريباً', 'info');
+    });
+});
+
+// دالة لعرض رسائل الإشعارات
+function showMobileToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `mobile-toast ${type}`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+</script>
+{% endblock %}

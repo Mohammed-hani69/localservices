@@ -1,0 +1,624 @@
+
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}لوحة التحكم - مقدم خدمات تعليمية{% endblock %}
+
+{% block header_title %}لوحة تحكم مقدم خدمات التعليم{% endblock %}
+
+{% block styles %}
+<style>
+    .mobile-dashboard-page {
+        padding: 15px;
+        background-color: #f5f5f5;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .profile-info h4 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #3498db;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        margin-top: 5px;
+    }
+
+    .mobile-tabs {
+        display: flex;
+        background: white;
+        border-radius: 12px;
+        padding: 5px;
+        margin: 20px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .mobile-tab {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        background: none;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-tab.active {
+        background: #3498db;
+        color: white;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .service-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .service-icon, .service-item img {
+        width: 70px;
+        height: 70px;
+        border-radius: 10px;
+        object-fit: cover;
+        margin-left: 15px;
+    }
+
+    .service-icon {
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3498db;
+        font-size: 1.5rem;
+    }
+
+    .service-details {
+        flex: 1;
+    }
+
+    .service-details h6 {
+        margin: 0 0 5px 0;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .service-details .price {
+        color: #27ae60;
+        font-weight: bold;
+        margin: 0 0 5px 0;
+    }
+
+    .service-details .type {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin: 0 0 5px 0;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+    }
+
+    .status-badge.active {
+        background: #e8f5e9;
+        color: #27ae60;
+    }
+
+    .status-badge.inactive {
+        background: #ffebee;
+        color: #e74c3c;
+    }
+
+    .service-actions {
+        margin-right: 15px;
+    }
+
+    .service-actions .btn {
+        padding: 8px 12px;
+        border-radius: 8px;
+    }
+
+    .booking-item {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .booking-header h6 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .booking-details {
+        margin-bottom: 10px;
+    }
+
+    .booking-details p {
+        margin: 5px 0;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .booking-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .booking-actions .btn {
+        flex: 1;
+        font-size: 0.9rem;
+    }
+
+    .course-card {
+        background: white;
+        border-radius: 12px;
+        padding: 0;
+        margin-bottom: 15px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .course-thumbnail {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+
+    .course-content {
+        padding: 15px;
+    }
+
+    .course-title {
+        margin: 0 0 10px 0;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .course-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .course-description {
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .course-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .course-price {
+        font-weight: bold;
+        color: #27ae60;
+    }
+
+    .qualification-item {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .qualification-title {
+        margin: 0 0 10px 0;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .qualification-details {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        color: #bdc3c7;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mobile-dashboard-page">
+    <!-- ملخص الملف الشخصي -->
+    <div class="mobile-card profile-card">
+        <div class="profile-header">
+            <div class="profile-info">
+                <h4>{{ provider.company_name }}</h4>
+                <div class="rating">
+                    <span class="rating-display" data-rating="{{ provider.rating }}"></span>
+                    <span class="rating-value">({{ "%.1f"|format(provider.rating) }})</span>
+                </div>
+                <div class="provider-status">
+                    {% if provider.verified %}
+                    <span class="badge bg-success">موثّق</span>
+                    {% else %}
+                    <span class="badge bg-warning">قيد المراجعة</span>
+                    {% endif %}
+                </div>
+            </div>
+            <a href="{{ url_for('edit_user_profile') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i> تعديل الملف
+            </a>
+        </div>
+    </div>
+
+    <!-- إحصائيات -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ active_services_count }}</div>
+            <div class="stat-label">خدمات نشطة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ pending_bookings_count }}</div>
+            <div class="stat-label">حجوزات معلقة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ "%.1f"|format(provider.rating) }}</div>
+            <div class="stat-label">التقييم العام</div>
+        </div>
+    </div>
+
+    <!-- التبويبات -->
+    <div class="mobile-tabs">
+        <button class="mobile-tab active" data-target="courses">
+            <i class="fas fa-book"></i> الدورات
+        </button>
+        <button class="mobile-tab" data-target="appointments">
+            <i class="fas fa-calendar-alt"></i> المواعيد
+        </button>
+        <button class="mobile-tab" data-target="qualifications">
+            <i class="fas fa-certificate"></i> المؤهلات
+        </button>
+    </div>
+
+    <!-- محتوى الدورات -->
+    <div class="tab-content active" id="courses">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>الدورات والخدمات التعليمية</h5>
+                <a href="{{ url_for('add_service') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> إضافة خدمة
+                </a>
+            </div>
+            {% if services %}
+            <div class="courses-list">
+                {% for service in services %}
+                <div class="course-card">
+                    {% if service.image %}
+                    <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="course-thumbnail">
+                    {% else %}
+                    <div class="course-thumbnail" style="background: #e9ecef; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-book" style="font-size: 3rem; color: #adb5bd;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="course-content">
+                        <h6 class="course-title">{{ service.name }}</h6>
+                        <div class="course-meta">
+                            <span><i class="fas fa-tag me-1"></i> {{ service.service_type }}</span>
+                            <span><i class="fas fa-clock me-1"></i> {{ service.duration }} دقيقة</span>
+                        </div>
+                        <p class="course-description">{{ service.description|truncate(100) }}</p>
+                        <div class="course-footer">
+                            <div class="course-price">{{ "%.2f"|format(service.price) }} ر.س</div>
+                            <div class="status-badge {{ 'active' if service.is_active else 'inactive' }}">
+                                {{ 'نشط' if service.is_active else 'غير نشط' }}
+                            </div>
+                            <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h4>لا توجد دورات</h4>
+                <p>لم تقم بإضافة أي دورات أو خدمات تعليمية بعد</p>
+                <a href="{{ url_for('add_service') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إضافة خدمة جديدة
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- محتوى المواعيد -->
+    <div class="tab-content" id="appointments" style="display: none;">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>المواعيد والحجوزات</h5>
+            </div>
+            {% if bookings %}
+            <div class="bookings-list">
+                {% for booking in bookings %}
+                <div class="booking-item" data-status="{{ booking.status }}">
+                    <div class="booking-header">
+                        <h6>{{ booking.service.name }}</h6>
+                        <span class="badge bg-{{ get_status_color(booking.status) }}">
+                            {{ booking.status }}
+                        </span>
+                    </div>
+                    <div class="booking-details">
+                        <p><i class="fas fa-user"></i> {{ booking.client.username }}</p>
+                        <p><i class="fas fa-calendar"></i> {{ booking.booking_date.strftime('%Y-%m-%d') }}</p>
+                        <p><i class="fas fa-clock"></i> {{ booking.booking_date.strftime('%H:%M') }}</p>
+                        {% if booking.notes %}
+                        <p><i class="fas fa-comment"></i> {{ booking.notes }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="booking-actions">
+                        {% if booking.status == 'pending' %}
+                        <button class="btn btn-success confirm-booking" data-booking-id="{{ booking.id }}">
+                            <i class="fas fa-check"></i> تأكيد
+                        </button>
+                        {% elif booking.status == 'confirmed' %}
+                        <button class="btn btn-info complete-booking" data-booking-id="{{ booking.id }}">
+                            <i class="fas fa-check-double"></i> إكمال
+                        </button>
+                        {% endif %}
+                        {% if booking.status in ['pending', 'confirmed'] %}
+                        <button class="btn btn-danger cancel-booking" data-booking-id="{{ booking.id }}">
+                            <i class="fas fa-times"></i> إلغاء
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h4>لا توجد مواعيد</h4>
+                <p>لم يتم تسجيل أي مواعيد حتى الآن</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- محتوى المؤهلات -->
+    <div class="tab-content" id="qualifications" style="display: none;">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>المؤهلات والشهادات</h5>
+                <button class="btn btn-primary btn-sm" id="add-qualification-btn">
+                    <i class="fas fa-plus"></i> إضافة مؤهل
+                </button>
+            </div>
+            <div class="qualifications-list">
+                <div class="qualification-item">
+                    <h6 class="qualification-title">بكالوريوس في علوم الحاسب</h6>
+                    <div class="qualification-details">
+                        <p>جامعة الملك سعود</p>
+                        <p>سنة التخرج: 2015</p>
+                    </div>
+                </div>
+                <div class="qualification-item">
+                    <h6 class="qualification-title">ماجستير في تقنيات التعليم</h6>
+                    <div class="qualification-details">
+                        <p>جامعة الإمام محمد بن سعود</p>
+                        <p>سنة التخرج: 2018</p>
+                    </div>
+                </div>
+                <div class="qualification-item">
+                    <h6 class="qualification-title">شهادة تدريب المدربين (TOT)</h6>
+                    <div class="qualification-details">
+                        <p>المؤسسة العامة للتدريب التقني والمهني</p>
+                        <p>تاريخ الإصدار: 2019</p>
+                    </div>
+                </div>
+            </div>
+            <div class="section-header mt-4">
+                <h5>مجالات التخصص</h5>
+            </div>
+            <div class="specialization-areas">
+                <div class="specialization-tags mb-3">
+                    <span class="badge bg-primary m-1 p-2">البرمجة</span>
+                    <span class="badge bg-primary m-1 p-2">تطوير الويب</span>
+                    <span class="badge bg-primary m-1 p-2">قواعد البيانات</span>
+                    <span class="badge bg-primary m-1 p-2">الذكاء الاصطناعي</span>
+                    <span class="badge bg-primary m-1 p-2">تطبيقات الموبايل</span>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> يمكنك تحديث مجالات تخصصك عند تعديل ملفك الشخصي.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل التبويبات
+    const tabs = document.querySelectorAll('.mobile-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            tabContents.forEach(content => {
+                if (content.id === target) {
+                    content.style.display = 'block';
+                } else {
+                    content.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // تنسيق عرض التقييمات
+    const ratingElements = document.querySelectorAll('.rating-display');
+    ratingElements.forEach(function(element) {
+        const rating = parseFloat(element.getAttribute('data-rating'));
+        let starsHtml = '';
+        
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                starsHtml += '<i class="fas fa-star text-warning"></i>';
+            } else if (i - 0.5 <= rating) {
+                starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
+            } else {
+                starsHtml += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        
+        element.innerHTML = starsHtml;
+    });
+
+    // معالجة أزرار الحجوزات
+    const handleBookingAction = async (action, bookingId) => {
+        try {
+            const response = await fetch(`/booking/${bookingId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showMobileToast(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showMobileToast(data.message || 'حدث خطأ أثناء تنفيذ العملية', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMobileToast('حدث خطأ في الاتصال بالخادم', 'error');
+        }
+    };
+
+    document.querySelectorAll('.confirm-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('confirm', bookingId);
+        });
+    });
+
+    document.querySelectorAll('.complete-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('complete', bookingId);
+        });
+    });
+
+    document.querySelectorAll('.cancel-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
+                handleBookingAction('cancel', bookingId);
+            }
+        });
+    });
+
+    // إضافة مؤهل جديد (زر إنشاء)
+    document.getElementById('add-qualification-btn').addEventListener('click', () => {
+        showMobileToast('سيتم توفير هذه الميزة قريباً', 'info');
+    });
+});
+
+// دالة لعرض رسائل الإشعارات
+function showMobileToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `mobile-toast ${type}`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+</script>
+{% endblock %}
