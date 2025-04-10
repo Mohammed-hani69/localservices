@@ -1,0 +1,630 @@
+
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم - مقدم خدمات تعليمية{% endblock %}
+
+{% block content %}
+<section class="dashboard py-5">
+    <div class="container">
+        <div class="dashboard-header">
+            <h2 class="dashboard-title">مرحباً، {{ current_user.username }}</h2>
+            <p class="text-muted">لوحة تحكم مقدم الخدمات التعليمية</p>
+        </div>
+        
+        <div class="row mb-4">
+            <!-- ملف المؤسسة التعليمية -->
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">ملف المؤسسة التعليمية</h5>
+                        {% if provider %}
+                            <p><strong>اسم المؤسسة:</strong> {{ provider.company_name }}</p>
+                            <p><strong>الوصف:</strong> {{ provider.description|truncate(100) }}</p>
+                            <p><strong>التقييم:</strong> <span class="rating-display" data-rating="{{ provider.rating }}"></span> ({{ "%.1f"|format(provider.rating) }})</p>
+                            <p><strong>الحالة:</strong> {% if provider.verified %}<span class="badge bg-success">موثّق</span>{% else %}<span class="badge bg-warning">قيد المراجعة</span>{% endif %}</p>
+                            
+                            <div class="mt-3">
+                                <a href="{{ url_for('edit_provider_profile') }}" class="btn btn-sm btn-outline-primary">تعديل الملف</a>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">لم يتم إنشاء ملف مقدم الخدمة بعد.</p>
+                            <a href="{{ url_for('create_provider_profile') }}" class="btn btn-sm btn-primary">إنشاء ملف مقدم الخدمة</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- إحصائيات -->
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">إحصائيات</h5>
+                        <div class="row mt-4">
+                            <div class="col-4">
+                                <div class="text-center mb-3">
+                                    <h3 class="text-primary mb-0">{{ services|length }}</h3>
+                                    <span class="text-muted">دورات</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-center mb-3">
+                                    <h3 class="text-info mb-0">{{ bookings|selectattr('status', 'equalto', 'confirmed')|list|length }}</h3>
+                                    <span class="text-muted">طلاب</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-center mb-3">
+                                    <h3 class="text-success mb-0">{{ "%.1f"|format(provider.rating) }}</h3>
+                                    <span class="text-muted">التقييم</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-center">
+                            <a href="{{ url_for('add_service') }}" class="btn btn-primary">إضافة دورة جديدة</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- روابط سريعة -->
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">روابط سريعة</h5>
+                        <div class="list-group mt-3">
+                            <a href="#courses" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-graduation-cap me-2"></i> الدورات التعليمية</span>
+                                <span class="badge bg-primary rounded-pill">{{ services|length }}</span>
+                            </a>
+                            <a href="#students" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-users me-2"></i> الطلاب</span>
+                                <span class="badge bg-primary rounded-pill">{{ bookings|selectattr('status', 'equalto', 'confirmed')|list|length }}</span>
+                            </a>
+                            <a href="#schedule" class="list-group-item list-group-item-action">
+                                <span><i class="fas fa-calendar-alt me-2"></i> جدول الدورات</span>
+                            </a>
+                            <a href="{{ url_for('notifications') }}" class="list-group-item list-group-item-action">
+                                <span><i class="fas fa-bell me-2"></i> الإشعارات</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- الدورات التعليمية -->
+        <div class="card shadow-sm mb-4" id="courses">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">الدورات التعليمية</h5>
+                <a href="{{ url_for('add_service') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus me-1"></i> إضافة دورة جديدة
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="text" id="courseSearch" class="form-control" placeholder="بحث في الدورات...">
+                        </div>
+                        <div class="col-md-6">
+                            <select id="courseTypeFilter" class="form-select">
+                                <option value="">جميع التخصصات</option>
+                                <option value="لغات">لغات</option>
+                                <option value="رياضيات">رياضيات</option>
+                                <option value="علوم">علوم</option>
+                                <option value="حاسوب">حاسوب</option>
+                                <option value="موسيقى">موسيقى</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if services %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="coursesTable">
+                            <thead>
+                                <tr>
+                                    <th>الدورة</th>
+                                    <th>التخصص</th>
+                                    <th>الرسوم</th>
+                                    <th>المدة</th>
+                                    <th>الطلاب</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service in services %}
+                                    <tr data-course-type="{{ service.service_type }}">
+                                        <td>
+                                            {% if service.image %}
+                                                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-thumbnail me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% else %}
+                                                <i class="fas fa-book me-2 text-primary"></i>
+                                            {% endif %}
+                                            {{ service.name }}
+                                        </td>
+                                        <td>{{ service.service_type }}</td>
+                                        <td>{{ "%.2f"|format(service.price) }} ريال</td>
+                                        <td>{{ service.duration }} ساعة</td>
+                                        <td>{{ service.bookings|selectattr('status', 'equalto', 'confirmed')|list|length }}</td>
+                                        <td>
+                                            {% if service.is_active %}
+                                                <span class="badge bg-success">متاحة</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">غير متاحة</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> تعديل
+                                            </a>
+                                            <a href="{{ url_for('service_details', service_id=service.id) }}" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-eye"></i> عرض
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#studentsModal" data-service-id="{{ service.id }}" data-service-name="{{ service.name }}">
+                                                <i class="fas fa-users"></i> الطلاب
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> لا توجد دورات تعليمية مضافة بعد. <a href="{{ url_for('add_service') }}">أضف دورة جديدة</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- الطلاب -->
+        <div class="card shadow-sm mb-4" id="students">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">الطلاب المسجلين</h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="studentTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab">الطلاب النشطين</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">طلبات التسجيل</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">دورات مكتملة</button>
+                    </li>
+                </ul>
+                <div class="tab-content pt-3" id="studentTabsContent">
+                    <div class="tab-pane fade show active" id="active" role="tabpanel">
+                        {% set active_students = bookings|selectattr('status', 'equalto', 'confirmed')|list %}
+                        {% if active_students %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>اسم الطالب</th>
+                                            <th>الدورة المسجل بها</th>
+                                            <th>تاريخ التسجيل</th>
+                                            <th>معلومات التواصل</th>
+                                            <th>حالة الدفع</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for booking in active_students %}
+                                            <tr>
+                                                <td>{{ booking.client.username }}</td>
+                                                <td>{{ booking.service.name }}</td>
+                                                <td>{{ booking.created_at.strftime('%Y-%m-%d') }}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-title="{{ booking.client.email }}">
+                                                        <i class="fas fa-envelope"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-title="{{ booking.client.phone }}">
+                                                        <i class="fas fa-phone"></i>
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    {% if booking.payment and booking.payment.status == 'completed' %}
+                                                        <span class="badge bg-success">مدفوع</span>
+                                                    {% elif booking.payment %}
+                                                        <span class="badge bg-warning">معلق</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">غير مدفوع</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-success complete-booking" data-booking-id="{{ booking.id }}">
+                                                        <i class="fas fa-check-double"></i> إكمال الدورة
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger cancel-booking" data-booking-id="{{ booking.id }}">
+                                                        <i class="fas fa-times"></i> إلغاء التسجيل
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> لا يوجد طلاب مسجلين حالياً.
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="tab-pane fade" id="pending" role="tabpanel">
+                        {% set pending_students = bookings|selectattr('status', 'equalto', 'pending')|list %}
+                        {% if pending_students %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>اسم الطالب</th>
+                                            <th>الدورة المطلوبة</th>
+                                            <th>تاريخ الطلب</th>
+                                            <th>ملاحظات</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for booking in pending_students %}
+                                            <tr>
+                                                <td>{{ booking.client.username }}</td>
+                                                <td>{{ booking.service.name }}</td>
+                                                <td>{{ booking.created_at.strftime('%Y-%m-%d') }}</td>
+                                                <td>{{ booking.notes|truncate(30) }}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-success confirm-booking" data-booking-id="{{ booking.id }}">
+                                                        <i class="fas fa-check"></i> قبول
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger cancel-booking" data-booking-id="{{ booking.id }}">
+                                                        <i class="fas fa-times"></i> رفض
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> لا توجد طلبات تسجيل معلقة حالياً.
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="tab-pane fade" id="completed" role="tabpanel">
+                        {% set completed_students = bookings|selectattr('status', 'equalto', 'completed')|list %}
+                        {% if completed_students %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>اسم الطالب</th>
+                                            <th>الدورة</th>
+                                            <th>تاريخ البدء</th>
+                                            <th>تاريخ الإكمال</th>
+                                            <th>التقييم</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for booking in completed_students %}
+                                            <tr>
+                                                <td>{{ booking.client.username }}</td>
+                                                <td>{{ booking.service.name }}</td>
+                                                <td>{{ booking.created_at.strftime('%Y-%m-%d') }}</td>
+                                                <td>{{ booking.updated_at.strftime('%Y-%m-%d') }}</td>
+                                                <td>
+                                                    {% set review = booking.service.reviews|selectattr('user_id', 'equalto', booking.client_id)|first %}
+                                                    {% if review %}
+                                                        <span class="rating-display" data-rating="{{ review.rating }}"></span>
+                                                        <button class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="tooltip" data-bs-title="{{ review.comment }}">
+                                                            <i class="fas fa-comment-dots"></i>
+                                                        </button>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">لا يوجد تقييم</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> لا توجد دورات مكتملة بعد.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- جدول الدورات -->
+        <div class="card shadow-sm mb-4" id="schedule">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">جدول الدورات</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="courseCalendar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">دورات اليوم</h5>
+                            </div>
+                            <div class="card-body">
+                                {% set today_bookings = bookings|selectattr('status', 'equalto', 'confirmed')|selectattr('booking_date', 'ge', now.replace(hour=0, minute=0, second=0))|selectattr('booking_date', 'le', now.replace(hour=23, minute=59, second=59))|list %}
+                                {% if today_bookings %}
+                                    <ul class="list-group">
+                                        {% for booking in today_bookings %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>{{ booking.service.name }}</strong><br>
+                                                    <small>{{ booking.booking_date.strftime('%H:%M') }}</small>
+                                                </div>
+                                                <span class="badge bg-primary rounded-pill">{{ booking.service.bookings|selectattr('status', 'equalto', 'confirmed')|list|length }} طالب</span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p class="text-muted mb-0">لا توجد دورات اليوم</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">الدورات القادمة</h5>
+                            </div>
+                            <div class="card-body">
+                                {% set upcoming_bookings = bookings|selectattr('status', 'equalto', 'confirmed')|selectattr('booking_date', 'gt', now)|list|sort(attribute='booking_date') %}
+                                {% if upcoming_bookings %}
+                                    <ul class="list-group">
+                                        {% for booking in upcoming_bookings[:5] %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>{{ booking.service.name }}</strong><br>
+                                                    <small>{{ booking.booking_date.strftime('%Y-%m-%d %H:%M') }}</small>
+                                                </div>
+                                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" data-bs-title="إرسال تذكير">
+                                                    <i class="fas fa-bell"></i>
+                                                </button>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p class="text-muted mb-0">لا توجد دورات قادمة مجدولة</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal لعرض طلاب الدورة -->
+<div class="modal fade" id="studentsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">طلاب الدورة: <span id="courseTitle"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>اسم الطالب</th>
+                                <th>تاريخ التسجيل</th>
+                                <th>حالة الدفع</th>
+                                <th>الحضور</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courseStudentsList">
+                            <tr>
+                                <td colspan="5" class="text-center">يتم تحميل البيانات...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                <button type="button" class="btn btn-primary" id="sendAllNotification">إرسال إشعار للجميع</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // تنسيق عرض التقييمات
+    document.addEventListener('DOMContentLoaded', function() {
+        const ratingElements = document.querySelectorAll('.rating-display');
+        ratingElements.forEach(function(element) {
+            const rating = parseFloat(element.getAttribute('data-rating'));
+            let starsHtml = '';
+            
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    starsHtml += '<i class="fas fa-star text-warning"></i>';
+                } else if (i - 0.5 <= rating) {
+                    starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
+                } else {
+                    starsHtml += '<i class="far fa-star text-warning"></i>';
+                }
+            }
+            
+            element.innerHTML = starsHtml;
+        });
+        
+        // تفعيل tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // البحث وتصفية الدورات
+        document.getElementById('courseSearch').addEventListener('keyup', function() {
+            filterCourses();
+        });
+        
+        document.getElementById('courseTypeFilter').addEventListener('change', function() {
+            filterCourses();
+        });
+        
+        function filterCourses() {
+            const searchText = document.getElementById('courseSearch').value.toLowerCase();
+            const courseType = document.getElementById('courseTypeFilter').value;
+            const rows = document.querySelectorAll('#coursesTable tbody tr');
+            
+            rows.forEach(row => {
+                const courseName = row.cells[0].textContent.toLowerCase();
+                const rowCourseType = row.getAttribute('data-course-type');
+                
+                const nameMatch = courseName.includes(searchText);
+                const typeMatch = courseType === '' || rowCourseType === courseType;
+                
+                if (nameMatch && typeMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // معالجة أزرار الحجوزات
+        document.querySelectorAll('.confirm-booking').forEach(button => {
+            button.addEventListener('click', function() {
+                const bookingId = this.getAttribute('data-booking-id');
+                if (confirm('هل أنت متأكد من قبول هذا الطالب في الدورة؟')) {
+                    fetch(`/booking/${bookingId}/confirm`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            window.location.reload();
+                        } else {
+                            alert('حدث خطأ أثناء قبول الطالب');
+                        }
+                    });
+                }
+            });
+        });
+        
+        document.querySelectorAll('.complete-booking').forEach(button => {
+            button.addEventListener('click', function() {
+                const bookingId = this.getAttribute('data-booking-id');
+                if (confirm('هل أنت متأكد من إكمال هذه الدورة للطالب؟')) {
+                    fetch(`/booking/${bookingId}/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            window.location.reload();
+                        } else {
+                            alert('حدث خطأ أثناء إكمال الدورة');
+                        }
+                    });
+                }
+            });
+        });
+        
+        document.querySelectorAll('.cancel-booking').forEach(button => {
+            button.addEventListener('click', function() {
+                const bookingId = this.getAttribute('data-booking-id');
+                if (confirm('هل أنت متأكد من إلغاء تسجيل هذا الطالب؟')) {
+                    fetch(`/booking/${bookingId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            window.location.reload();
+                        } else {
+                            alert('حدث خطأ أثناء إلغاء التسجيل');
+                        }
+                    });
+                }
+            });
+        });
+        
+        // عرض تفاصيل طلاب الدورة
+        const studentsModal = document.getElementById('studentsModal');
+        if (studentsModal) {
+            studentsModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const serviceId = button.getAttribute('data-service-id');
+                const serviceName = button.getAttribute('data-service-name');
+                
+                document.getElementById('courseTitle').textContent = serviceName;
+                
+                // هنا يمكن طلب بيانات طلاب الدورة من الخادم
+                // كمثال، سنقوم بعرض بيانات وهمية
+                const studentsList = document.getElementById('courseStudentsList');
+                studentsList.innerHTML = `
+                    <tr>
+                        <td>أحمد محمد</td>
+                        <td>2023-01-15</td>
+                        <td><span class="badge bg-success">مدفوع</span></td>
+                        <td>90%</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-envelope"></i> إرسال رسالة
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>سارة أحمد</td>
+                        <td>2023-01-18</td>
+                        <td><span class="badge bg-success">مدفوع</span></td>
+                        <td>85%</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-envelope"></i> إرسال رسالة
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>محمود خالد</td>
+                        <td>2023-01-20</td>
+                        <td><span class="badge bg-warning">معلق</span></td>
+                        <td>75%</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-envelope"></i> إرسال رسالة
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    });
+</script>
+{% endblock %}

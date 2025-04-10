@@ -165,20 +165,98 @@ def dashboard():
             active_services_count = sum(1 for s in services if s.is_active)
             pending_bookings_count = sum(1 for b in bookings if b.status == 'pending')
 
+            # توجيه مقدم الخدمة إلى لوحة التحكم المخصصة حسب تخصصه
             if is_mobile:
-                return render_template('mobile/provider/dashboard.html',
-                                    provider=provider,
-                                    services=services,
-                                    bookings=bookings,
-                                    active_services_count=active_services_count,
-                                    pending_bookings_count=pending_bookings_count)
+                if provider.specialization == 'صحة':
+                    return render_template('mobile/provider/dashboard_health.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count)
+                elif provider.specialization == 'تعليم':
+                    return render_template('mobile/provider/dashboard_education.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count)
+                elif provider.specialization == 'صيانة':
+                    return render_template('mobile/provider/dashboard_maintenance.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count)
+                elif provider.specialization == 'تنظيف':
+                    return render_template('mobile/provider/dashboard_cleaning.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count)
+                elif provider.specialization == 'طعام':
+                    return render_template('mobile/provider/dashboard_food.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count,
+                                        meals=provider.meals.all(),
+                                        table_reservations=provider.table_reservations.all())
+                else:
+                    return render_template('mobile/provider/dashboard.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count)
             else:
-                return render_template('provider/dashboard.html',
-                                    provider=provider,
-                                    services=services,
-                                    bookings=bookings,
-                                    active_services_count=active_services_count,
-                                    pending_bookings_count=pending_bookings_count)
+                if provider.specialization == 'صحة':
+                    return render_template('provider/dashboard_health.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count)
+                elif provider.specialization == 'تعليم':
+                    return render_template('provider/dashboard_education.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count)
+                elif provider.specialization == 'صيانة':
+                    return render_template('provider/dashboard_maintenance.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count)
+                elif provider.specialization == 'تنظيف':
+                    return render_template('provider/dashboard_cleaning.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count)
+                elif provider.specialization == 'طعام':
+                    return render_template('provider/dashboard_food.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count,
+                                        meals=provider.meals.all(),
+                                        meal_orders=MealOrder.query.join(Meal).filter(Meal.provider_id == provider.id).all(),
+                                        table_reservations=provider.table_reservations.all())
+                else:
+                    return render_template('provider/dashboard.html',
+                                        provider=provider,
+                                        services=services,
+                                        bookings=bookings,
+                                        active_services_count=active_services_count,
+                                        pending_bookings_count=pending_bookings_count)
         else:
             return redirect(url_for('create_provider_profile'))
 
