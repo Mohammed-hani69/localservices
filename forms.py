@@ -3,6 +3,8 @@ from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, FloatField, DateTimeField, HiddenField, IntegerField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange, Optional
 from models import User
+from wtforms.validators import URL
+
 
 class LoginForm(FlaskForm):
     email = StringField('البريد الإلكتروني', validators=[DataRequired(), Email()])
@@ -31,18 +33,18 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('هذا البريد الإلكتروني مسجل بالفعل، الرجاء استخدام بريد آخر.')
 
 class ServiceProviderForm(FlaskForm):
-    company_name = StringField('اسم الشركة/المؤسسة', validators=[DataRequired()])
-    description = TextAreaField('وصف الخدمات', validators=[DataRequired()])
-    website = StringField('الموقع الإلكتروني')
+    company_name = StringField('اسم الشركة أو المؤسسة', validators=[DataRequired(), Length(min=2, max=100)])
+    description = TextAreaField('وصف الخدمات المقدمة', validators=[DataRequired()])
     specialization = SelectField('التخصص', choices=[
-        ('صيانة', 'صيانة'),
-        ('تنظيف', 'تنظيف'),
-        ('تعليم', 'تعليم'),
-        ('صحة', 'صحة'),
+        ('صحة', 'صحة'), 
+        ('تعليم', 'تعليم'), 
+        ('صيانة', 'صيانة'), 
+        ('تنظيف', 'تنظيف'), 
         ('طعام', 'طعام'),
         ('أخرى', 'أخرى')
     ], validators=[DataRequired()])
-    submit = SubmitField('حفظ المعلومات')
+    website = StringField('الموقع الإلكتروني', validators=[Optional(), URL(message='الرجاء إدخال رابط صحيح')])
+    submit = SubmitField('حفظ')
 
 class ServiceForm(FlaskForm):
     name = StringField('اسم الخدمة', validators=[DataRequired()])

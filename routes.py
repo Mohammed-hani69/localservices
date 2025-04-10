@@ -74,14 +74,14 @@ def about():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-        
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('بريد إلكتروني أو كلمة مرور غير صحيحة', 'danger')
             return redirect(url_for('login'))
-            
+
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
@@ -112,7 +112,7 @@ def logout():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-        
+
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data,
@@ -1512,25 +1512,27 @@ def mobile_dashboard():
 
     # الحصول على حجوزات المستخدم
     bookings = Booking.query.filter_by(client_id=current_user.id).order_by(Booking.created_at.desc()).all()
-    
+
     # مقدم خدمة؟
     provider = None
     active_services_count = 0
     pending_bookings_count = 0
-    
+
     if current_user.is_provider():
         provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
         if provider:
             services = Service.query.filter_by(provider_id=provider.id).all()
             active_services_count = sum(1 for s in services if s.is_active)
-            
+
             # الحصول على حجوزات الخدمات الخاصة بالمزود
             provider_bookings = []
             for service in services:
                 service_bookings = Booking.query.filter_by(service_id=service.id, status='pending').all()
                 provider_bookings.extend(service_bookings)
-            
+
             pending_bookings_count = len(provider_bookings)
+            services_offered = ", ".join([service.name for service in services]) #Added this line
+
 
     completed_bookings = [b for b in bookings if b.status == 'completed']
     review_form = ReviewForm()
@@ -1541,7 +1543,9 @@ def mobile_dashboard():
                           completed_bookings=completed_bookings,
                           active_services_count=active_services_count,
                           pending_bookings_count=pending_bookings_count,
-                          review_form=review_form)
+                          review_form=review_form,
+                          provider=provider,
+                          services_offered=services_offered if services else None) #Added this line
 
 @app.route('/mobile/about')
 def mobile_about():

@@ -1,73 +1,57 @@
 {% extends "base.html" %}
 
-{% block title %}
-    {% if provider %}تعديل ملف مقدم الخدمة{% else %}إنشاء ملف مقدم الخدمة{% endif %}
-{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="section pt-5 pb-5">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card shadow">
+                <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">
-                            {% if provider %}تعديل ملف مقدم الخدمة{% else %}إنشاء ملف مقدم الخدمة{% endif %}
-                        </h4>
+                        <h3 class="mb-0">{{ title }}</h3>
                     </div>
                     <div class="card-body">
-                        <form method="post" action="{{ url_for('create_provider_profile') if not provider else url_for('edit_provider_profile') }}" class="needs-validation" novalidate>
+                        <form method="POST" action="" class="needs-validation" novalidate>
                             {{ form.hidden_tag() }}
-                            
+
                             <div class="mb-3">
-                                <label for="company_name" class="form-label">{{ form.company_name.label }}</label>
-                                {{ form.company_name(class="form-control", id="company_name", placeholder="أدخل اسم الشركة أو المؤسسة") }}
-                                {% if form.company_name.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.company_name.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+                                {{ form.company_name.label(class="form-label") }}
+                                {{ form.company_name(class="form-control" + (" is-invalid" if form.company_name.errors else ""), placeholder="أدخل اسم الشركة أو المؤسسة") }}
+                                {% for error in form.company_name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
                             </div>
-                            
+
                             <div class="mb-3">
-                                <label for="description" class="form-label">{{ form.description.label }}</label>
-                                {{ form.description(class="form-control", id="description", rows="5", placeholder="أدخل وصفاً مفصلاً للخدمات التي تقدمها") }}
-                                {% if form.description.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.description.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+                                {{ form.description.label(class="form-label") }}
+                                {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="5", placeholder="أدخل وصفاً مفصلاً للخدمات التي تقدمها") }}
+                                {% for error in form.description.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
                             </div>
-                            
+
                             <div class="mb-3">
-                                <label for="website" class="form-label">{{ form.website.label }}</label>
-                                {{ form.website(class="form-control", id="website", placeholder="أدخل رابط الموقع الإلكتروني (اختياري)") }}
-                                {% if form.website.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.website.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+                                {{ form.specialization.label(class="form-label") }}
+                                {{ form.specialization(class="form-select" + (" is-invalid" if form.specialization.errors else "")) }}
+                                {% for error in form.specialization.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
                             </div>
-                            
+
+                            <div class="mb-3">
+                                {{ form.website.label(class="form-label") }}
+                                {{ form.website(class="form-control" + (" is-invalid" if form.website.errors else ""), placeholder="أدخل رابط الموقع الإلكتروني (اختياري)") }}
+                                {% for error in form.website.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
                             <div class="d-grid gap-2">
-                                {{ form.submit(class="btn btn-primary") }}
+                                {{ form.submit(class="btn btn-primary btn-lg") }}
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">إلغاء</a>
                             </div>
                         </form>
-                    </div>
-                    <div class="card-footer">
-                        <div class="text-center">
-                            <p>
-                                <a href="{{ url_for('dashboard') }}">
-                                    <i class="fas fa-arrow-right me-1"></i> العودة إلى لوحة التحكم
-                                </a>
-                            </p>
-                        </div>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,630 @@
+
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم - مزود خدمات طعام{% endblock %}
+
+{% block content %}
+<section class="provider-dashboard-page py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                {% if provider.logo %}
+                                <img src="{{ url_for('static', filename=provider.logo) }}" alt="{{ provider.company_name }}" class="rounded-circle" width="80">
+                                {% else %}
+                                <div class="avatar-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-utensils fa-2x"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h4 class="mb-1">{{ provider.company_name }}</h4>
+                                <p class="text-muted mb-1">تخصص: {{ provider.specialization }}</p>
+                                <div class="rating">
+                                    <span class="rating-display" data-rating="{{ provider.rating }}"></span>
+                                    <small class="text-muted">({{ "%.1f"|format(provider.rating) }})</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if provider.description %}
+                        <hr>
+                        <h6 class="mb-2">نبذة عن المطعم</h6>
+                        <p class="text-muted small">{{ provider.description }}</p>
+                        {% endif %}
+                        
+                        <hr>
+                        <div class="text-center">
+                            <a href="{{ url_for('edit_provider_profile') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">إحصائيات سريعة</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="p-3 bg-light rounded text-center">
+                                    <h2 class="mb-1">{{ active_services_count }}</h2>
+                                    <p class="mb-0 small">خدمات نشطة</p>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="p-3 bg-light rounded text-center">
+                                    <h2 class="mb-1">{{ pending_bookings_count }}</h2>
+                                    <p class="mb-0 small">حجوزات معلقة</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded text-center">
+                                    <h2 class="mb-1">{{ meals|length }}</h2>
+                                    <p class="mb-0 small">وجبات</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded text-center">
+                                    <h2 class="mb-1">{{ table_reservations|length }}</h2>
+                                    <p class="mb-0 small">حجوزات طاولات</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">إضافة وجبات وخدمات</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('add_service') }}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle"></i> إضافة خدمة
+                            </a>
+                            <a href="{{ url_for('add_meal') }}" class="btn btn-success">
+                                <i class="fas fa-utensils"></i> إضافة وجبة
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-8">
+                <ul class="nav nav-tabs mb-4" id="providerTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button" role="tab">
+                            <i class="fas fa-list-alt"></i> الخدمات
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="meals-tab" data-bs-toggle="tab" data-bs-target="#meals" type="button" role="tab">
+                            <i class="fas fa-utensils"></i> الوجبات
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings" type="button" role="tab">
+                            <i class="fas fa-calendar-alt"></i> الحجوزات
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="table-reservations-tab" data-bs-toggle="tab" data-bs-target="#table-reservations" type="button" role="tab">
+                            <i class="fas fa-chair"></i> حجوزات الطاولات
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
+                            <i class="fas fa-shopping-bag"></i> طلبات الوجبات
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="providerTabContent">
+                    <!-- تبويب الخدمات -->
+                    <div class="tab-pane fade show active" id="services" role="tabpanel" aria-labelledby="services-tab">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">الخدمات المقدمة</h5>
+                                <a href="{{ url_for('add_service') }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> إضافة خدمة
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                {% if services %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>الخدمة</th>
+                                                <th>السعر</th>
+                                                <th>المدة</th>
+                                                <th>الحالة</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for service in services %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        {% if service.image %}
+                                                        <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" width="40" height="40" class="rounded me-2">
+                                                        {% else %}
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-concierge-bell text-primary"></i>
+                                                        </div>
+                                                        {% endif %}
+                                                        <div>
+                                                            <h6 class="mb-0">{{ service.name }}</h6>
+                                                            <small class="text-muted">{{ service.category }}</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>{{ "%.2f"|format(service.price) }} ر.س</td>
+                                                <td>{{ service.duration }} دقيقة</td>
+                                                <td>
+                                                    {% if service.is_active %}
+                                                    <span class="badge bg-success">نشط</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">غير نشط</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <div class="mb-3">
+                                        <i class="fas fa-list-alt fa-3x text-muted"></i>
+                                    </div>
+                                    <h5>لا توجد خدمات</h5>
+                                    <p class="text-muted">لم تقم بإضافة أي خدمات بعد</p>
+                                    <a href="{{ url_for('add_service') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> إضافة خدمة جديدة
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تبويب الوجبات -->
+                    <div class="tab-pane fade" id="meals" role="tabpanel" aria-labelledby="meals-tab">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">الوجبات المقدمة</h5>
+                                <a href="{{ url_for('add_meal') }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> إضافة وجبة
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                {% if meals %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>الوجبة</th>
+                                                <th>السعر</th>
+                                                <th>النوع</th>
+                                                <th>التحضير</th>
+                                                <th>الحالة</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for meal in meals %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        {% if meal.image %}
+                                                        <img src="{{ url_for('static', filename=meal.image) }}" alt="{{ meal.name }}" width="40" height="40" class="rounded me-2">
+                                                        {% else %}
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-utensils text-primary"></i>
+                                                        </div>
+                                                        {% endif %}
+                                                        <div>
+                                                            <h6 class="mb-0">{{ meal.name }}</h6>
+                                                            <small class="text-muted">{{ meal.calories }} سعرة</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>{{ "%.2f"|format(meal.price) }} ر.س</td>
+                                                <td>{{ meal.meal_type }}</td>
+                                                <td>{{ meal.preparation_time }} دقيقة</td>
+                                                <td>
+                                                    {% if meal.is_available %}
+                                                    <span class="badge bg-success">متاح</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">غير متاح</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{{ url_for('edit_meal', meal_id=meal.id) }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <div class="mb-3">
+                                        <i class="fas fa-utensils fa-3x text-muted"></i>
+                                    </div>
+                                    <h5>لا توجد وجبات</h5>
+                                    <p class="text-muted">لم تقم بإضافة أي وجبات بعد</p>
+                                    <a href="{{ url_for('add_meal') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> إضافة وجبة جديدة
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تبويب الحجوزات -->
+                    <div class="tab-pane fade" id="bookings" role="tabpanel" aria-labelledby="bookings-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">الحجوزات</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if bookings %}
+                                <div class="booking-filters mb-3">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-primary active" data-filter="all">الكل</button>
+                                        <button type="button" class="btn btn-outline-warning" data-filter="pending">معلق</button>
+                                        <button type="button" class="btn btn-outline-info" data-filter="confirmed">مؤكد</button>
+                                        <button type="button" class="btn btn-outline-success" data-filter="completed">مكتمل</button>
+                                        <button type="button" class="btn btn-outline-danger" data-filter="cancelled">ملغي</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>الخدمة</th>
+                                                <th>العميل</th>
+                                                <th>التاريخ</th>
+                                                <th>الوقت</th>
+                                                <th>الحالة</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for booking in bookings %}
+                                            <tr data-status="{{ booking.status }}">
+                                                <td>{{ booking.service.name }}</td>
+                                                <td>{{ booking.client.username }}</td>
+                                                <td>{{ booking.booking_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>{{ booking.booking_date.strftime('%H:%M') }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ get_status_color(booking.status) }}">
+                                                        {% if booking.status == 'pending' %}
+                                                            معلق
+                                                        {% elif booking.status == 'confirmed' %}
+                                                            مؤكد
+                                                        {% elif booking.status == 'completed' %}
+                                                            مكتمل
+                                                        {% elif booking.status == 'cancelled' %}
+                                                            ملغي
+                                                        {% else %}
+                                                            {{ booking.status }}
+                                                        {% endif %}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {% if booking.status == 'pending' %}
+                                                    <button class="btn btn-sm btn-success confirm-booking" data-booking-id="{{ booking.id }}">
+                                                        <i class="fas fa-check"></i> تأكيد
+                                                    </button>
+                                                    {% elif booking.status == 'confirmed' %}
+                                                    <button class="btn btn-sm btn-info complete-booking" data-booking-id="{{ booking.id }}">
+                                                        <i class="fas fa-check-double"></i> إكمال
+                                                    </button>
+                                                    {% endif %}
+                                                    {% if booking.status in ['pending', 'confirmed'] %}
+                                                    <button class="btn btn-sm btn-danger cancel-booking" data-booking-id="{{ booking.id }}">
+                                                        <i class="fas fa-times"></i> إلغاء
+                                                    </button>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <div class="mb-3">
+                                        <i class="fas fa-calendar-alt fa-3x text-muted"></i>
+                                    </div>
+                                    <h5>لا توجد حجوزات</h5>
+                                    <p class="text-muted">لم يتم تسجيل أي حجوزات حتى الآن</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تبويب حجوزات الطاولات -->
+                    <div class="tab-pane fade" id="table-reservations" role="tabpanel" aria-labelledby="table-reservations-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">حجوزات الطاولات</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if table_reservations %}
+                                <div class="booking-filters mb-3">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-primary active" data-filter="all">الكل</button>
+                                        <button type="button" class="btn btn-outline-warning" data-filter="pending">معلق</button>
+                                        <button type="button" class="btn btn-outline-info" data-filter="confirmed">مؤكد</button>
+                                        <button type="button" class="btn btn-outline-success" data-filter="completed">مكتمل</button>
+                                        <button type="button" class="btn btn-outline-danger" data-filter="cancelled">ملغي</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>العميل</th>
+                                                <th>التاريخ</th>
+                                                <th>الوقت</th>
+                                                <th>عدد الضيوف</th>
+                                                <th>الحالة</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for reservation in table_reservations %}
+                                            <tr data-status="{{ reservation.status }}">
+                                                <td>{{ reservation.user.username }}</td>
+                                                <td>{{ reservation.reservation_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>{{ reservation.reservation_date.strftime('%H:%M') }}</td>
+                                                <td>{{ reservation.guests_number }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ get_status_color(reservation.status) }}">
+                                                        {% if reservation.status == 'pending' %}
+                                                            معلق
+                                                        {% elif reservation.status == 'confirmed' %}
+                                                            مؤكد
+                                                        {% elif reservation.status == 'completed' %}
+                                                            مكتمل
+                                                        {% elif reservation.status == 'cancelled' %}
+                                                            ملغي
+                                                        {% else %}
+                                                            {{ reservation.status }}
+                                                        {% endif %}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {% if reservation.status == 'pending' %}
+                                                    <button class="btn btn-sm btn-success confirm-reservation" data-reservation-id="{{ reservation.id }}">
+                                                        <i class="fas fa-check"></i> تأكيد
+                                                    </button>
+                                                    {% elif reservation.status == 'confirmed' %}
+                                                    <button class="btn btn-sm btn-info complete-reservation" data-reservation-id="{{ reservation.id }}">
+                                                        <i class="fas fa-check-double"></i> إكمال
+                                                    </button>
+                                                    {% endif %}
+                                                    {% if reservation.status in ['pending', 'confirmed'] %}
+                                                    <button class="btn btn-sm btn-danger cancel-reservation" data-reservation-id="{{ reservation.id }}">
+                                                        <i class="fas fa-times"></i> إلغاء
+                                                    </button>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <div class="mb-3">
+                                        <i class="fas fa-chair fa-3x text-muted"></i>
+                                    </div>
+                                    <h5>لا توجد حجوزات طاولات</h5>
+                                    <p class="text-muted">لم يتم تسجيل أي حجوزات طاولات حتى الآن</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تبويب طلبات الوجبات -->
+                    <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">طلبات الوجبات</h5>
+                            </div>
+                            <div class="card-body">
+                                {% set meal_orders = meal_orders if meal_orders is defined else [] %}
+                                {% if meal_orders %}
+                                <div class="booking-filters mb-3">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-primary active" data-filter="all">الكل</button>
+                                        <button type="button" class="btn btn-outline-warning" data-filter="pending">معلق</button>
+                                        <button type="button" class="btn btn-outline-info" data-filter="preparing">قيد التحضير</button>
+                                        <button type="button" class="btn btn-outline-success" data-filter="ready">جاهز</button>
+                                        <button type="button" class="btn btn-outline-primary" data-filter="delivered">تم التسليم</button>
+                                        <button type="button" class="btn btn-outline-danger" data-filter="cancelled">ملغي</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>الوجبة</th>
+                                                <th>العميل</th>
+                                                <th>الكمية</th>
+                                                <th>التاريخ</th>
+                                                <th>الحالة</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for order in meal_orders %}
+                                            <tr data-status="{{ order.status }}">
+                                                <td>{{ order.meal.name }}</td>
+                                                <td>{{ order.user.username }}</td>
+                                                <td>{{ order.quantity }}</td>
+                                                <td>{{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ get_status_color(order.status) }}">
+                                                        {% if order.status == 'pending' %}
+                                                            معلق
+                                                        {% elif order.status == 'preparing' %}
+                                                            قيد التحضير
+                                                        {% elif order.status == 'ready' %}
+                                                            جاهز
+                                                        {% elif order.status == 'delivered' %}
+                                                            تم التسليم
+                                                        {% elif order.status == 'cancelled' %}
+                                                            ملغي
+                                                        {% else %}
+                                                            {{ order.status }}
+                                                        {% endif %}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {% if order.status == 'pending' %}
+                                                    <button class="btn btn-sm btn-success start-preparing" data-order-id="{{ order.id }}">
+                                                        <i class="fas fa-utensils"></i> بدء التحضير
+                                                    </button>
+                                                    {% elif order.status == 'preparing' %}
+                                                    <button class="btn btn-sm btn-info mark-ready" data-order-id="{{ order.id }}">
+                                                        <i class="fas fa-check"></i> جاهز
+                                                    </button>
+                                                    {% elif order.status == 'ready' %}
+                                                    <button class="btn btn-sm btn-primary mark-delivered" data-order-id="{{ order.id }}">
+                                                        <i class="fas fa-truck"></i> تم التسليم
+                                                    </button>
+                                                    {% endif %}
+                                                    {% if order.status in ['pending', 'preparing'] %}
+                                                    <button class="btn btn-sm btn-danger cancel-order" data-order-id="{{ order.id }}">
+                                                        <i class="fas fa-times"></i> إلغاء
+                                                    </button>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <div class="mb-3">
+                                        <i class="fas fa-shopping-bag fa-3x text-muted"></i>
+                                    </div>
+                                    <h5>لا توجد طلبات وجبات</h5>
+                                    <p class="text-muted">لم يتم تسجيل أي طلبات وجبات حتى الآن</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل فلتر الحجوزات
+    document.querySelectorAll('.booking-filters .btn-group button').forEach(button => {
+        button.addEventListener('click', function() {
+            // إزالة الحالة النشطة من جميع الأزرار
+            this.parentNode.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // إضافة الحالة النشطة للزر المحدد
+            this.classList.add('active');
+            
+            // تطبيق الفلتر
+            const filter = this.getAttribute('data-filter');
+            const tableRows = this.closest('.card-body').querySelectorAll('table tbody tr');
+            
+            tableRows.forEach(row => {
+                if (filter === 'all' || row.getAttribute('data-status') === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // معالجة أزرار الحجوزات
+    const handleBookingAction = async (action, bookingId) => {
+        try {
+            const response = await fetch(`/booking/${bookingId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(data.message);
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                alert(data.message || 'حدث خطأ أثناء تنفيذ العملية');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('حدث خطأ في الاتصال بالخادم');
+        }
+    };
+
+    document.querySelectorAll('.confirm-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('confirm', bookingId);
+        });
+    });
+
+    document.querySelectorAll('.complete-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('complete', bookingId);
+        });
+    });
+
+    document.querySelectorAll('.cancel-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
+                handleBookingAction('cancel', bookingId);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
