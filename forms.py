@@ -49,8 +49,11 @@ class ServiceProviderForm(FlaskForm):
 class ServiceForm(FlaskForm):
     name = StringField('اسم الخدمة', validators=[DataRequired()])
     description = TextAreaField('وصف الخدمة', validators=[DataRequired()])
-    price = FloatField('السعر', validators=[DataRequired(), NumberRange(min=0)])
-    duration = IntegerField('المدة (بالدقائق)', validators=[DataRequired(), NumberRange(min=5)])
+    price_type = SelectField('نوع السعر', choices=[
+        ('fixed', 'سعر محدد'),
+        ('later', 'يحدد السعر لاحقًا')
+    ], default='fixed')
+    price = FloatField('السعر', validators=[Optional(), NumberRange(min=0)])
     category = SelectField('التصنيف', choices=[
         ('صيانة', 'صيانة'),
         ('تنظيف', 'تنظيف'),

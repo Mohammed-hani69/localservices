@@ -483,13 +483,21 @@ def add_service():
         if form.image.data:
             image_path = save_image(form.image.data)
 
+        # تحديد السعر بناءً على نوع السعر المحدد
+        price = form.price.data if form.price_type.data == 'fixed' else 0
+        price_to_be_determined = form.price_type.data == 'later'
+        
+        # تحديد نوع الخدمة تلقائيًا بناءً على تخصص مقدم الخدمة
+        category = provider.specialization
+        
         service = Service(
             provider_id=provider.id,
             name=form.name.data,
             description=form.description.data,
-            price=form.price.data,
-            duration=form.duration.data,
-            category=form.category.data,
+            price=price,
+            price_to_be_determined=price_to_be_determined,
+            duration=0,  # إزالة المدة
+            category=category,
             service_type=form.service_type.data,
             additional_info=form.additional_info.data,
             image=image_path,
@@ -521,7 +529,13 @@ def edit_service(service_id):
         return redirect(url_for('dashboard'))
 
     form = ServiceForm(obj=service)
-
+    
+    # تعيين نوع السعر بناءً على قيمة price_to_be_determined
+    if service.price_to_be_determined:
+        form.price_type.data = 'later'
+    else:
+        form.price_type.data = 'fixed'
+    
     # تحديث اختيارات نوع الخدمة حسب الفئة المحددة حالياً
     if service.category:
         form.service_type.choices = form.service_types.get(service.category, [('', 'اختر نوع الخدمة')])
@@ -534,9 +548,13 @@ def edit_service(service_id):
     if form.validate_on_submit():
         service.name = form.name.data
         service.description = form.description.data
-        service.price = form.price.data
-        service.duration = form.duration.data
-        service.category = form.category.data
+        
+        # تحديد السعر بناءً على نوع السعر المحدد
+        service.price = form.price.data if form.price_type.data == 'fixed' else 0
+        service.price_to_be_determined = form.price_type.data == 'later'
+        
+        # لا نقوم بتحديث المدة (تبقى كما هي أو صفر)
+        # عدم تغيير الفئة لأنها محددة بناءً على تخصص مقدم الخدمة
         service.service_type = form.service_type.data
         service.additional_info = form.additional_info.data
         service.is_active = form.is_active.data
