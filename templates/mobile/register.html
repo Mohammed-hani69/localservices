@@ -1,0 +1,80 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}إنشاء حساب جديد{% endblock %}
+
+{% block header_title %}إنشاء حساب{% endblock %}
+
+{% block content %}
+<div class="mobile-register-page">
+    <div class="mobile-card">
+        <form method="post" action="{{ url_for('register') }}" class="mobile-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control", placeholder="أدخل اسم المستخدم") }}
+                {% for error in form.username.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control", placeholder="أدخل بريدك الإلكتروني") }}
+                {% for error in form.email.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.phone.label(class="form-label") }}
+                {{ form.phone(class="form-control", placeholder="أدخل رقم الهاتف") }}
+                {% for error in form.phone.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.address.label(class="form-label") }}
+                {{ form.address(class="form-control", placeholder="أدخل العنوان") }}
+                {% for error in form.address.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", placeholder="أدخل كلمة المرور") }}
+                {% for error in form.password.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+                <small class="form-text text-muted">كلمة المرور يجب أن تكون 8 أحرف على الأقل</small>
+            </div>
+
+            <div class="form-group">
+                {{ form.password2.label(class="form-label") }}
+                {{ form.password2(class="form-control", placeholder="أكد كلمة المرور") }}
+                {% for error in form.password2.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.role.label(class="form-label") }}
+                {{ form.role(class="form-select") }}
+                {% for error in form.role.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-actions">
+                {{ form.submit(class="btn btn-primary w-100") }}
+            </div>
+        </form>
+
+        <div class="mobile-form-footer">
+            <p>لديك حساب بالفعل؟ <a href="{{ url_for('login') }}">تسجيل الدخول</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

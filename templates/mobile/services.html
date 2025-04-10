@@ -1,4 +1,3 @@
-
 {% extends "mobile/base_mobile.html" %}
 
 {% block title %}تصفح الخدمات - منصة الخدمات المحلية{% endblock %}
@@ -65,7 +64,7 @@
         </form>
     </div>
 
-    <!-- تبويبات الفئات (إذا لم يكن هناك بحث) -->
+    <!-- تبويبات الفئات -->
     {% if not request.args.get('query') %}
     <div class="mobile-card">
         <h5 class="text-center mb-3">
@@ -118,69 +117,54 @@
     </div>
     {% endif %}
 
-    <!-- عرض نتائج البحث أو الفئة -->
-    {% if category or request.args.get('query') %}
-    <div class="mobile-card">
-        <div class="search-results-header">
-            <h5 class="mb-3">
-                {% if request.args.get('query') %}
-                نتائج البحث عن "{{ request.args.get('query') }}"
-                {% elif category %}
-                خدمات في فئة "{{ category }}"
-                {% else %}
-                جميع الخدمات
-                {% endif %}
-            </h5>
-        </div>
-    </div>
-    {% endif %}
-
     <!-- قائمة الخدمات -->
     {% if services %}
-        <div class="row">
-            {% for service in services %}
-            <div class="col-12">
-                <div class="service-card" data-href="{{ url_for('mobile_service_details', service_id=service.id) }}">
-                    <div class="service-image-container">
-                        {% if service.image %}
-                        <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" class="img-fluid">
-                        {% else %}
-                        <div class="d-flex align-items-center justify-content-center h-100">
-                            <i class="fas fa-concierge-bell fa-2x text-muted"></i>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="p-3">
-                        <h5 class="card-title mb-1">{{ service.name }}</h5>
-                        <p class="text-muted small mb-1">{{ service.category }} - {{ service.provider.company_name }}</p>
-                        <div class="rating-display mb-2" data-rating="{{ service.provider.rating }}"></div>
-                        <p class="fw-bold text-primary mb-1">{{ "%.2f"|format(service.price) }} ر.س</p>
-                        <a href="{{ url_for('mobile_service_details', service_id=service.id) }}" class="btn btn-sm btn-outline-primary mt-1">عرض التفاصيل</a>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    {% else %}
-    <div class="mobile-card">
-        <div class="empty-state">
-            <div class="empty-state-icon">
-                <i class="fas fa-search"></i>
-            </div>
-            <h4 class="empty-state-title">لا توجد خدمات</h4>
-            <p class="empty-state-text">
-                {% if request.args.get('query') %}
-                لم يتم العثور على نتائج تطابق بحثك "{{ request.args.get('query') }}"
-                {% elif category %}
-                لا توجد خدمات في فئة "{{ category }}" حاليًا
+    <div class="services-grid">
+        {% for service in services %}
+        <div class="service-card mobile-card">
+            <div class="service-image">
+                {% if service.image %}
+                <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}">
                 {% else %}
-                لا توجد خدمات متاحة حاليًا
+                <div class="service-placeholder">
+                    <i class="fas fa-concierge-bell"></i>
+                </div>
                 {% endif %}
-            </p>
-            <a href="{{ url_for('mobile_services') }}" class="btn btn-primary">
-                <i class="fas fa-home me-1"></i> عرض جميع الخدمات
-            </a>
+                <span class="service-price">{{ "%.2f"|format(service.price) }} ر.س</span>
+            </div>
+            <div class="service-content">
+                <h5>{{ service.name }}</h5>
+                <p class="service-provider">{{ service.provider.company_name }}</p>
+                <div class="rating-display mb-2" data-rating="{{ service.provider.rating }}"></div>
+                <div class="service-meta">
+                    <span class="category-badge">{{ service.category }}</span>
+                    <span class="duration-badge"><i class="fas fa-clock"></i> {{ service.duration }} دقيقة</span>
+                </div>
+                <a href="{{ url_for('mobile_service_details', service_id=service.id) }}" class="btn btn-primary btn-sm w-100 mt-2">
+                    عرض التفاصيل
+                </a>
+            </div>
         </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="mobile-card empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        <h4 class="empty-state-title">لا توجد خدمات</h4>
+        <p class="empty-state-text">
+            {% if request.args.get('query') %}
+            لم يتم العثور على نتائج تطابق بحثك "{{ request.args.get('query') }}"
+            {% elif category %}
+            لا توجد خدمات في فئة "{{ category }}" حالياً
+            {% else %}
+            لا توجد خدمات متاحة حالياً
+            {% endif %}
+        </p>
+        <a href="{{ url_for('mobile_services') }}" class="btn btn-primary">
+            <i class="fas fa-home me-1"></i> عرض جميع الخدمات
+        </a>
     </div>
     {% endif %}
 </div>
@@ -222,4 +206,112 @@ function initRatingDisplays() {
     });
 }
 </script>
+{% endblock %}
+
+{% block styles %}
+<style>
+.services-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.service-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.service-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.service-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.service-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    color: #adb5bd;
+    font-size: 2rem;
+}
+
+.service-price {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.service-content {
+    padding: 1rem;
+}
+
+.service-provider {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.service-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.category-badge, .duration-badge {
+    font-size: 0.8rem;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+}
+
+.categories-scroll {
+    display: flex;
+    overflow-x: auto;
+    padding: 0.5rem;
+    gap: 1rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+}
+
+.category-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.category-item.active .category-circle {
+    background-color: var(--primary-color);
+    color: white;
+}
+</style>
 {% endblock %}

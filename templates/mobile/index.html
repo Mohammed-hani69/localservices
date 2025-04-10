@@ -47,7 +47,7 @@
         <!-- Search Box -->
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <form action="{{ url_for('services') }}" method="get">
+                <form action="{{ url_for('mobile_services') }}" method="get">
                     <div class="input-group">
                         <input type="text" name="query" class="form-control" placeholder="ابحث عن خدمة...">
                         <button type="submit" class="btn btn-primary">
@@ -63,37 +63,37 @@
             <div class="card-body">
                 <h5 class="card-title mb-3 text-center">تصفح حسب الفئة</h5>
                 <div class="categories-scroll">
-                    <a href="{{ url_for('services', category='صيانة') }}" class="category-item">
+                    <a href="{{ url_for('mobile_services', category='صيانة') }}" class="category-item">
                         <div class="category-circle">
                             <i class="fas fa-tools"></i>
                         </div>
                         <span>صيانة</span>
                     </a>
-                    <a href="{{ url_for('services', category='تنظيف') }}" class="category-item">
+                    <a href="{{ url_for('mobile_services', category='تنظيف') }}" class="category-item">
                         <div class="category-circle">
                             <i class="fas fa-broom"></i>
                         </div>
                         <span>تنظيف</span>
                     </a>
-                    <a href="{{ url_for('services', category='تعليم') }}" class="category-item">
+                    <a href="{{ url_for('mobile_services', category='تعليم') }}" class="category-item">
                         <div class="category-circle">
                             <i class="fas fa-graduation-cap"></i>
                         </div>
                         <span>تعليم</span>
                     </a>
-                    <a href="{{ url_for('services', category='صحة') }}" class="category-item">
+                    <a href="{{ url_for('mobile_services', category='صحة') }}" class="category-item">
                         <div class="category-circle">
                             <i class="fas fa-heartbeat"></i>
                         </div>
                         <span>صحة</span>
                     </a>
-                    <a href="{{ url_for('services', category='طعام') }}" class="category-item">
+                    <a href="{{ url_for('mobile_services', category='طعام') }}" class="category-item">
                         <div class="category-circle">
                             <i class="fas fa-utensils"></i>
                         </div>
                         <span>طعام</span>
                     </a>
-                    <a href="{{ url_for('services', category='أخرى') }}" class="category-item">
+                    <a href="{{ url_for('mobile_services', category='أخرى') }}" class="category-item">
                         <div class="category-circle">
                             <i class="fas fa-ellipsis-h"></i>
                         </div>
@@ -179,25 +179,25 @@
                 <h5 class="card-title mb-3 text-center">الفئات الأكثر طلبًا</h5>
                 <div class="row">
                     <div class="col-6 mb-3">
-                        <a href="{{ url_for('services', category='صيانة') }}" class="btn btn-outline-primary w-100 p-3 h-100">
+                        <a href="{{ url_for('mobile_services', category='صيانة') }}" class="btn btn-outline-primary w-100 p-3 h-100">
                             <i class="fas fa-tools mb-2 fa-2x"></i>
                             <div>صيانة</div>
                         </a>
                     </div>
                     <div class="col-6 mb-3">
-                        <a href="{{ url_for('services', category='تنظيف') }}" class="btn btn-outline-primary w-100 p-3 h-100">
+                        <a href="{{ url_for('mobile_services', category='تنظيف') }}" class="btn btn-outline-primary w-100 p-3 h-100">
                             <i class="fas fa-broom mb-2 fa-2x"></i>
                             <div>تنظيف</div>
                         </a>
                     </div>
                     <div class="col-6 mb-3">
-                        <a href="{{ url_for('services', category='تعليم') }}" class="btn btn-outline-primary w-100 p-3 h-100">
+                        <a href="{{ url_for('mobile_services', category='تعليم') }}" class="btn btn-outline-primary w-100 p-3 h-100">
                             <i class="fas fa-graduation-cap mb-2 fa-2x"></i>
                             <div>تعليم</div>
                         </a>
                     </div>
                     <div class="col-6 mb-3">
-                        <a href="{{ url_for('services', category='صحة') }}" class="btn btn-outline-primary w-100 p-3 h-100">
+                        <a href="{{ url_for('mobile_services', category='صحة') }}" class="btn btn-outline-primary w-100 p-3 h-100">
                             <i class="fas fa-heartbeat mb-2 fa-2x"></i>
                             <div>صحة</div>
                         </a>

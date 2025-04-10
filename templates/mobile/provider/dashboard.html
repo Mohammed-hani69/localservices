@@ -1,0 +1,451 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}لوحة التحكم - مقدم خدمة{% endblock %}
+
+{% block header_title %}لوحة التحكم{% endblock %}
+
+{% block styles %}
+<style>
+    .mobile-dashboard-page {
+        padding: 15px;
+        background-color: #f5f5f5;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .profile-info h4 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #3498db;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        margin-top: 5px;
+    }
+
+    .mobile-tabs {
+        display: flex;
+        background: white;
+        border-radius: 12px;
+        padding: 5px;
+        margin: 20px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .mobile-tab {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        background: none;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-tab.active {
+        background: #3498db;
+        color: white;
+    }
+
+    .service-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .service-icon, .service-item img {
+        width: 70px;
+        height: 70px;
+        border-radius: 10px;
+        object-fit: cover;
+        margin-left: 15px;
+    }
+
+    .service-icon {
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3498db;
+        font-size: 1.5rem;
+    }
+
+    .service-details {
+        flex: 1;
+    }
+
+    .service-details h6 {
+        margin: 0 0 5px 0;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .service-details .price {
+        color: #27ae60;
+        font-weight: bold;
+        margin: 0 0 5px 0;
+    }
+
+    .service-details .category {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin: 0 0 5px 0;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+    }
+
+    .status-badge.active {
+        background: #e8f5e9;
+        color: #27ae60;
+    }
+
+    .status-badge.inactive {
+        background: #ffebee;
+        color: #e74c3c;
+    }
+
+    .service-actions {
+        margin-right: 15px;
+    }
+
+    .service-actions .btn {
+        padding: 8px 12px;
+        border-radius: 8px;
+    }
+
+    .booking-filters {
+        display: flex;
+        gap: 10px;
+        padding: 10px 0;
+        overflow-x: auto;
+    }
+
+    .filter-btn {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        background: white;
+        white-space: nowrap;
+    }
+
+    .filter-btn.active {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        color: #bdc3c7;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mobile-dashboard-page">
+    <!-- ملخص الملف الشخصي -->
+    <div class="mobile-card profile-card">
+        <div class="profile-header">
+            <div class="profile-info">
+                <h4>{{ provider.company_name }}</h4>
+                <div class="rating">
+                    <span class="rating-display" data-rating="{{ provider.rating }}"></span>
+                    <span class="rating-value">({{ "%.1f"|format(provider.rating) }})</span>
+                </div>
+                <div class="provider-status">
+                    {% if provider.verified %}
+                    <span class="badge bg-success">موثّق</span>
+                    {% else %}
+                    <span class="badge bg-warning">قيد المراجعة</span>
+                    {% endif %}
+                </div>
+            </div>
+            <a href="{{ url_for('edit_user_profile') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i> تعديل الملف
+            </a>
+        </div>
+    </div>
+
+    <!-- إحصائيات -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ active_services_count }}</div>
+            <div class="stat-label">خدمات نشطة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ pending_bookings_count }}</div>
+            <div class="stat-label">حجوزات معلقة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ "%.1f"|format(provider.rating) }}</div>
+            <div class="stat-label">التقييم العام</div>
+        </div>
+    </div>
+
+    <!-- التبويبات -->
+    <div class="mobile-tabs">
+        <button class="mobile-tab active" data-target="services">
+            <i class="fas fa-cogs"></i> الخدمات
+        </button>
+        <button class="mobile-tab" data-target="bookings">
+            <i class="fas fa-calendar-alt"></i> الحجوزات
+        </button>
+        <button class="mobile-tab" data-target="stats">
+            <i class="fas fa-chart-bar"></i> الإحصائيات
+        </button>
+    </div>
+
+    <!-- محتوى الخدمات -->
+    <div class="tab-content active" id="services">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>خدماتي</h5>
+                <a href="{{ url_for('add_service') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> إضافة خدمة
+                </a>
+            </div>
+            {% if services %}
+            <div class="services-list">
+                {% for service in services %}
+                <div class="service-item">
+                    {% if service.image %}
+                    <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}">
+                    {% else %}
+                    <div class="service-icon">
+                        <i class="fas fa-concierge-bell"></i>
+                    </div>
+                    {% endif %}
+                    <div class="service-details">
+                        <h6>{{ service.name }}</h6>
+                        <p class="price">{{ "%.2f"|format(service.price) }} ر.س</p>
+                        <p class="category">{{ service.category }}</p>
+                        <div class="status-badge {{ 'active' if service.is_active else 'inactive' }}">
+                            {{ 'نشط' if service.is_active else 'غير نشط' }}
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <h4>لا توجد خدمات</h4>
+                <p>لم تقم بإضافة أي خدمات بعد</p>
+                <a href="{{ url_for('add_service') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إضافة خدمة جديدة
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- محتوى الحجوزات -->
+    <div class="tab-content" id="bookings" style="display: none;">
+        <div class="mobile-card">
+            <div class="booking-filters">
+                <button class="filter-btn active" data-status="all">الكل</button>
+                <button class="filter-btn" data-status="pending">معلق</button>
+                <button class="filter-btn" data-status="confirmed">مؤكد</button>
+                <button class="filter-btn" data-status="completed">مكتمل</button>
+            </div>
+
+            {% if bookings %}
+            <div class="bookings-list">
+                {% for booking in bookings %}
+                <div class="booking-item" data-status="{{ booking.status }}">
+                    <div class="booking-header">
+                        <h6>{{ booking.service.name }}</h6>
+                        <span class="badge bg-{{ get_status_color(booking.status) }}">
+                            {{ booking.status }}
+                        </span>
+                    </div>
+                    <div class="booking-details">
+                        <p><i class="fas fa-user"></i> {{ booking.client.username }}</p>
+                        <p><i class="fas fa-calendar"></i> {{ booking.booking_date.strftime('%Y-%m-%d') }}</p>
+                        <p><i class="fas fa-clock"></i> {{ booking.booking_date.strftime('%H:%M') }}</p>
+                    </div>
+                    <div class="booking-actions">
+                        {% if booking.status == 'pending' %}
+                        <button class="btn btn-sm btn-success confirm-booking" data-booking-id="{{ booking.id }}">
+                            <i class="fas fa-check"></i> تأكيد
+                        </button>
+                        {% elif booking.status == 'confirmed' %}
+                        <button class="btn btn-sm btn-info complete-booking" data-booking-id="{{ booking.id }}">
+                            <i class="fas fa-check-double"></i> إكمال
+                        </button>
+                        {% endif %}
+                        {% if booking.status in ['pending', 'confirmed'] %}
+                        <button class="btn btn-sm btn-danger cancel-booking" data-booking-id="{{ booking.id }}">
+                            <i class="fas fa-times"></i> إلغاء
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h4>لا توجد حجوزات</h4>
+                <p>لم يتم تسجيل أي حجوزات حتى الآن</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل التبويبات
+    const tabs = document.querySelectorAll('.mobile-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            tabContents.forEach(content => {
+                if (content.id === target) {
+                    content.style.display = 'block';
+                } else {
+                    content.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // تفعيل فلتر الحجوزات
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const bookingItems = document.querySelectorAll('.booking-item');
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const status = this.getAttribute('data-status');
+            
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            bookingItems.forEach(item => {
+                if (status === 'all' || item.getAttribute('data-status') === status) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // معالجة أزرار الحجوزات
+    const handleBookingAction = async (action, bookingId) => {
+        try {
+            const response = await fetch(`/booking/${bookingId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showMobileToast(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showMobileToast(data.message || 'حدث خطأ أثناء تنفيذ العملية', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMobileToast('حدث خطأ في الاتصال بالخادم', 'error');
+        }
+    };
+
+    document.querySelectorAll('.confirm-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('confirm', bookingId);
+        });
+    });
+
+    document.querySelectorAll('.complete-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('complete', bookingId);
+        });
+    });
+
+    document.querySelectorAll('.cancel-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
+                handleBookingAction('cancel', bookingId);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

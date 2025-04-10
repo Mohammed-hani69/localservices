@@ -1,0 +1,44 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}تسجيل الدخول{% endblock %}
+
+{% block header_title %}تسجيل الدخول{% endblock %}
+
+{% block content %}
+<div class="mobile-login-page">
+    <div class="mobile-card">
+        <form method="post" action="{{ url_for('login') }}" class="mobile-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control", placeholder="أدخل بريدك الإلكتروني") }}
+                {% for error in form.email.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", placeholder="أدخل كلمة المرور") }}
+                {% for error in form.password.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-check mb-3">
+                {{ form.remember_me(class="form-check-input") }}
+                {{ form.remember_me.label(class="form-check-label") }}
+            </div>
+
+            <div class="form-actions">
+                {{ form.submit(class="btn btn-primary w-100") }}
+            </div>
+        </form>
+
+        <div class="mobile-form-footer">
+            <p>ليس لديك حساب؟ <a href="{{ url_for('register') }}">سجل الآن</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -74,12 +74,14 @@ def about():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+        
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('بريد إلكتروني أو كلمة مرور غير صحيحة', 'danger')
             return redirect(url_for('login'))
+            
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
@@ -90,7 +92,14 @@ def login():
             else:
                 next_page = url_for('index')
         return redirect(next_page)
-    return render_template('login.html', title='تسجيل الدخول', form=form)
+
+    # التحقق من نوع الجهاز
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
+
+    # اختيار القالب المناسب
+    template = 'mobile/login.html' if is_mobile else 'login.html'
+    return render_template(template, title='تسجيل الدخول', form=form)
 
 # Logout
 @app.route('/logout')
@@ -103,6 +112,7 @@ def logout():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+        
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data,
@@ -119,7 +129,14 @@ def register():
 
         flash('تم تسجيل حسابك بنجاح! يمكنك الآن تسجيل الدخول.', 'success')
         return redirect(url_for('login'))
-    return render_template('register.html', title='تسجيل حساب جديد', form=form)
+
+    # التحقق من نوع الجهاز
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
+
+    # اختيار القالب المناسب
+    template = 'mobile/register.html' if is_mobile else 'register.html'
+    return render_template(template, title='تسجيل حساب جديد', form=form)
 
 # User Dashboard
 @app.route('/dashboard')
@@ -128,6 +145,10 @@ def register():
 def dashboard():
     if current_user.is_admin():
         return redirect(url_for('admin_dashboard'))
+
+    # Check if mobile device
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
 
     # Get provider profile if exists
     provider = None
@@ -144,12 +165,20 @@ def dashboard():
             active_services_count = sum(1 for s in services if s.is_active)
             pending_bookings_count = sum(1 for b in bookings if b.status == 'pending')
 
-            return render_template('provider/dashboard.html',
-                                 provider=provider,
-                                 services=services,
-                                 bookings=bookings,
-                                 active_services_count=active_services_count,
-                                 pending_bookings_count=pending_bookings_count)
+            if is_mobile:
+                return render_template('mobile/provider/dashboard.html',
+                                    provider=provider,
+                                    services=services,
+                                    bookings=bookings,
+                                    active_services_count=active_services_count,
+                                    pending_bookings_count=pending_bookings_count)
+            else:
+                return render_template('provider/dashboard.html',
+                                    provider=provider,
+                                    services=services,
+                                    bookings=bookings,
+                                    active_services_count=active_services_count,
+                                    pending_bookings_count=pending_bookings_count)
         else:
             return redirect(url_for('create_provider_profile'))
 
@@ -188,7 +217,13 @@ def create_provider_profile():
         flash('تم إنشاء ملف مقدم الخدمة بنجاح!', 'success')
         return redirect(url_for('dashboard'))
 
-    return render_template('profile.html', title='إنشاء ملف مقدم الخدمة', form=form)
+    # التحقق من نوع الجهاز
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
+
+    # اختيار القالب المناسب
+    template = 'mobile/provider/create.html' if is_mobile else 'profile.html'
+    return render_template(template, title='إنشاء ملف مقدم الخدمة', form=form)
 
 # Edit User Profile
 @app.route('/profile/edit', methods=['GET', 'POST'])
@@ -387,7 +422,13 @@ def add_service():
         flash('تمت إضافة الخدمة بنجاح!', 'success')
         return redirect(url_for('dashboard'))
 
-    return render_template('service_form.html', form=form)
+    # التحقق من نوع الجهاز
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
+
+    # اختيار القالب المناسب
+    template = 'mobile/service_form.html' if is_mobile else 'service_form.html'
+    return render_template(template, form=form)
 
 # Edit Service
 @app.route('/services/edit/<int:service_id>', methods=['GET', 'POST'])
@@ -1359,7 +1400,6 @@ def mobile_index():
     recent_services = Service.query.filter_by(is_active=True).order_by(Service.created_at.desc()).limit(6).all()
     return render_template('mobile/index.html', featured_services=featured_services, recent_services=recent_services)
 
-# Mobile Services Page
 @app.route('/mobile/services')
 def mobile_services():
     query = request.args.get('query', '')
@@ -1369,13 +1409,12 @@ def mobile_services():
 
     if query:
         services_query = services_query.filter(Service.name.contains(query) |
-                                            Service.description.contains(query))
+                                           Service.description.contains(query))
 
     if category:
         services_query = services_query.filter_by(category=category)
 
     services = services_query.all()
-
     return render_template('mobile/services.html', services=services, category=category)
 
 # Mobile Service Details
