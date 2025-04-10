@@ -59,9 +59,8 @@ class Service(db.Model):
     provider_id = db.Column(db.Integer, db.ForeignKey('service_provider.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    price = db.Column(db.Float, nullable=False, default=0)
-    price_to_be_determined = db.Column(db.Boolean, default=False)  # تحديد ما إذا كان السعر سيتم تحديده لاحقًا
-    duration = db.Column(db.Integer, default=0)  # Duration in minutes
+    price = db.Column(db.Float, nullable=False)
+    duration = db.Column(db.Integer)  # Duration in minutes
     category = db.Column(db.String(50))
     is_active = db.Column(db.Boolean, default=True)
     image = db.Column(db.String(200))  # لتخزين مسار الصورة

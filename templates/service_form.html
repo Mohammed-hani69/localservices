@@ -56,24 +56,32 @@
                                 <div class="form-text text-muted" id="additional-info-hint"></div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">{{ form.price_type.label }}</label>
-                                <div class="d-flex">
-                                    {{ form.price_type(class="form-select" + (" is-invalid" if form.price_type.errors else ""), id="price-type-select") }}
-                                    {% for error in form.price_type.errors %}
-                                        <div class="invalid-feedback">{{ error }}</div>
-                                    {% endfor %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="price" class="form-label">{{ form.price.label }}</label>
+                                        <div class="input-group">
+                                            {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else "")) }}
+                                            <span class="input-group-text">جنيه</span>
+                                            {% for error in form.price.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="duration" class="form-label">{{ form.duration.label }}</label>
+                                        <div class="input-group">
+                                            {{ form.duration(class="form-control" + (" is-invalid" if form.duration.errors else "")) }}
+                                            <span class="input-group-text">دقيقة</span>
+                                            {% for error in form.duration.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="mb-3" id="price-field-container">
-                                <label for="price" class="form-label">{{ form.price.label }}</label>
-                                {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else "")) }}
-                                {% for error in form.price.errors %}
-                                    <div class="invalid-feedback">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-
 
                             <div class="mb-3">
                                 <label for="image" class="form-label">{{ form.image.label }}</label>
@@ -116,26 +124,7 @@
         const categorySelect = document.getElementById('category-select');
         const serviceTypeSelect = document.getElementById('service-type-select');
         const additionalInfoHint = document.getElementById('additional-info-hint');
-        const priceTypeSelect = document.getElementById('price-type-select');
-        const priceFieldContainer = document.getElementById('price-field-container');
-
-        // إدارة حقل السعر بناءً على نوع السعر
-        if (priceTypeSelect && priceFieldContainer) {
-            function togglePriceField() {
-                if (priceTypeSelect.value === 'later') {
-                    priceFieldContainer.style.display = 'none';
-                } else {
-                    priceFieldContainer.style.display = 'block';
-                }
-            }
-
-            // تنفيذ عند تحميل الصفحة
-            togglePriceField();
-
-            // إضافة مستمع حدث للتغييرات
-            priceTypeSelect.addEventListener('change', togglePriceField);
-        }
-
+        
         // تكوين الخصائص الإضافية حسب نوع الخدمة
         const additionalInfoHints = {
             'صيانة': {
@@ -178,10 +167,10 @@
         // عند تغيير التصنيف، قم بتحديث قائمة أنواع الخدمات
         categorySelect.addEventListener('change', function() {
             const selectedCategory = this.value;
-
+            
             // إعادة تعيين حقل النوع والنص الإرشادي
             additionalInfoHint.textContent = '';
-
+            
             if (selectedCategory) {
                 // الحصول على أنواع الخدمات للفئة المحددة
                 fetch(`/api/service-types/${selectedCategory}`)
@@ -189,13 +178,13 @@
                     .then(data => {
                         // تفريغ القائمة الحالية
                         serviceTypeSelect.innerHTML = '';
-
+                        
                         // إضافة خيار افتراضي
                         const defaultOption = document.createElement('option');
                         defaultOption.value = '';
                         defaultOption.textContent = 'اختر نوع الخدمة';
                         serviceTypeSelect.appendChild(defaultOption);
-
+                        
                         // إضافة الخيارات الجديدة
                         data.forEach(option => {
                             const optElement = document.createElement('option');
@@ -206,7 +195,7 @@
                             }
                             serviceTypeSelect.appendChild(optElement);
                         });
-
+                        
                         // تشغيل حدث التغيير لتحديث النص الإرشادي
                         serviceTypeSelect.dispatchEvent(new Event('change'));
                     })
@@ -216,12 +205,12 @@
                 serviceTypeSelect.innerHTML = '<option value="">اختر نوع الخدمة</option>';
             }
         });
-
+        
         // عند تغيير نوع الخدمة، قم بتحديث النص الإرشادي
         serviceTypeSelect.addEventListener('change', function() {
             const selectedCategory = categorySelect.value;
             const selectedType = this.value;
-
+            
             if (selectedCategory && selectedType && 
                 additionalInfoHints[selectedCategory] && 
                 additionalInfoHints[selectedCategory][selectedType]) {
@@ -230,7 +219,7 @@
                 additionalInfoHint.textContent = 'أضف أي معلومات إضافية مهمة عن الخدمة.';
             }
         });
-
+        
         // تشغيل الحدث الأولي لتحميل القيم الافتراضية
         if (categorySelect.value) {
             categorySelect.dispatchEvent(new Event('change'));
