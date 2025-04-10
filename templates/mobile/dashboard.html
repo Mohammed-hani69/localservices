@@ -314,7 +314,7 @@
                         {% set service_bookings = service.bookings.all() %}
                         {% if service_bookings %}
                             {% for booking in service_bookings %}
-                                {% do provider_bookings.append(booking) %}
+                                {% set _ = provider_bookings.append(booking) %}
                             {% endfor %}
                         {% endif %}
                     {% endfor %}
