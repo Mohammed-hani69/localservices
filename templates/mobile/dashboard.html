@@ -9,7 +9,7 @@
 <style>
     .mobile-dashboard-page {
         padding: 15px;
-        background-color: #f5f5f5;
+        background-color: #f8f9fa;
     }
 
     .user-card {
@@ -17,13 +17,33 @@
         border-radius: 15px;
         padding: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .user-card:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 150px;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(52, 152, 219, 0.1) 100%);
+        border-radius: 0 15px 15px 0;
+        z-index: 0;
+    }
+
+    .user-info {
+        position: relative;
+        z-index: 1;
     }
 
     .user-info h4 {
         margin: 0;
         color: #2c3e50;
-        font-size: 1.2rem;
+        font-size: 1.3rem;
+        font-weight: 700;
     }
 
     .user-info p {
@@ -31,49 +51,79 @@
         margin: 5px 0 0 0;
     }
 
+    .user-badge {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .badge-provider {
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+    
+    .badge-admin {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+    
+    .badge-user {
+        background-color: #f5f5f5;
+        color: #616161;
+    }
+
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 15px;
         margin: 20px 0;
     }
 
     .stat-card {
         background: white;
         border-radius: 12px;
-        padding: 15px;
+        padding: 20px 15px;
         text-align: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:active {
+        transform: scale(0.98);
     }
 
     .stat-value {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         font-weight: bold;
         color: #3498db;
+        margin-bottom: 5px;
     }
 
     .stat-label {
         font-size: 0.9rem;
         color: #7f8c8d;
-        margin-top: 5px;
     }
 
     .mobile-tabs {
         display: flex;
         background: white;
         border-radius: 12px;
-        padding: 5px;
+        padding: 8px;
         margin: 20px 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .mobile-tab {
         flex: 1;
-        padding: 10px;
+        padding: 12px 8px;
         border: none;
         background: none;
         color: #7f8c8d;
         font-size: 0.9rem;
+        font-weight: 500;
         border-radius: 8px;
         transition: all 0.3s ease;
     }
@@ -86,36 +136,67 @@
     .booking-item {
         background: white;
         border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        padding: 18px;
+        margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border-right: 4px solid #3498db;
+        transition: transform 0.3s ease;
+    }
+
+    .booking-item:active {
+        transform: translateY(2px);
     }
 
     .booking-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
 
     .booking-header h6 {
         margin: 0;
         font-size: 1.1rem;
+        font-weight: 600;
+        color: #34495e;
     }
 
     .booking-details {
-        margin-bottom: 10px;
+        margin-bottom: 15px;
     }
 
     .booking-details p {
-        margin: 5px 0;
+        margin: 8px 0;
         font-size: 0.9rem;
         color: #7f8c8d;
+        display: flex;
+        align-items: center;
+    }
+
+    .booking-details i {
+        width: 20px;
+        margin-left: 8px;
+        color: #3498db;
     }
 
     .booking-actions {
         display: flex;
         gap: 10px;
+        margin-top: 15px;
+    }
+
+    .booking-actions .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .booking-actions .btn i {
+        margin-left: 5px;
     }
 
     .service-item {
@@ -124,8 +205,14 @@
         padding: 15px;
         background: white;
         border-radius: 12px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border-right: 4px solid #27ae60;
+        transition: transform 0.3s ease;
+    }
+
+    .service-item:active {
+        transform: translateX(2px);
     }
 
     .service-icon, .service-item img {
@@ -134,6 +221,7 @@
         border-radius: 10px;
         object-fit: cover;
         margin-left: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     .service-icon {
@@ -150,8 +238,9 @@
     }
 
     .service-details h6 {
-        margin: 0 0 5px 0;
+        margin: 0 0 8px 0;
         font-size: 1.1rem;
+        font-weight: 600;
         color: #2c3e50;
     }
 
@@ -164,14 +253,15 @@
     .service-details .category {
         color: #7f8c8d;
         font-size: 0.9rem;
-        margin: 0 0 5px 0;
+        margin: 0 0 8px 0;
     }
 
     .status-badge {
         display: inline-block;
-        padding: 4px 8px;
-        border-radius: 15px;
+        padding: 5px 10px;
+        border-radius: 20px;
         font-size: 0.8rem;
+        font-weight: 500;
     }
 
     .status-badge.active {
@@ -185,25 +275,119 @@
     }
 
     .action-buttons {
-        margin-top: 15px;
-        text-align: center;
+        margin-top: 25px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
     .action-buttons .btn {
-        padding: 12px 20px;
-        border-radius: 8px;
-        margin-bottom: 10px;
+        padding: 14px 20px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .action-buttons .btn:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .action-buttons .btn i {
+        margin-left: 8px;
+        font-size: 1.1rem;
+    }
+
+    .btn-provider-dashboard {
+        background: linear-gradient(135deg, #4481eb 0%, #04befe 100%);
+        color: white;
+        border: none;
     }
 
     .empty-state {
         text-align: center;
-        padding: 30px;
+        padding: 40px 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .empty-state-icon {
-        font-size: 3rem;
+        font-size: 3.5rem;
         color: #bdc3c7;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h4 {
+        font-size: 1.3rem;
+        color: #34495e;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #7f8c8d;
+        margin-bottom: 20px;
+    }
+
+    .rating-input {
+        direction: ltr;
+        display: flex;
+        justify-content: center;
+        margin: 10px 0;
+    }
+
+    .rating-input input {
+        display: none;
+    }
+
+    .rating-input label {
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: #ddd;
+        padding: 0 2px;
+    }
+
+    .rating-input label:before {
+        content: '\2605';
+    }
+
+    .rating-input input:checked ~ label {
+        color: #ffb400;
+    }
+
+    .form-group {
         margin-bottom: 15px;
+    }
+
+    .review-form {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+    }
+
+    .welcome-message {
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        color: #3498db;
+    }
+
+    .provider-details {
+        background: rgba(52, 152, 219, 0.05);
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+    }
+
+    .provider-details p {
+        margin: 5px 0;
+        font-size: 0.9rem;
+        color: #34495e;
     }
 </style>
 {% endblock %}
@@ -213,29 +397,35 @@
     <!-- معلومات المستخدم -->
     <div class="user-card">
         <div class="user-info">
+            <div class="welcome-message">مرحباً بك في لوحة التحكم</div>
             <h4>{{ user.username }}</h4>
             <p>{{ user.email }}</p>
             {% if current_user.is_provider() %}
-                <span class="badge bg-primary">مزود خدمة</span>
+                <span class="user-badge badge-provider">مزود خدمة</span>
             {% elif current_user.is_admin() %}
-                <span class="badge bg-danger">مدير النظام</span>
+                <span class="user-badge badge-admin">مدير النظام</span>
             {% else %}
-                <span class="badge bg-secondary">مستخدم</span>
+                <span class="user-badge badge-user">مستخدم</span>
             {% endif %}
         </div>
     </div>
 
     {% if current_user.is_provider() %}
-        <!-- معلومات مزود الخدمة -->
-        {% set provider = current_user.provider_profile %}
         {% if provider %}
+            <!-- معلومات مزود الخدمة -->
             <div class="user-card">
                 <div class="user-info">
                     <h4>{{ provider.company_name }}</h4>
-                    <p>التخصص: {{ provider.specialization }}</p>
-                    <div class="rating mt-2">
-                        <span class="rating-display" data-rating="{{ provider.rating }}"></span>
-                        <span class="rating-value">({{ "%.1f"|format(provider.rating) }})</span>
+                    <div class="provider-details">
+                        <p><i class="fas fa-briefcase"></i> التخصص: {{ provider.specialization }}</p>
+                        <p><i class="fas fa-star"></i> التقييم: {{ "%.1f"|format(provider.rating) }} / 5</p>
+                        <p><i class="fas fa-check-circle"></i> الحالة: 
+                            {% if provider.verified %}
+                                <span class="text-success">موثّق</span>
+                            {% else %}
+                                <span class="text-warning">قيد المراجعة</span>
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -252,6 +442,19 @@
                 </div>
             </div>
 
+            <!-- أزرار الإجراءات لمزود الخدمة -->
+            <div class="action-buttons">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-provider-dashboard">
+                    <i class="fas fa-tachometer-alt"></i> لوحة تحكم مزود الخدمة
+                </a>
+                <a href="{{ url_for('add_service') }}?mobile=true" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إضافة خدمة جديدة
+                </a>
+                <a href="{{ url_for('edit_user_profile') }}?mobile=true" class="btn btn-outline-primary">
+                    <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
+                </a>
+            </div>
+
             <!-- التبويبات -->
             <div class="mobile-tabs">
                 <button class="mobile-tab active" data-target="services">
@@ -265,9 +468,6 @@
             <!-- محتوى الخدمات -->
             <div class="tab-content active" id="services">
                 <div class="mobile-card">
-                    <div class="section-header">
-                        <h5>خدماتي</h5>
-                    </div>
                     {% set services = provider.services.all() %}
                     {% if services %}
                     <div class="services-list">
@@ -298,7 +498,7 @@
                         </div>
                         <h4>لا توجد خدمات</h4>
                         <p>لم تقم بإضافة أي خدمات بعد</p>
-                        <a href="{{ url_for('add_service') }}" class="btn btn-primary">
+                        <a href="{{ url_for('add_service') }}?mobile=true" class="btn btn-primary">
                             <i class="fas fa-plus"></i> إضافة خدمة جديدة
                         </a>
                     </div>
@@ -326,7 +526,17 @@
                             <div class="booking-header">
                                 <h6>{{ booking.service.name }}</h6>
                                 <span class="badge bg-{{ get_status_color(booking.status) }}">
-                                    {{ booking.status }}
+                                    {% if booking.status == 'pending' %}
+                                        معلق
+                                    {% elif booking.status == 'confirmed' %}
+                                        مؤكد
+                                    {% elif booking.status == 'completed' %}
+                                        مكتمل
+                                    {% elif booking.status == 'cancelled' %}
+                                        ملغي
+                                    {% else %}
+                                        {{ booking.status }}
+                                    {% endif %}
                                 </span>
                             </div>
                             <div class="booking-details">
@@ -364,15 +574,6 @@
                     {% endif %}
                 </div>
             </div>
-
-            <div class="action-buttons">
-                <a href="{{ url_for('add_service') }}" class="btn btn-primary w-100">
-                    <i class="fas fa-plus"></i> إضافة خدمة جديدة
-                </a>
-                <a href="{{ url_for('edit_user_profile') }}?mobile=true" class="btn btn-outline-primary w-100">
-                    <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
-                </a>
-            </div>
         {% else %}
             <div class="user-card">
                 <div class="user-info">
@@ -380,7 +581,7 @@
                     <p>يرجى إكمال ملف مزود الخدمة الخاص بك للوصول إلى جميع المزايا</p>
                 </div>
                 <div class="action-buttons">
-                    <a href="{{ url_for('create_provider_profile') }}?mobile=true" class="btn btn-primary w-100">
+                    <a href="{{ url_for('create_provider_profile') }}?mobile=true" class="btn btn-primary">
                         <i class="fas fa-user-plus"></i> إكمال الملف
                     </a>
                 </div>
@@ -397,6 +598,16 @@
                 <div class="stat-value">{{ completed_bookings|length }}</div>
                 <div class="stat-label">حجوزات مكتملة</div>
             </div>
+        </div>
+
+        <!-- أزرار الإجراءات للمستخدم العادي -->
+        <div class="action-buttons">
+            <a href="{{ url_for('services') }}?mobile=true" class="btn btn-primary">
+                <i class="fas fa-search"></i> تصفح الخدمات
+            </a>
+            <a href="{{ url_for('edit_user_profile') }}?mobile=true" class="btn btn-outline-primary">
+                <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
+            </a>
         </div>
 
         <!-- التبويبات -->
@@ -458,7 +669,7 @@
                                         <textarea class="form-control" id="comment-{{ booking.service_id }}" name="comment" rows="3" required></textarea>
                                     </div>
                                     
-                                    <button type="submit" class="btn btn-sm btn-primary">إرسال التقييم</button>
+                                    <button type="submit" class="btn btn-sm btn-primary w-100">إرسال التقييم</button>
                                 </form>
                             {% endif %}
                         </div>
@@ -530,10 +741,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (data.success) {
-                alert(data.message);
-                setTimeout(() => window.location.reload(), 1000);
+                // عرض رسالة نجاح
+                const alertBox = document.createElement('div');
+                alertBox.className = 'alert alert-success m-3';
+                alertBox.textContent = data.message;
+                document.querySelector('main').prepend(alertBox);
+                
+                // إزالة الرسالة بعد 3 ثوان
+                setTimeout(() => {
+                    alertBox.remove();
+                    window.location.reload();
+                }, 2000);
             } else {
-                alert(data.message || 'حدث خطأ أثناء تنفيذ العملية');
+                // عرض رسالة الخطأ
+                const alertBox = document.createElement('div');
+                alertBox.className = 'alert alert-danger m-3';
+                alertBox.textContent = data.message || 'حدث خطأ أثناء تنفيذ العملية';
+                document.querySelector('main').prepend(alertBox);
+                
+                // إزالة الرسالة بعد 3 ثوان
+                setTimeout(() => {
+                    alertBox.remove();
+                }, 3000);
             }
         } catch (error) {
             console.error('Error:', error);
@@ -563,6 +792,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // إضافة تأثيرات لمس للبطاقات على الأجهزة اللمسية
+    const addTouchEffect = (elements) => {
+        elements.forEach(el => {
+            el.addEventListener('touchstart', () => {
+                el.style.transform = 'scale(0.98)';
+            });
+            
+            el.addEventListener('touchend', () => {
+                el.style.transform = 'scale(1)';
+            });
+        });
+    };
+    
+    addTouchEffect(document.querySelectorAll('.stat-card'));
+    addTouchEffect(document.querySelectorAll('.service-item'));
+    addTouchEffect(document.querySelectorAll('.booking-item'));
+    addTouchEffect(document.querySelectorAll('.action-buttons .btn'));
 });
 </script>
 {% endblock %}
