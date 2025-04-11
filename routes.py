@@ -2342,7 +2342,7 @@ def check_completed_booking(service_id):
         booking_details = {
             'service_name': service.name,
             'booking_date': completed_booking.booking_date.strftime('%Y-%m-%d %H:%M'),
-            'completion_date': completed_booking.created_at.strftime('%Y-%m-%d') if hasattr(completed_booking, 'created_at') else None
+            'completion_date': completed_booking.created_at.strftime('%Y-%m-%d') if completed_booking.created_at else None
         }
 
     return jsonify({
