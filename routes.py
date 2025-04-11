@@ -485,15 +485,38 @@ def add_service():
     form.category.data = provider.specialization
     form.category.render_kw = {'readonly': True, 'disabled': 'disabled'}
     
-    if form.validate_on_submit():دمات فقط.', 'warning')
+    if form.validate_on_submit():
+        # معالجة تحميل الصورة إن وجدت
+        image_path = None
+        if form.image.data:
+            image_path = save_image(form.image.data)
+
+        service = Service(
+            provider_id=provider.id,
+            name=form.name.data,
+            description=form.description.data,
+            price=form.price.data,
+            duration=form.duration.data,
+            category=form.category.data,
+            service_type=form.service_type.data,
+            additional_info=form.additional_info.data,
+            image=image_path,
+            is_active=form.is_active.data
+        )
+        db.session.add(service)
+        db.session.commit()
+        flash('تمت إضافة الخدمة بنجاح!', 'success')
+        return redirect(url_for('dashboard'))
+        
+    # التحقق من أن المستخدم هو مقدم خدمة
+    if not current_user.is_provider():
+        flash('عذراً، هذه الصفحة مخصصة لمقدمي الخدمات فقط.', 'warning')
         return redirect(url_for('index'))
 
     provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
     if not provider:
         flash('الرجاء إكمال ملف مقدم الخدمة أولاً.', 'warning')
         return redirect(url_for('create_provider_profile'))
-
-    form = ServiceForm()
 
     # تحديث اختيارات نوع الخدمة بناءً على الفئة المحددة
     if form.category.data:
