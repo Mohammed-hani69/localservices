@@ -1,0 +1,87 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}إتمام الدفع{% endblock %}
+
+{% block header_title %}إتمام الدفع{% endblock %}
+
+{% block content %}
+<div class="mobile-payment-page">
+    <!-- Payment Summary -->
+    <div class="mobile-card">
+        <h5 class="mb-3">ملخص الطلب</h5>
+        <div class="d-flex justify-content-between mb-2">
+            <span>الخدمة:</span>
+            <span class="fw-bold">{{ service.name }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+            <span>المبلغ:</span>
+            <span class="text-primary fw-bold">{{ "%.2f"|format(payment.amount) }} ر.س</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+            <span>طريقة الدفع:</span>
+            <span>
+                {% if payment.payment_method == 'credit_card' %}
+                    بطاقة ائتمان
+                {% elif payment.payment_method == 'debit_card' %}
+                    بطاقة مدين
+                {% elif payment.payment_method == 'bank_transfer' %}
+                    تحويل بنكي
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Payment Actions -->
+    <div class="mobile-card">
+        {% if payment.status == 'pending' %}
+            <!-- Error Alert -->
+            <div id="payment-error" class="alert alert-danger d-none mb-3"></div>
+            
+            <!-- Payment Form -->
+            <form id="payment-form" action="{{ url_for('stripe_checkout', booking_id=booking.id) }}" method="POST" onsubmit="return confirmPayment()">
+                <button type="submit" class="btn btn-primary btn-lg w-100" id="submit-button">
+                    <span class="normal-state">
+                        <i class="fab fa-stripe me-2"></i> الدفع عبر Stripe
+                    </span>
+                    <span class="loading-state d-none">
+                        <i class="fas fa-spinner fa-spin me-2"></i> جاري المعالجة...
+                    </span>
+                </button>
+            </form>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                تم إرسال طلب الدفع. يرجى انتظار التأكيد.
+            </div>
+        {% endif %}
+        <a href="{{ url_for('mobile_dashboard') }}" class="btn btn-outline-secondary mt-2">
+            العودة للوحة التحكم
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmPayment() {
+    const submitButton = document.getElementById('submit-button');
+    const normalState = submitButton.querySelector('.normal-state');
+    const loadingState = submitButton.querySelector('.loading-state');
+    
+    if (confirm('هل أنت متأكد من إتمام عملية الدفع؟')) {
+        // Show loading state
+        normalState.classList.add('d-none');
+        loadingState.classList.remove('d-none');
+        submitButton.disabled = true;
+        return true;
+    }
+    return false;
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('payment-error');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('d-none');
+}
+</script>
+{% endblock %}

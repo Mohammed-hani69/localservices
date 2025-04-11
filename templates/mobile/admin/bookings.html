@@ -1,0 +1,672 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}إدارة الحجوزات{% endblock %}
+
+{% block content %}
+<div class="bookings-dashboard">
+    <!-- Top Stats Overview -->
+    <div class="top-stats">
+        <div class="stat-box total">
+            <div class="stat-content">
+                <div class="stat-info">
+                    <h3>{{ bookings|length }}</h3>
+                    <p>إجمالي الحجوزات</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" style="width: 75%"></div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon pending">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="count">{{ bookings|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+                    <span class="label">قيد الانتظار</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="count">{{ bookings|selectattr('status', 'equalto', 'completed')|list|length }}</span>
+                    <span class="label">مكتملة</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <div class="filters-header">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="بحث عن حجز..." id="bookingSearch">
+            </div>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">
+                <i class="fas fa-border-all"></i>
+                <span>الكل</span>
+                <span class="count">{{ bookings|length }}</span>
+            </button>
+            <button class="filter-tab" data-filter="pending">
+                <i class="fas fa-clock"></i>
+                <span>قيد الانتظار</span>
+                <span class="count">{{ bookings|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+            </button>
+            <button class="filter-tab" data-filter="confirmed">
+                <i class="fas fa-check"></i>
+                <span>مؤكدة</span>
+                <span class="count">{{ bookings|selectattr('status', 'equalto', 'confirmed')|list|length }}</span>
+            </button>
+            <button class="filter-tab" data-filter="completed">
+                <i class="fas fa-check-double"></i>
+                <span>مكتملة</span>
+                <span class="count">{{ bookings|selectattr('status', 'equalto', 'completed')|list|length }}</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- تحسين عرض الجدول -->
+    <div class="bookings-container">
+        {% if bookings %}
+            <div class="table-responsive">
+                <table class="bookings-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-sort="number">#</th>
+                            <th class="sortable" data-sort="service">الخدمة</th>
+                            <th class="sortable" data-sort="client">العميل</th>
+                            <th class="sortable" data-sort="date">التاريخ</th>
+                            <th class="sortable" data-sort="status">الحالة</th>
+                            <th class="sortable" data-sort="amount">المبلغ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr class="booking-row fade-in" 
+                            data-status="{{ booking.status }}"
+                            data-date="{{ booking.booking_date.strftime('%Y-%m-%d') }}"
+                            data-amount="{{ booking.payment.amount if booking.payment else 0 }}">
+                            <td>{{ loop.index }}</td>
+                            <td>{{ booking.service.name }}</td>
+                            <td>
+                                <div class="user-info">
+                                    <i class="fas fa-user"></i>
+                                    {{ booking.client.username }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-info">
+                                    <span class="date">{{ booking.booking_date.strftime('%Y-%m-%d') }}</span>
+                                    <time class="time">{{ booking.booking_date.strftime('%H:%M') }}</time>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ booking.status }}">
+                                    <i class="fas fa-{{ 'clock' if booking.status == 'pending' else 'check' if booking.status == 'confirmed' else 'check-double' if booking.status == 'completed' else 'times' }}"></i>
+                                    {{ 'قيد الانتظار' if booking.status == 'pending' else 'مؤكد' if booking.status == 'confirmed' else 'مكتمل' if booking.status == 'completed' else 'ملغي' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="amount-info">
+                                    {% if booking.payment %}
+                                        <span class="amount">{{ "%.2f"|format(booking.payment.amount) }}</span>
+                                        <span class="currency">جنيه</span>
+                                    {% else %}
+                                        <span class="no-payment">لم يتم الدفع</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h3>لا توجد حجوزات</h3>
+                <p>لم يتم العثور على أي حجوزات في الوقت الحالي</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- إضافة نافذة التفاصيل -->
+    <div class="modal" id="bookingDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تفاصيل الحجز</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- سيتم ملء المحتوى ديناميكياً -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bookings-dashboard {
+    padding: 20px;
+    background: #f8f9ff;
+    min-height: 100vh;
+}
+
+.top-stats {
+    margin-bottom: 20px;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    border-radius: 20px;
+    padding: 20px;
+    color: white;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-info h3 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.stat-info p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.stat-icon {
+    font-size: 2rem;
+}
+
+.progress-bar {
+    height: 5px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: #ffb703;
+}
+
+.stats-grid {
+    display: flex;
+    gap: 10px;
+}
+
+.stat-card {
+    flex: 1;
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.stat-icon.pending {
+    color: #ffb703;
+}
+
+.stat-icon.success {
+    color: #06d6a0;
+}
+
+.stat-details {
+    flex: 1;
+}
+
+.stat-details .count {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.stat-details .label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.filters-section {
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.filters-header {
+    margin-bottom: 15px;
+}
+
+.search-box {
+    background: var(--light-color);
+    border-radius: 12px;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-box i {
+    color: var(--primary-color);
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 0.95rem;
+    background: transparent;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 5px 0;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.filter-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-tab {
+    background: var(--light-color);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.filter-tab i {
+    font-size: 1rem;
+}
+
+.filter-tab .count {
+    background: rgba(0,0,0,0.1);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.filter-tab.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.filter-tab.active .count {
+    background: rgba(255,255,255,0.2);
+}
+
+.bookings-container {
+    margin-top: 20px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin: 0 -10px;
+    padding: 15px;
+}
+
+.bookings-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 800px;
+}
+
+.bookings-table thead th {
+    background: var(--light-color);
+    padding: 15px;
+    font-weight: 600;
+    color: var(--dark-color);
+    text-align: right;
+    font-size: 0.9rem;
+    border-bottom: 2px solid rgba(0,0,0,0.05);
+    cursor: pointer;
+}
+
+.bookings-table tbody td {
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+.booking-row {
+    transition: all 0.3s ease;
+}
+
+.booking-row:hover {
+    background: rgba(67, 97, 238, 0.03);
+}
+
+.user-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--light-color);
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.user-info i {
+    color: var(--primary-color);
+}
+
+.date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.status-pending {
+    background: linear-gradient(45deg, rgba(255, 159, 28, 0.1), rgba(255, 159, 28, 0.2));
+    color: var(--warning-color);
+}
+
+.status-confirmed {
+    background: linear-gradient(45deg, rgba(76, 201, 240, 0.1), rgba(76, 201, 240, 0.2));
+    color: var(--info-color);
+}
+
+.status-completed {
+    background: linear-gradient(45deg, rgba(46, 196, 182, 0.1), rgba(46, 196, 182, 0.2));
+    color: var(--success-color);
+}
+
+.status-cancelled {
+    background: linear-gradient(45deg, rgba(231, 29, 54, 0.1), rgba(231, 29, 54, 0.2));
+    color: var(--danger-color);
+}
+
+.amount-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.action-btn {
+    background: white;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(67, 97, 238, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: var(--primary-color);
+    font-size: 2rem;
+}
+
+.empty-state h3 {
+    font-size: 1.2rem;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        flex-direction: row;
+    }
+    
+    .stat-card {
+        padding: 12px;
+    }
+    
+    .stat-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+    }
+    
+    .stat-details .count {
+        font-size: 1.1rem;
+    }
+    
+    .stat-details .label {
+        font-size: 0.75rem;
+    }
+    
+    .filter-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .filter-tab {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+    }
+    
+    .table-responsive {
+        margin: 0 -20px;
+        padding: 10px;
+    }
+    
+    .bookings-table {
+        font-size: 0.85rem;
+    }
+    
+    .bookings-table thead th {
+        padding: 12px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .bookings-table tbody td {
+        padding: 10px;
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .user-info {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const bookingItems = document.querySelectorAll('.booking-row');
+    
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const filter = tab.dataset.filter;
+            
+            filterTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            bookingItems.forEach(item => {
+                if (filter === 'all' || item.dataset.status === filter) {
+                    item.style.display = 'table-row';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Search functionality
+    const searchInput = document.getElementById('bookingSearch');
+    
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        bookingItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(searchTerm) ? 'table-row' : 'none';
+        });
+    });
+});
+
+// Modal Functions
+function showBookingDetails(bookingId) {
+    const modal = document.getElementById('bookingDetailsModal');
+    modal.classList.add('show');
+    // هنا يمكنك إضافة كود لجلب تفاصيل الحجز من الخادم
+}
+
+function confirmBooking(bookingId) {
+    if (confirm('هل أنت متأكد من تأكيد هذا الحجز؟')) {
+        // هنا يمكنك إضافة كود لتأكيد الحجز
+    }
+}
+
+function showMoreOptions(bookingId) {
+    // هنا يمكنك إضافة قائمة منسدلة بالمزيد من الخيارات
+}
+
+// Helper Functions
+function getColumnIndex(sortBy) {
+    const columns = {
+        'number': 1,
+        'service': 2,
+        'client': 3,
+        'date': 4,
+        'status': 5,
+        'amount': 6
+    };
+    return columns[sortBy] || 1;
+}
+</script>
+{% endblock %}

@@ -1,4 +1,3 @@
-
 {% extends "mobile/base_mobile.html" %}
 
 {% block title %}حجز خدمة - منصة الخدمات المحلية{% endblock %}
@@ -13,7 +12,7 @@
         <div class="d-flex align-items-center">
             <div class="me-3">
                 {% if service.image %}
-                <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" width="60" height="60" class="rounded">
+                <img src="{{ url_for('static', filename='' + service.image) }}" alt="{{ service.name }}" width="60" height="60" class="rounded">
                 {% else %}
                 <div class="d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: #f0f0f0; border-radius: 8px;">
                     <i class="fas fa-concierge-bell fa-2x text-muted"></i>
@@ -32,7 +31,7 @@
     <!-- Booking Form -->
     <div class="mobile-card">
         <h5 class="mb-3">تفاصيل الحجز</h5>
-        <form action="{{ url_for('book_service') }}" method="post">
+        <form action="{{ url_for('process_booking') }}" method="post" id="booking-form">
             {{ booking_form.csrf_token }}
             {{ booking_form.service_id }}
 
@@ -118,12 +117,14 @@
                 </div>
             </div>
 
-            <div class="alert alert-info mt-3">
-                <small>سيتم توجيهك إلى صفحة تأكيد الحجز بعد إتمام العملية</small>
-            </div>
-
             <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg">تأكيد الحجز</button>
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                    <span class="normal-text">تأكيد الحجز والدفع</span>
+                    <span class="loading-text d-none">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        جاري المعالجة...
+                    </span>
+                </button>
             </div>
         </form>
     </div>
@@ -213,6 +214,45 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize on page load
     togglePaymentDetails();
+
+    // Handle form submission
+    const bookingForm = document.getElementById('booking-form');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    function setLoading(isLoading) {
+        submitBtn.disabled = isLoading;
+        if (isLoading) {
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>جاري المعالجة...';
+        } else {
+            submitBtn.innerHTML = 'تأكيد الحجز والدفع';
+        }
+    }
+
+    bookingForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        setLoading(true);
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: new FormData(this),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                throw new Error(data.message || 'حدث خطأ أثناء معالجة الطلب');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message || 'حدث خطأ أثناء معالجة الطلب');
+            setLoading(false);
+        });
+    });
 });
 </script>
 {% endblock %}

@@ -29,6 +29,17 @@ def before_request():
     else:
         g.unread_notifications_count = 0
 
+# تحقق من حالة المستخدم قبل كل طلب
+@app.before_request
+def check_user_status():
+    if current_user.is_authenticated:
+        # استثناء صفحات تسجيل الخروج والصفحة الرئيسية
+        if request.endpoint not in ['logout', 'index', 'static']:
+            if not current_user.is_active:
+                logout_user()
+                flash('تم تعطيل حسابك. يرجى التواصل مع الإدارة.', 'danger')
+                return redirect(url_for('index'))
+
 # Make variables available to templates
 @app.context_processor
 def inject_now():
@@ -82,23 +93,32 @@ def login():
             flash('بريد إلكتروني أو كلمة مرور غير صحيحة', 'danger')
             return redirect(url_for('login'))
 
+        # التحقق من حالة المستخدم
+        if not user.is_active:
+            flash('تم تعطيل حسابك. يرجى التواصل مع الإدارة.', 'danger')
+            return redirect(url_for('login'))
+
+        # Move login_user here after all checks pass
         login_user(user, remember=form.remember_me.data)
+        
+        # Get next page or default to dashboard
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
-            if user.is_admin():
-                next_page = url_for('admin_dashboard')
-            elif user.is_provider():
-                next_page = url_for('dashboard')
-            else:
-                next_page = url_for('index')
+            next_page = url_for('dashboard')
+            
+        # Check if mobile device and redirect accordingly  
+        user_agent = request.headers.get('User-Agent', '').lower()
+        is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent
+        if is_mobile:
+            next_page = url_for('mobile_dashboard')
+            
         return redirect(next_page)
 
-    # التحقق من نوع الجهاز
+    # Choose appropriate template for GET requests
     user_agent = request.headers.get('User-Agent', '').lower()
-    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
-
-    # اختيار القالب المناسب
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent
     template = 'mobile/login.html' if is_mobile else 'login.html'
+    
     return render_template(template, title='تسجيل الدخول', form=form)
 
 # Logout
@@ -515,8 +535,8 @@ def edit_service(service_id):
     service = Service.query.get_or_404(service_id)
     provider = ServiceProvider.query.get(service.provider_id)
 
-    # Verify ownership
-    if provider.user_id != current_user.id and not current_user.is_admin():
+    # التحقق من أن المستخدم هو مقدم الخدمة الأصلي فقط
+    if provider.user_id != current_user.id:
         flash('ليس لديك صلاحية تعديل هذه الخدمة.', 'danger')
         return redirect(url_for('dashboard'))
 
@@ -627,10 +647,11 @@ def book_service(service_id):
 @app.route('/booking/process', methods=['POST'])
 @login_required
 def process_booking():
+    """Process booking for both mobile and desktop views"""
     form = BookingForm()
     if form.validate_on_submit():
         service = Service.query.get_or_404(form.service_id.data)
-
+        
         booking = Booking(
             client_id=current_user.id,
             service_id=service.id,
@@ -641,68 +662,55 @@ def process_booking():
         db.session.add(booking)
         db.session.commit()
 
-        # تحديد حالة الدفع بناءً على طريقة الدفع المختارة
-        payment_status = 'pending'
-        if form.payment_method.data == 'cash':
-            payment_status = 'awaiting_confirmation'
-
-        # Create a payment record
+        # Create payment record
         payment = Payment(
             booking_id=booking.id,
             user_id=current_user.id,
             amount=service.price,
-            status=payment_status,
+            status='pending',
             payment_method=form.payment_method.data
         )
-
-        # إذا كانت طريقة الدفع بالبطاقة، قم بتخزين تفاصيل البطاقة
-        if form.payment_method.data in ['credit_card', 'debit_card']:
-            # في بيئة الإنتاج الحقيقية، يجب استخدام خدمة دفع آمنة مثل Stripe بدلاً من تخزين تفاصيل البطاقة
-            payment.transaction_id = f"TR-{uuid.uuid4().hex[:8]}"  # إنشاء معرف معاملة وهمي
-
-            # في حالة نجاح الدفع، نقوم بتحديث حالة الدفع وتاريخه
-            payment.status = 'completed'
-            payment.payment_date = datetime.utcnow()
-
-            # تحديث حالة الحجز إلى مؤكد
-            booking.status = 'confirmed'
-
         db.session.add(payment)
+        
+        # Update payment status based on payment method
+        if payment.payment_method == 'cash':
+            payment.status = 'awaiting_confirmation'
+            booking.status = 'pending'
+        
         db.session.commit()
 
-        # إنشاء إشعار للمستخدم
+        # Create notification for service provider
         create_notification(
-            current_user.id,
-            "تم إنشاء الحجز بنجاح",
-            f"تم إنشاء حجز لخدمة {service.name} بتاريخ {booking.booking_date.strftime('%Y-%m-%d %H:%M')}",
-            "success",
-            booking.id,
-            "booking"
-        )
-
-        # إنشاء إشعار لمقدم الخدمة
-        provider = ServiceProvider.query.get(service.provider_id)
-        create_notification(
-            provider.user_id,
+            service.provider.user_id,
             "حجز جديد",
-            f"لديك طلب حجز جديد لخدمة {service.name} من المستخدم {current_user.username}",
+            f"لديك حجز جديد للخدمة {service.name}",
             "info",
             booking.id,
             "booking"
         )
 
-        if payment.status == 'completed':
-            flash('تم تأكيد الحجز وإتمام عملية الدفع بنجاح!', 'success')
-            return redirect(url_for('dashboard'))
-        elif payment.status == 'awaiting_confirmation':
-            flash('تم إنشاء الحجز بنجاح! سيتم تأكيده بعد الدفع نقدًا عند الاستلام.', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('تم إنشاء الحجز بنجاح! الرجاء إكمال عملية الدفع.', 'info')
-            return redirect(url_for('payment', payment_id=payment.id))
+        # Return JSON response for AJAX requests
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': True,
+                'redirect_url': url_for('mobile_dashboard' if 'mobile' in request.referrer else 'dashboard')
+            })
+        
+        # Regular form submission redirect
+        flash('تم إنشاء الحجز بنجاح!', 'success')
+        if 'mobile' in request.referrer:
+            return redirect(url_for('mobile_dashboard'))
+        return redirect(url_for('dashboard'))
 
+    # Handle validation errors
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({
+            'success': False,
+            'message': 'حدث خطأ في معالجة النموذج'
+        })
+    
     flash('حدث خطأ أثناء إنشاء الحجز. الرجاء المحاولة مرة أخرى.', 'danger')
-    return redirect(url_for('services'))
+    return redirect(url_for('mobile_services' if 'mobile' in request.referrer else 'services'))
 
 # Payment
 @app.route('/payment/<int:payment_id>', methods=['GET', 'POST'])
@@ -738,6 +746,23 @@ def payment(payment_id):
     return render_template('payment.html', title='إتمام الدفع',
                           payment=payment, booking=booking,
                           service=service, form=form)
+
+@app.route('/mobile/payment/<int:payment_id>')
+@login_required
+def mobile_payment(payment_id):
+    payment = Payment.query.get_or_404(payment_id)
+    booking = Booking.query.get(payment.booking_id)
+    service = Service.query.get(booking.service_id)
+
+    # Verify ownership
+    if payment.user_id != current_user.id and not current_user.is_admin():
+        flash('ليس لديك صلاحية الوصول إلى صفحة الدفع هذه.', 'danger')
+        return redirect(url_for('mobile_dashboard'))
+
+    return render_template('mobile/payment.html', 
+                         payment=payment,
+                         booking=booking,
+                         service=service)
 
 # Add review
 @app.route('/review', methods=['POST'])
@@ -924,6 +949,10 @@ def admin_dashboard():
     if not current_user.is_admin():
         flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
         return redirect(url_for('index'))
+        
+    # Check if the user is requesting from a mobile device
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent
 
     users_count = User.query.count()
     providers_count = ServiceProvider.query.count()
@@ -934,11 +963,48 @@ def admin_dashboard():
     recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
     recent_bookings = Booking.query.order_by(Booking.created_at.desc()).limit(5).all()
 
+    if is_mobile and request.args.get('view') != 'desktop':
+        return render_template('mobile/admin/dashboard.html',
+                             title='لوحة تحكم المدير',
+                             users_count=users_count,
+                             providers_count=providers_count,
+                             services_count=services_count,
+                             bookings_count=bookings_count,
+                             payments_count=payments_count,
+                             recent_users=recent_users,
+                             recent_bookings=recent_bookings)
+
     return render_template('admin/dashboard.html', title='لوحة تحكم المدير',
                           users_count=users_count, providers_count=providers_count,
                           services_count=services_count, bookings_count=bookings_count,
                           payments_count=payments_count, recent_users=recent_users,
                           recent_bookings=recent_bookings)
+
+@app.route('/mobile/admin/dashboard')
+@login_required
+def mobile_admin_dashboard():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('mobile_index'))
+
+    users_count = User.query.count()
+    providers_count = ServiceProvider.query.count()
+    services_count = Service.query.count()
+    bookings_count = Booking.query.count()
+    payments_count = Payment.query.count()
+
+    recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
+    recent_bookings = Booking.query.order_by(Booking.created_at.desc()).limit(5).all()
+
+    return render_template('mobile/admin/dashboard.html',
+                         title='لوحة تحكم المدير',
+                         users_count=users_count,
+                         providers_count=providers_count,
+                         services_count=services_count,
+                         bookings_count=bookings_count,
+                         payments_count=payments_count,
+                         recent_users=recent_users,
+                         recent_bookings=recent_bookings)
 
 # Admin Reports
 @app.route('/admin/reports')
@@ -948,17 +1014,19 @@ def admin_reports():
         flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
         return redirect(url_for('index'))
 
+    # التحقق من نوع الجهاز
+    is_mobile = request.args.get('mobile') or 'mobile' in request.headers.get('User-Agent', '').lower()
+
     # استخراج إحصائيات المستخدمين
     total_users = User.query.count()
     total_providers = ServiceProvider.query.count()
     total_regular_users = User.query.filter_by(role=ROLE_USER).count()
     verified_providers = ServiceProvider.query.filter_by(verified=True).count()
-    unverified_providers = total_providers - verified_providers
+    unverified_providers = total_providers - verified_providers  # إضافة هذا المتغير
 
     # استخراج إحصائيات الخدمات
     total_services = Service.query.count()
     active_services = Service.query.filter_by(is_active=True).count()
-    inactive_services = total_services - active_services
 
     # توزيع الخدمات حسب الفئات
     categories = db.session.query(Service.category, db.func.count(Service.id)).group_by(Service.category).all()
@@ -975,7 +1043,6 @@ def admin_reports():
     # إحصائيات المدفوعات
     total_payments = Payment.query.count()
     completed_payments = Payment.query.filter_by(status='completed').count()
-    pending_payments = Payment.query.filter_by(status='pending').count()
     payment_amounts = db.session.query(Payment.status, db.func.sum(Payment.amount)).group_by(Payment.status).all()
 
     # إجمالي المبيعات
@@ -984,7 +1051,7 @@ def admin_reports():
         if payment[0] == 'completed':
             total_sales = payment[1] if payment[1] else 0
 
-    # استخراج إحصائيات الحجوزات حسب الشهر
+    # استخراج إحصائيات الحجوزات الشهرية
     monthly_bookings = []
     current_year = datetime.now().year
     for month in range(1, 13):
@@ -993,24 +1060,21 @@ def admin_reports():
             end_date = datetime(current_year + 1, 1, 1)
         else:
             end_date = datetime(current_year, month + 1, 1)
-
         count = Booking.query.filter(
             Booking.created_at >= start_date,
             Booking.created_at < end_date
         ).count()
-
         monthly_bookings.append(count)
 
     # استخراج إحصائيات التقييمات
     avg_rating = db.session.query(db.func.avg(Review.rating)).scalar() or 0
     rating_distribution = db.session.query(Review.rating, db.func.count(Review.id)).group_by(Review.rating).all()
     rating_data = [0, 0, 0, 0, 0]  # تمثل التقييمات من 1 إلى 5
-
     for rating in rating_distribution:
         if 1 <= rating[0] <= 5:
             rating_data[rating[0]-1] = rating[1]
 
-    # تقرير أفضل مقدمي الخدمة
+    # تقرير أفضل مزودي الخدمة
     top_providers = db.session.query(
         ServiceProvider.id,
         ServiceProvider.company_name,
@@ -1023,27 +1087,39 @@ def admin_reports():
      .order_by(ServiceProvider.rating.desc())\
      .limit(5).all()
 
-    # تقرير أكثر الخدمات حجزاً
-    top_services = db.session.query(
-        Service.id,
-        Service.name,
-        Service.category,
-        db.func.count(Booking.id).label('booking_count')
-    ).join(Booking, Service.id == Booking.service_id)\
-     .group_by(Service.id)\
-     .order_by(db.desc('booking_count'))\
-     .limit(5).all()
+    if is_mobile:
+        return render_template('mobile/admin/reports.html', 
+                             title='تقارير النظام',
+                             total_users=total_users,
+                             total_providers=total_providers,
+                             total_regular_users=total_regular_users,
+                             verified_providers=verified_providers,
+                             unverified_providers=unverified_providers,  # إضافة هذا المتغير
+                             total_services=total_services,
+                             active_services=active_services,
+                             category_labels=category_labels,
+                             category_data=category_data,
+                             total_bookings=total_bookings,
+                             pending_bookings=pending_bookings,
+                             confirmed_bookings=confirmed_bookings,
+                             completed_bookings=completed_bookings,
+                             cancelled_bookings=cancelled_bookings,
+                             total_payments=total_payments,
+                             completed_payments=completed_payments,
+                             total_sales=total_sales,
+                             monthly_bookings=monthly_bookings,
+                             avg_rating=avg_rating,
+                             rating_data=rating_data,
+                             top_providers=top_providers)
 
     return render_template('admin/reports.html', title='تقارير النظام',
                           total_users=total_users,
                           total_providers=total_providers,
                           total_regular_users=total_regular_users,
                           verified_providers=verified_providers,
-                          unverified_providers=unverified_providers,
+                          unverified_providers=unverified_providers,  # إضافة هذا المتغير
                           total_services=total_services,
                           active_services=active_services,
-                          inactive_services=inactive_services,
-                          categories=categories,
                           category_labels=category_labels,
                           category_data=category_data,
                           total_bookings=total_bookings,
@@ -1053,13 +1129,11 @@ def admin_reports():
                           cancelled_bookings=cancelled_bookings,
                           total_payments=total_payments,
                           completed_payments=completed_payments,
-                          pending_payments=pending_payments,
                           total_sales=total_sales,
                           monthly_bookings=monthly_bookings,
                           avg_rating=avg_rating,
                           rating_data=rating_data,
-                          top_providers=top_providers,
-                          top_services=top_services)
+                          top_providers=top_providers)
 
 # Admin - Users
 @app.route('/admin/users')
@@ -1069,8 +1143,14 @@ def admin_users():
         flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
         return redirect(url_for('index'))
 
+    # التحقق من نوع الجهاز
+    is_mobile = request.args.get('mobile') or 'mobile' in request.headers.get('User-Agent', '').lower()
+    
     users = User.query.all()
-    return render_template('admin/users.html', title='إدارة المستخدمين', users=users)
+    
+    # اختيار القالب المناسب حسب نوع الجهاز
+    template = 'mobile/admin/users.html' if is_mobile else 'admin/users.html'
+    return render_template(template, title='إدارة المستخدمين', users=users)
 
 # Admin - Services
 @app.route('/admin/services')
@@ -1083,6 +1163,18 @@ def admin_services():
     services = Service.query.all()
     return render_template('admin/services.html', title='إدارة الخدمات', services=services)
 
+@app.route('/mobile/admin/services')
+@login_required
+def mobile_admin_services():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('mobile_index'))
+
+    services = Service.query.all()
+    return render_template('mobile/admin/services.html', 
+                         title='إدارة الخدمات',
+                         services=services)
+
 # Admin - Bookings
 @app.route('/admin/bookings')
 @login_required
@@ -1091,7 +1183,14 @@ def admin_bookings():
         flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
         return redirect(url_for('index'))
 
+    # التحقق من نوع الجهاز
+    is_mobile = request.args.get('mobile') or 'mobile' in request.headers.get('User-Agent', '').lower()
+
     bookings = Booking.query.all()
+    
+    if is_mobile:
+        return render_template('mobile/admin/bookings.html', title='إدارة الحجوزات', bookings=bookings)
+    
     return render_template('admin/bookings.html', title='إدارة الحجوزات', bookings=bookings)
 
 # Admin - Payments
@@ -1102,7 +1201,14 @@ def admin_payments():
         flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
         return redirect(url_for('index'))
 
+    # التحقق من نوع الجهاز
+    is_mobile = request.args.get('mobile') or 'mobile' in request.headers.get('User-Agent', '').lower()
+
     payments = Payment.query.all()
+    
+    if is_mobile:
+        return render_template('mobile/admin/payments.html', title='إدارة المدفوعات', payments=payments)
+    
     return render_template('admin/payments.html', title='إدارة المدفوعات', payments=payments)
 
 # Toggle user active status
@@ -1145,16 +1251,28 @@ def toggle_service_active(service_id):
 def manage_booking(booking_id, action):
     # التحقق من الحجز
     booking = Booking.query.get_or_404(booking_id)
-
-    # التحقق من أن المستخدم هو مزود الخدمة المرتبط بالحجز
     service = Service.query.get(booking.service_id)
     provider = ServiceProvider.query.get(service.provider_id)
 
-    if provider.user_id != current_user.id and not current_user.is_admin():
-        return jsonify({'success': False, 'message': 'ليس لديك صلاحية إدارة هذا الحجز'})
+    # التحقق من الصلاحيات - السماح للعميل ومزود الخدمة والمشرف
+    is_authorized = (booking.client_id == current_user.id or 
+                    provider.user_id == current_user.id or 
+                    current_user.is_admin())
+    
+    if not is_authorized:
+        return jsonify({
+            'success': False,
+            'message': 'ليس لديك صلاحية إدارة هذا الحجز'
+        })
 
     # تنفيذ الإجراء المطلوب
     if action == 'confirm':
+        if provider.user_id != current_user.id and not current_user.is_admin():
+            return jsonify({
+                'success': False,
+                'message': 'فقط مزود الخدمة يمكنه تأكيد الحجز'
+            })
+            
         booking.status = 'confirmed'
         message = 'تم تأكيد الحجز بنجاح'
 
@@ -1162,55 +1280,56 @@ def manage_booking(booking_id, action):
         create_notification(
             booking.client_id,
             "تم تأكيد الحجز",
-            f"تم تأكيد حجزك للخدمة {service.name} بتاريخ {booking.booking_date.strftime('%Y-%m-%d %H:%M')}",
+            f"تم تأكيد حجزك للخدمة {service.name}",
             "success",
             booking.id,
             "booking"
         )
 
-        # تسجيل الإجراء
-        log_action(
-            current_user.id,
-            'confirm_booking',
-            f'تم تأكيد الحجز رقم {booking_id}',
-            booking_id=booking_id
-        )
-
     elif action == 'cancel':
+        # التحقق من حالة الحجز
+        if booking.status not in ['pending', 'confirmed']:
+            return jsonify({
+                'success': False,
+                'message': 'لا يمكن إلغاء هذا الحجز في حالته الحالية'
+            })
+
+        # حذف الدفع المرتبط إن وجد
+        if booking.payment:
+            db.session.delete(booking.payment)
+
+        # إلغاء الحجز
         booking.status = 'cancelled'
         message = 'تم إلغاء الحجز بنجاح'
 
-        # إعادة تعيين حالة الدفع إذا كانت موجودة
-        if booking.payment:
-            booking.payment.status = 'cancelled'
-
-        # إنشاء إشعار للعميل
+        # تحديد من سيتلقى الإشعار
+        notify_user_id = provider.user_id if current_user.id == booking.client_id else booking.client_id
+        notifier_name = "العميل" if current_user.id == booking.client_id else "مزود الخدمة"
+        
         create_notification(
-            booking.client_id,
+            notify_user_id,
             "تم إلغاء الحجز",
-            f"تم إلغاء حجزك للخدمة {service.name} بتاريخ {booking.booking_date.strftime('%Y-%m-%d %H:%M')}",
+            f"قام {notifier_name} بإلغاء الحجز للخدمة {service.name}",
             "danger",
-            booking.id,
+            None,
             "booking"
         )
 
-        # تسجيل الإجراء
-        log_action(
-            current_user.id,
-            'cancel_booking',
-            f'تم إلغاء الحجز رقم {booking_id}',
-            booking_id=booking_id
-        )
-
     elif action == 'complete':
+        if provider.user_id != current_user.id and not current_user.is_admin():
+            return jsonify({
+                'success': False,
+                'message': 'فقط مزود الخدمة يمكنه إكمال الحجز'
+            })
+            
         booking.status = 'completed'
-        message = 'تم تعليم الحجز كمكتمل'
+        message = 'تم إكمال الحجز بنجاح'
 
         # إنشاء إشعار للعميل
         create_notification(
             booking.client_id,
             "تم إكمال الخدمة",
-            f"تم إكمال تقديم الخدمة {service.name}. نأمل أن تكون راضياً عن الخدمة. يمكنك الآن تقييم الخدمة.",
+            f"تم إكمال تقديم الخدمة {service.name}. يمكنك الآن تقييم الخدمة",
             "info",
             booking.id,
             "booking"
@@ -1219,24 +1338,35 @@ def manage_booking(booking_id, action):
         # إرسال إشعار للتقييم
         send_review_notification(booking.id)
 
+    else:
+        return jsonify({
+            'success': False,
+            'message': 'إجراء غير صالح'
+        })
+
+    try:
+        db.session.commit()
         # تسجيل الإجراء
         log_action(
             current_user.id,
-            'complete_booking',
-            f'تم إكمال الحجز رقم {booking_id}',
+            f'{action}_booking',
+            f'تم {message} رقم {booking_id}',
             booking_id=booking_id
         )
-
-    else:
-        return jsonify({'success': False, 'message': 'إجراء غير صالح'})
-
-    db.session.commit()
-
-    return jsonify({
-        'success': True,
-        'message': message,
-        'status': booking.status
-    })
+        
+        return jsonify({
+            'success': True,
+            'message': message,
+            'status': booking.status
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error in {action} booking {booking_id}: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'حدث خطأ أثناء {message}'
+        })
 
 # تغيير حالة الدفع (للمزودين)
 @app.route('/payment/<int:payment_id>/confirm-payment', methods=['POST'])
@@ -1535,12 +1665,14 @@ def mobile_dashboard():
     current_user_data = User.query.get(current_user.id)
 
     # الحصول على حجوزات المستخدم
-    bookings = Booking.query.filter_by(client_id=current_user.id).order_by(Booking.created_at.desc()).all()
+    bookings = Booking.query.filter_by(client_id=current_user.id)\
+        .order_by(Booking.booking_date.desc()).all()
 
     # مقدم خدمة؟
     provider = None
     active_services_count = 0
     pending_bookings_count = 0
+    services_offered = None
 
     if current_user.is_provider():
         provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
@@ -1555,8 +1687,7 @@ def mobile_dashboard():
                 provider_bookings.extend(service_bookings)
 
             pending_bookings_count = len(provider_bookings)
-            services_offered = ", ".join([service.name for service in services]) #Added this line
-
+            services_offered = ", ".join([service.name for service in services])
 
     completed_bookings = [b for b in bookings if b.status == 'completed']
     review_form = ReviewForm()
@@ -1569,7 +1700,7 @@ def mobile_dashboard():
                           pending_bookings_count=pending_bookings_count,
                           review_form=review_form,
                           provider=provider,
-                          services_offered=services_offered if services else None) #Added this line
+                          services_offered=services_offered)
 
 @app.route('/mobile/about')
 def mobile_about():
@@ -1732,3 +1863,25 @@ def log_action(user_id, action_type, action_details, booking_id=None, payment_id
     )
     db.session.add(action)
     db.session.commit()
+
+# Delete Service
+@app.route('/admin/services/<int:service_id>/delete', methods=['POST'])
+@login_required
+def delete_service(service_id):
+    if not current_user.is_admin():
+        return jsonify({'success': False, 'message': 'غير مصرح بهذه العملية'})
+
+    service = Service.query.get_or_404(service_id)
+    try:
+        db.session.delete(service)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'تم حذف الخدمة بنجاح'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': 'حدث خطأ أثناء حذف الخدمة'
+        })

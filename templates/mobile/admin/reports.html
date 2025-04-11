@@ -1,0 +1,571 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}تقارير النظام{% endblock %}
+
+{% block content %}
+<div class="reports-dashboard">
+    <!-- تبويبات التقارير -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" onclick="switchTab('overview')" id="tab-overview">
+            <i class="fas fa-chart-pie"></i>
+            <span>نظرة عامة</span>
+        </button>
+        <button class="filter-tab" onclick="switchTab('users')" id="tab-users">
+            <i class="fas fa-users"></i>
+            <span>المستخدمين</span>
+        </button>
+        <button class="filter-tab" onclick="switchTab('services')" id="tab-services">
+            <i class="fas fa-cogs"></i>
+            <span>الخدمات</span>
+        </button>
+        <button class="filter-tab" onclick="switchTab('bookings')" id="tab-bookings">
+            <i class="fas fa-calendar-alt"></i>
+            <span>الحجوزات</span>
+        </button>
+        <button class="filter-tab" onclick="switchTab('payments')" id="tab-payments">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>المدفوعات</span>
+        </button>
+    </div>
+
+    <!-- محتوى التقارير -->
+    <div id="reportsContent">
+        <!-- نظرة عامة -->
+        <div class="report-section fade-section" id="overview">
+            <div class="stat-box total">
+                <div class="stat-content">
+                    <div class="stat-info">
+                        <h3>{{ total_sales }} جنيه</h3>
+                        <p>إجمالي المبيعات</p>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 75%"></div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon users">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="count">{{ total_users }}</span>
+                        <span class="label">المستخدمين</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon services">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="count">{{ total_services }}</span>
+                        <span class="label">الخدمات</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bookings">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="count">{{ total_bookings }}</span>
+                        <span class="label">الحجوزات</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon payments">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="count">{{ completed_payments }}</span>
+                        <span class="label">المدفوعات</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">توزيع الخدمات حسب الفئات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="categoriesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">الحجوزات الشهرية</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="monthlyBookingsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- المستخدمين -->
+        <div class="report-section fade-section" id="users" style="display: none;">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">توزيع المستخدمين</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="usersChart"></canvas>
+                    </div>
+                    <div class="text-center mt-3">
+                        <p class="mb-1">إجمالي المستخدمين: <strong>{{ total_users }}</strong></p>
+                        <p class="mb-1">المستخدمين العاديين: <strong>{{ total_regular_users }}</strong></p>
+                        <p>مزودي الخدمة: <strong>{{ total_providers }}</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">حالة مزودي الخدمة</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="providersStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الخدمات -->
+        <div class="report-section fade-section" id="services" style="display: none;">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">حالة الخدمات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="servicesStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">توزيع التقييمات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="ratingsChart"></canvas>
+                    </div>
+                    <div class="text-center mt-3">
+                        <h5>متوسط التقييم: <span class="badge bg-warning">{{ "%.1f"|format(avg_rating) }}</span></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الحجوزات -->
+        <div class="report-section fade-section" id="bookings" style="display: none;">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">حالات الحجوزات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="bookingsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- المدفوعات -->
+        <div class="report-section fade-section" id="payments" style="display: none;">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">حالات المدفوعات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="paymentsChart"></canvas>
+                    </div>
+                    <div class="text-center mt-3">
+                        <h4>إجمالي المبيعات: <span class="badge bg-success">{{ total_sales }} جنيه</span></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.reports-dashboard {
+    padding: 20px;
+    background: #f8f9ff;
+    min-height: 100vh;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.filter-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-tab {
+    background: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #666;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.filter-tab i {
+    font-size: 16px;
+}
+
+.filter-tab.active {
+    background: #4361ee;
+    color: white;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    border-radius: 20px;
+    padding: 20px;
+    color: white;
+    margin-bottom: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-info h3 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.stat-info p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-top: 15px;
+}
+
+.progress-bar .progress {
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.stat-icon.users { background: rgba(67, 97, 238, 0.1); color: #4361ee; }
+.stat-icon.services { background: rgba(46, 213, 115, 0.1); color: #2ed573; }
+.stat-icon.bookings { background: rgba(255, 159, 67, 0.1); color: #ff9f43; }
+.stat-icon.payments { background: rgba(94, 114, 228, 0.1); color: #5e72e4; }
+
+.stat-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-details .count {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.stat-details .label {
+    font-size: 13px;
+    color: #666;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+    height: 400px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.fade-section {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+function switchTab(tabId) {
+    // Remove active class from all tabs
+    document.querySelectorAll('.filter-tabs .filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Add active class to selected tab
+    document.getElementById('tab-' + tabId).classList.add('active');
+    
+    // Hide all sections
+    document.querySelectorAll('.report-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Show selected section
+    document.getElementById(tabId).style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Activate first tab by default
+    switchTab('overview');
+    
+    const commonChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 25,
+                    font: {
+                        size: 14
+                    }
+                }
+            }
+        },
+        animation: {
+            duration: 2000,
+            easing: 'easeInOutQuart'
+        }
+    };
+
+    // Categories Chart
+    new Chart('categoriesChart', {
+        type: 'pie',
+        data: {
+            labels: {{ category_labels|tojson }},
+            datasets: [{
+                data: {{ category_data|tojson }},
+                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b']
+            }]
+        },
+        options: {
+            ...commonChartOptions,
+            plugins: {
+                ...commonChartOptions.plugins,
+                legend: {
+                    position: 'right',
+                    labels: {
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Monthly Bookings Chart
+    new Chart('monthlyBookingsChart', {
+        type: 'line',
+        data: {
+            labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+            datasets: [{
+                label: 'عدد الحجوزات',
+                data: {{ monthly_bookings|tojson }},
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            ...commonChartOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Users Chart
+    new Chart('usersChart', {
+        type: 'doughnut',
+        data: {
+            labels: ['مستخدمين عاديين', 'مزودي خدمة'],
+            datasets: [{
+                data: [{{ total_regular_users }}, {{ total_providers }}],
+                backgroundColor: ['#4e73df', '#1cc88a']
+            }]
+        },
+        options: commonChartOptions
+    });
+
+    // Providers Status Chart
+    new Chart('providersStatusChart', {
+        type: 'pie',
+        data: {
+            labels: ['موثّقين', 'غير موثّقين'],
+            datasets: [{
+                data: [{{ verified_providers }}, {{ total_providers - verified_providers }}],
+                backgroundColor: ['#1cc88a', '#f6c23e']
+            }]
+        },
+        options: commonChartOptions
+    });
+
+    // Services Status Chart
+    new Chart('servicesStatusChart', {
+        type: 'pie',
+        data: {
+            labels: ['خدمات نشطة', 'خدمات غير نشطة'],
+            datasets: [{
+                data: [{{ active_services }}, {{ total_services - active_services }}],
+                backgroundColor: ['#1cc88a', '#e74a3b']
+            }]
+        },
+        options: commonChartOptions
+    });
+
+    // Ratings Chart
+    new Chart('ratingsChart', {
+        type: 'bar',
+        data: {
+            labels: ['★', '★★', '★★★', '★★★★', '★★★★★'],
+            datasets: [{
+                label: 'عدد التقييمات',
+                data: {{ rating_data|tojson }},
+                backgroundColor: ['#e74a3b', '#f6c23e', '#f6c23e', '#1cc88a', '#1cc88a']
+            }]
+        },
+        options: {
+            ...commonChartOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Bookings Chart
+    new Chart('bookingsChart', {
+        type: 'doughnut',
+        data: {
+            labels: ['قيد الانتظار', 'مؤكدة', 'مكتملة', 'ملغية'],
+            datasets: [{
+                data: [
+                    {{ pending_bookings }},
+                    {{ confirmed_bookings }},
+                    {{ completed_bookings }},
+                    {{ cancelled_bookings }}
+                ],
+                backgroundColor: ['#f6c23e', '#4e73df', '#1cc88a', '#e74a3b']
+            }]
+        },
+        options: commonChartOptions
+    });
+
+    // Payments Chart
+    new Chart('paymentsChart', {
+        type: 'doughnut',
+        data: {
+            labels: ['مكتملة', 'قيد الانتظار'],
+            datasets: [{
+                data: [{{ completed_payments }}, {{ total_payments - completed_payments }}],
+                backgroundColor: ['#1cc88a', '#f6c23e']
+            }]
+        },
+        options: commonChartOptions
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,385 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}لوحة تحكم المدير{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <!-- Header Section -->
+    <div class="dashboard-header-section mb-4">
+        <div class="welcome-container text-center">
+            <div class="admin-avatar mb-3">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h1 class="dashboard-title">لوحة تحكم المدير</h1>
+            <p class="welcome-text">مرحباً بك، {{ current_user.username }}</p>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-container mb-4">
+        <div class="stats-grid">
+            <div class="stat-card users">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ users_count }}</h3>
+                    <p>المستخدمين</p>
+                </div>
+            </div>
+            <div class="stat-card providers">
+                <div class="stat-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ providers_count }}</h3>
+                    <p>مقدمي الخدمات</p>
+                </div>
+            </div>
+            <div class="stat-card services">
+                <div class="stat-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ services_count }}</h3>
+                    <p>الخدمات</p>
+                </div>
+            </div>
+            <div class="stat-card payments">
+                <div class="stat-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ payments_count }}</h3>
+                    <p>المدفوعات</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-container mb-4">
+        <h2 class="section-title">
+            <i class="fas fa-bolt me-2"></i>
+            الإجراءات السريعة
+        </h2>
+        <div class="actions-grid">
+            <div class="row g-2">
+                <div class="col-6">
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-light w-100 py-3">
+                        <i class="fas fa-users d-block mb-2"></i>
+                        المستخدمين
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('mobile_admin_services') }}" class="btn btn-light w-100 py-3">
+                        <i class="fas fa-cogs d-block mb-2"></i>
+                        الخدمات
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('admin_bookings', mobile=true) }}" class="btn btn-light w-100 py-3">
+                        <i class="fas fa-calendar-alt d-block mb-2"></i>
+                        الحجوزات
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('admin_payments', mobile=true) }}" class="btn btn-light w-100 py-3">
+                        <i class="fas fa-money-bill-wave d-block mb-2"></i>
+                        المدفوعات
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('admin_reports', mobile=true) }}" class="btn btn-light w-100 py-3">
+                        <i class="fas fa-chart-line d-block mb-2"></i>
+                        التقارير
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="activity-section mb-4">
+        <div class="card mb-3">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title small mb-0">المستخدمون الجدد</h5>
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-link">عرض الكل</a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_users %}
+                    <div class="list-group list-group-flush">
+                        {% for user in recent_users[:3] %}
+                            <div class="list-group-item py-2">
+                                <h6 class="mb-1 small">{{ user.username }}</h6>
+                                <p class="text-muted mb-0 smaller">
+                                    <i class="fas fa-envelope me-1"></i> {{ user.email }}
+                                    {% if user.role == 0 %}
+                                        <span class="badge bg-secondary ms-1">مستخدم</span>
+                                    {% elif user.role == 1 %}
+                                        <span class="badge bg-info ms-1">مقدم خدمة</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3 small">لا يوجد مستخدمين جدد</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title small mb-0">الحجوزات الأخيرة</h5>
+                    <a href="{{ url_for('admin_bookings') }}" class="btn btn-sm btn-link">عرض الكل</a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_bookings %}
+                    <div class="list-group list-group-flush">
+                        {% for booking in recent_bookings[:3] %}
+                            <div class="list-group-item py-2">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="mb-1 small">{{ booking.service.name }}</h6>
+                                        <p class="text-muted mb-0 smaller">
+                                            {{ booking.client.username }}
+                                            {% if booking.status == 'pending' %}
+                                                <span class="badge bg-warning">قيد الانتظار</span>
+                                            {% elif booking.status == 'confirmed' %}
+                                                <span class="badge bg-success">مؤكد</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="text-end small">
+                                        <div class="text-primary">{{ "%.2f"|format(booking.service.price) }} جنيه</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3 small">لا توجد حجوزات حديثة</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- System Actions -->
+    <div class="system-actions-container">
+        <div class="d-grid gap-2">
+            <a href="{{ url_for('admin_send_review_notifications') }}" class="btn btn-primary">
+                <i class="fas fa-envelope me-1"></i> إرسال إشعارات التقييم
+            </a>
+            <a href="{{ url_for('admin_export_database') }}" class="btn btn-success">
+                <i class="fas fa-database me-1"></i> تصدير قاعدة البيانات
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-dashboard {
+    padding: 1.5rem;
+    background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+    min-height: 100vh;
+}
+
+.dashboard-header-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+}
+
+.admin-avatar {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: white;
+    font-size: 2rem;
+    box-shadow: 0 4px 20px rgba(67, 97, 238, 0.3);
+}
+
+.dashboard-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 1rem 0 0.5rem;
+}
+
+.welcome-text {
+    color: #6c757d;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.stats-container {
+    margin-bottom: 2.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 18px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+.stat-card:active {
+    transform: scale(0.97);
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.users .stat-icon {
+    background: rgba(67, 97, 238, 0.1);
+    color: #4361ee;
+}
+
+.providers .stat-icon {
+    background: rgba(46, 196, 182, 0.1);
+    color: #2ec4b6;
+}
+
+.services .stat-icon {
+    background: rgba(255, 159, 28, 0.1);
+    color: #ff9f1c;
+}
+
+.payments .stat-icon {
+    background: rgba(231, 29, 54, 0.1);
+    color: #e71d36;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    margin-left: 0.5rem;
+    color: #4361ee;
+}
+
+.quick-actions-container {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+}
+
+.actions-grid .btn {
+    border-radius: 16px;
+    padding: 1.25rem 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    border: 1px solid rgba(0,0,0,0.03);
+    height: 100%;
+}
+
+.actions-grid .btn:active {
+    transform: scale(0.97);
+    background: #f1f3f5;
+}
+
+.actions-grid .btn i {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: #4361ee;
+    transition: all 0.3s ease;
+}
+
+.activity-section .card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+}
+
+.activity-section .card-header {
+    background: white;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding: 1.25rem;
+}
+
+.system-actions-container {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.system-actions .btn {
+    border-radius: 16px;
+    padding: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.system-actions .btn:last-child {
+    margin-bottom: 0;
+}
+
+.system-actions .btn:active {
+    transform: scale(0.98);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stats-grid > *, 
+.actions-grid > *,
+.activity-section > * {
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.stats-grid > *:nth-child(1) { animation-delay: 0.1s; }
+.stats-grid > *:nth-child(2) { animation-delay: 0.2s; }
+.stats-grid > *:nth-child(3) { animation-delay: 0.3s; }
+.stats-grid > *:nth-child(4) { animation-delay: 0.4s; }
+</style>
+{% endblock %}

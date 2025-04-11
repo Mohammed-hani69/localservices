@@ -1,0 +1,542 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}إدارة الخدمات{% endblock %}
+
+{% block content %}
+<div class="payments-dashboard">
+    <!-- Top Stats Overview -->
+    <div class="top-stats">
+        <div class="stat-box total">
+            <div class="stat-content">
+                <div class="stat-info">
+                    <h3>{{ services|length }}</h3>
+                    <p>إجمالي الخدمات</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" style="width: 75%"></div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="count">{{ services|selectattr('is_active', 'true')|list|length }}</span>
+                    <span class="label">نشطة</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon pending">
+                    <i class="fas fa-pause"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="count">{{ services|selectattr('is_active', 'false')|list|length }}</span>
+                    <span class="label">غير نشطة</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchServices" placeholder="بحث في الخدمات...">
+        </div>
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">الكل</button>
+            <button class="filter-tab" data-filter="active">نشطة</button>
+            <button class="filter-tab" data-filter="inactive">غير نشطة</button>
+        </div>
+    </div>
+
+    <!-- Services List -->
+    <div class="payments-container">
+        {% if services %}
+            {% for service in services %}
+            <div class="payment-item fade-in" data-status="{{ 'active' if service.is_active else 'inactive' }}">
+                <div class="payment-header">
+                    <div class="service-info">
+                        
+                        <div>
+                            <h4>{{ service.name }}</h4>
+                            <span class="client-name">
+                                <i class="fas fa-building"></i> {{ service.provider.company_name }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="payment-amount">
+                        <span class="amount">{{ "%.2f"|format(service.price) }}</span>
+                        <span class="currency">جنيه</span>
+                    </div>
+                </div>
+                
+                <div class="payment-details">
+                    <div class="detail-row">
+                        <div class="detail-item">
+                            <i class="fas fa-tag"></i>
+                            <span>{{ service.category }}</span>
+                        </div>
+                        <div class="status-badge status-{{ 'active' if service.is_active else 'inactive' }}">
+                            <i class="fas fa-{{ 'check' if service.is_active else 'pause' }}"></i>
+                            {{ 'نشط' if service.is_active else 'غير نشط' }}
+                        </div>
+                    </div>
+                    
+                    <div class="service-actions">
+                        <a href="{{ url_for('mobile_service_details', service_id=service.id) }}" class="action-btn view-btn ripple">
+                            <i class="fas fa-eye"></i>
+                            <span>عرض</span>
+                        </a>
+                        <button class="action-btn delete-btn ripple" data-id="{{ service.id }}">
+                            <i class="fas fa-trash"></i>
+                            <span>حذف</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-animation">
+                    <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_VMNh5Y.json" 
+                                 background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay>
+                    </lottie-player>
+                </div>
+                <h3>لا توجد خدمات</h3>
+                <p>لم يتم العثور على أي خدمات متاحة حالياً</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.payments-dashboard {
+    padding: 0;
+    background-color: var(--background-color);
+    min-height: 100vh;
+}
+
+.top-stats {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    padding: 1.5rem 1rem 2rem;
+    color: white;
+    border-radius: 0 0 25px 25px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.stat-box {
+    background: rgba(255, 255, 255, 0.21);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.progress-bar {
+    height: 5px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: var(--success-color);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.stat-card {
+    background:rgba(255, 255, 255, 0.21);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.success {
+    background: rgba(67, 98, 238, 0.33);
+    color: #4361ee;
+}
+
+.stat-icon.pending {
+    background: rgba(255, 159, 67, 0.33);
+    color: #ff9f43;
+}
+
+.stat-details {
+    flex: 1;
+}
+
+.filters-section {
+    margin: -20px 1rem 1rem;
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.search-box {
+    position: relative;
+    margin-bottom: 1rem;
+    padding-top: 0.9rem;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    padding-left: 2.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-tab {
+    flex: 1;
+    padding: 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    background-color: var(--light-color);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-tab.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.payments-container {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.payment-item {
+    background: white;
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.payment-item:active {
+    transform: scale(0.98);
+}
+
+.payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.service-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.service-icon-wrapper {
+    width: 45px;
+    height: 45px;
+    background: rgba(67, 97, 238, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4361ee;
+    font-size: 20px;
+}
+
+.payment-amount {
+    text-align: right;
+}
+
+.payment-amount .amount {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.payment-amount .currency {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.payment-details {
+    padding: 1rem 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    margin: 0.5rem 0;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.status-active {
+    background: rgba(67, 97, 238, 0.1);
+    color: #4361ee;
+}
+
+.status-badge.status-inactive {
+    background: rgba(255, 71, 87, 0.1);
+    color: #ff4757;
+}
+
+.service-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.action-btn {
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.view-btn {
+    background: rgba(67, 97, 238, 0.1);
+    color: #4361ee;
+    text-decoration: none;
+}
+
+.edit-btn {
+    background: rgba(255, 159, 67, 0.1);
+    color: #ff9f43;
+}
+
+.delete-btn {
+    background: rgba(255, 71, 87, 0.1);
+    color: #ff4757;
+    border: none;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+}
+
+.empty-animation {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 1.5rem;
+}
+
+.empty-state h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.payment-item {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.payment-item:nth-child(2) { animation-delay: 0.1s; }
+.payment-item:nth-child(3) { animation-delay: 0.2s; }
+.payment-item:nth-child(4) { animation-delay: 0.3s; }
+.payment-item:nth-child(5) { animation-delay: 0.4s; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const serviceItems = document.querySelectorAll('.payment-item');
+    
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const filter = tab.dataset.filter;
+            
+            filterTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            serviceItems.forEach(item => {
+                if (filter === 'all' || item.dataset.status === filter) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Search functionality
+    const searchInput = document.getElementById('searchServices');
+    
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        serviceItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+        });
+    });
+
+    // Delete Service functionality
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const serviceId = this.dataset.id;
+            const serviceName = this.closest('.payment-item').querySelector('h4').textContent;
+
+            if (confirm(`هل أنت متأكد من حذف الخدمة "${serviceName}"؟`)) {
+                fetch(`/admin/services/${serviceId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the service item from DOM
+                        this.closest('.payment-item').remove();
+                        // Show success message
+                        alert(data.message);
+                        
+                        // Update services count
+                        const totalCount = document.querySelector('.total h3');
+                        const activeCount = document.querySelector('.stats-grid .stat-card:first-child .count');
+                        const inactiveCount = document.querySelector('.stats-grid .stat-card:last-child .count');
+                        
+                        if (totalCount) totalCount.textContent = parseInt(totalCount.textContent) - 1;
+                        
+                        const wasActive = this.closest('.payment-item').dataset.status === 'active';
+                        if (wasActive && activeCount) {
+                            activeCount.textContent = parseInt(activeCount.textContent) - 1;
+                        } else if (!wasActive && inactiveCount) {
+                            inactiveCount.textContent = parseInt(inactiveCount.textContent) - 1;
+                        }
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء حذف الخدمة');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

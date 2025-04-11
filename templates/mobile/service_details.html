@@ -9,7 +9,7 @@
     <!-- Service Image -->
     <div class="service-image-container mb-3">
         {% if service.image %}
-        <img src="{{ url_for('static', filename='uploads/services/' + service.image) }}" alt="{{ service.name }}" class="img-fluid">
+        <img src="{{ url_for('static', filename='' + service.image) }}" alt="{{ service.name }}" class="img-fluid">
         {% else %}
         <div class="d-flex align-items-center justify-content-center bg-light py-5">
             <i class="fas fa-concierge-bell fa-4x text-muted"></i>

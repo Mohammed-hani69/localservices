@@ -1,0 +1,498 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}إدارة المدفوعات{% endblock %}
+
+{% block content %}
+<div class="payments-dashboard">
+    <!-- Top Stats Overview -->
+    <div class="top-stats">
+        <div class="stat-box total">
+            <div class="stat-content">
+                <div class="stat-info">
+                    <h3>{{ "%.2f"|format(payments|sum(attribute='amount')) }}</h3>
+                    <p>إجمالي المدفوعات</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" style="width: 75%"></div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon pending">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="count">{{ payments|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+                    <span class="label">قيد الانتظار</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-details">
+                    <span class="count">{{ payments|selectattr('status', 'equalto', 'completed')|list|length }}</span>
+                    <span class="label">مكتملة</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="بحث في المدفوعات..." id="paymentSearch">
+        </div>
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">الكل</button>
+            <button class="filter-tab" data-filter="pending">قيد الانتظار</button>
+            <button class="filter-tab" data-filter="completed">مكتملة</button>
+            <button class="filter-tab" data-filter="failed">فاشلة</button>
+        </div>
+    </div>
+
+    <!-- Payments List -->
+    <div class="payments-container">
+        {% if payments %}
+            {% for payment in payments %}
+            <div class="payment-item fade-in" data-status="{{ payment.status }}">
+                <div class="payment-header">
+                    <div class="service-info">
+                        <div>
+                            <h4>{{ payment.booking.service.name }}</h4>
+                            <span class="client-name">
+                                <i class="fas fa-user"></i> {{ payment.client.username }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="payment-amount">
+                        <span class="amount">{{ "%.2f"|format(payment.amount) }}</span>
+                        <span class="currency">جنيه</span>
+                    </div>
+                </div>
+                
+                <div class="payment-details">
+                    <div class="detail-row">
+                        <div class="detail-item">
+                            <i class="fas fa-credit-card"></i>
+                            <span>
+                                {% if payment.payment_method == 'credit_card' %}
+                                    بطاقة ائتمان
+                                {% elif payment.payment_method == 'debit_card' %}
+                                    بطاقة مدين
+                                {% elif payment.payment_method == 'bank_transfer' %}
+                                    تحويل بنكي
+                                {% elif payment.payment_method == 'cash' %}
+                                    نقداً
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>
+                                {% if payment.payment_date %}
+                                    {{ payment.payment_date.strftime('%Y-%m-%d') }}
+                                {% else %}
+                                    لم يتم الدفع بعد
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="status-badge status-{{ payment.status }}">
+                            <i class="fas fa-{{ 'clock' if payment.status == 'pending' else 'check' if payment.status == 'completed' else 'times' }}"></i>
+                            {{ 'قيد الانتظار' if payment.status == 'pending' else 'مكتمل' if payment.status == 'completed' else 'فشل' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-animation">
+                    <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_VMNh5Y.json" 
+                                 background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay>
+                    </lottie-player>
+                </div>
+                <h3>لا توجد مدفوعات</h3>
+                <p>لم يتم العثور على أي مدفوعات حالياً</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.payments-dashboard {
+    padding: 20px;
+    background: #f8f9ff;
+    min-height: 100vh;
+}
+
+.top-stats {
+    margin-bottom: 30px;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    border-radius: 20px;
+    padding: 20px;
+    color: white;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-info h3 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.stat-info p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-top: 15px;
+}
+
+.progress-bar .progress {
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.stat-icon.pending {
+    background: rgba(255, 159, 67, 0.1);
+    color: #ff9f43;
+}
+
+.stat-icon.success {
+    background: rgba(46, 213, 115, 0.1);
+    color: #2ed573;
+}
+
+.stat-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-details .count {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.stat-details .label {
+    font-size: 13px;
+    color: #666;
+}
+
+.filters-section {
+    margin-bottom: 25px;
+}
+
+.search-box {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.search-box i {
+    color: #666;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.filter-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-tab {
+    background: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #666;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.filter-tab.active {
+    background: #4361ee;
+    color: white;
+}
+
+.payments-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.payment-item {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.payment-header {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.service-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.service-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.service-info h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.client-name {
+    font-size: 13px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.payment-amount {
+    text-align: left;
+}
+
+.payment-amount .amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2ed573;
+}
+
+.payment-amount .currency {
+    font-size: 13px;
+    color: #666;
+    margin-right: 3px;
+}
+
+.payment-details {
+    padding: 15px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #666;
+}
+
+.detail-item i {
+    color: #4361ee;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-badge.status-pending {
+    background: rgba(255, 159, 67, 0.1);
+    color: #ff9f43;
+}
+
+.status-badge.status-completed {
+    background: rgba(46, 213, 115, 0.1);
+    color: #2ed573;
+}
+
+.status-badge.status-failed {
+    background: rgba(255, 71, 87, 0.1);
+    color: #ff4757;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-state h3 {
+    margin: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.empty-state p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .payments-dashboard {
+        padding: 15px;
+    }
+    
+    .stat-box {
+        padding: 15px;
+    }
+    
+    .stat-info h3 {
+        font-size: 24px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const paymentItems = document.querySelectorAll('.payment-item');
+    
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const filter = tab.dataset.filter;
+            
+            filterTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            paymentItems.forEach(item => {
+                if (filter === 'all' || item.dataset.status === filter) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Search functionality
+    const searchInput = document.getElementById('paymentSearch');
+    
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        paymentItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

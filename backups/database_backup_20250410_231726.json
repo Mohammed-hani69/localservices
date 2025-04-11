@@ -1,0 +1,144 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "username": "محمد هاني عبدالعزيز ",
+            "email": "ezezo291@gmail.com",
+            "phone": "01145425207",
+            "address": "Hehia",
+            "role": 1,
+            "is_active": true,
+            "created_at": "2025-04-10T14:52:59.193598"
+        },
+        {
+            "id": 2,
+            "username": "محمد الشبراوي",
+            "email": "mohamed@gmail.com",
+            "phone": "01120201210",
+            "address": "العبور",
+            "role": 1,
+            "is_active": true,
+            "created_at": "2025-04-10T15:04:36.757211"
+        },
+        {
+            "id": 3,
+            "username": "عبدالله ",
+            "email": "hanizezo5@gmail.com",
+            "phone": "01145425207",
+            "address": "Hehia",
+            "role": 1,
+            "is_active": true,
+            "created_at": "2025-04-10T15:06:52.393220"
+        },
+        {
+            "id": 4,
+            "username": "حسن احمد",
+            "email": "Hassan@gmail.com",
+            "phone": "01145425207",
+            "address": "Hehia",
+            "role": 1,
+            "is_active": true,
+            "created_at": "2025-04-10T16:46:21.317941"
+        },
+        {
+            "id": 5,
+            "username": "زيزو ",
+            "email": "hanizezo5u@gmail.com",
+            "phone": "01145425207",
+            "address": "Hehia",
+            "role": 0,
+            "is_active": true,
+            "created_at": "2025-04-10T18:09:33.759171"
+        },
+        {
+            "id": 6,
+            "username": "admin",
+            "email": "admin@gmail.com",
+            "phone": "0000000000",
+            "address": "Admin Address",
+            "role": 2,
+            "is_active": true,
+            "created_at": "2025-04-10T20:53:49.615368"
+        }
+    ],
+    "service_providers": [
+        {
+            "id": 1,
+            "user_id": 1,
+            "company_name": "Baladí mart ",
+            "description": "تسوق",
+            "logo": null,
+            "website": "",
+            "verified": false,
+            "rating": 0.0,
+            "created_at": "2025-04-10T14:53:15.701109"
+        },
+        {
+            "id": 2,
+            "user_id": 3,
+            "company_name": "استاذ / خالد",
+            "description": "مدرس رياضيات ",
+            "logo": null,
+            "website": "",
+            "verified": false,
+            "rating": 0.0,
+            "created_at": "2025-04-10T15:08:31.460849"
+        },
+        {
+            "id": 3,
+            "user_id": 2,
+            "company_name": "صيدلية الشفا",
+            "description": "صيدلية الشفا",
+            "logo": null,
+            "website": "",
+            "verified": false,
+            "rating": 0.0,
+            "created_at": "2025-04-10T16:27:01.457217"
+        },
+        {
+            "id": 4,
+            "user_id": 4,
+            "company_name": "حسن احمد ",
+            "description": "سباك",
+            "logo": null,
+            "website": "",
+            "verified": false,
+            "rating": 0.0,
+            "created_at": "2025-04-10T16:47:01.498860"
+        }
+    ],
+    "services": [
+        {
+            "id": 1,
+            "provider_id": 2,
+            "name": "درس رياضيات للصف الثالث الثانوي ",
+            "description": "درس رياضيات للمرحلة الثانوية ",
+            "price": 500.0,
+            "duration": 150,
+            "category": "تعليم",
+            "service_type": "رياضيات",
+            "is_active": true,
+            "image": "uploads/services/01f7afce53bb5922.jpeg",
+            "additional_info": "مراجعه شامله علي مادة الرياضيات للصف الثالث الثانوي ",
+            "created_at": "2025-04-10T15:12:33.157560"
+        },
+        {
+            "id": 2,
+            "provider_id": 3,
+            "name": "استشاره طبيه",
+            "description": "استشاره طبيه",
+            "price": 250.0,
+            "duration": 30,
+            "category": "صحة",
+            "service_type": "استشارات",
+            "is_active": true,
+            "image": "uploads/services/5743b20de4ae9fd5.png",
+            "additional_info": "استشاره طبيه",
+            "created_at": "2025-04-10T16:28:55.786078"
+        }
+    ],
+    "bookings": [],
+    "payments": [],
+    "reviews": [],
+    "notifications": []
+}

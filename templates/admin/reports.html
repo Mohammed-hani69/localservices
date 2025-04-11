@@ -7,31 +7,74 @@
 <style>
     .stats-card {
         transition: all 0.3s;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
     }
     .stats-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
     }
     .chart-container {
         position: relative;
-        height: 300px;
-        margin-bottom: 20px;
+        height: 350px;
+        margin-bottom: 25px;
+        padding: 15px;
     }
     .provider-card, .service-card {
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
+        border: none;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
         transition: all 0.3s;
+        background: #fff;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     }
     .provider-card:hover, .service-card:hover {
         background-color: #f8f9fa;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-3px);
     }
     .tab-pane {
-        padding: 20px 0;
+        padding: 25px 0;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    .nav-tabs {
+        border-bottom: none;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+    .nav-tabs .nav-link {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 20px;
+        font-weight: 500;
+        color: #6c757d;
+        transition: all 0.3s;
+    }
+    .nav-tabs .nav-link:hover {
+        background-color: #f8f9fa;
+        color: #000;
+    }
+    .nav-tabs .nav-link.active {
+        background-color: #4e73df;
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(78, 115, 223, 0.2);
+    }
+    .btn-group .btn {
+        border-radius: 12px;
+        padding: 10px 20px;
+        margin: 0 5px;
+        transition: all 0.3s;
+    }
+    .badge {
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>
 {% endblock %}

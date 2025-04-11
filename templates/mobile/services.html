@@ -1,50 +1,388 @@
 {% extends "mobile/base_mobile.html" %}
 
-{% block title %}لوحة التحكم - منصة الخدمات المحلية{% endblock %}
+{% block title %}تصفح الخدمات - منصة الخدمات المحلية{% endblock %}
 
-{% block header_title %}لوحة التحكم{% endblock %}
+{% block header_title %}تصفح الخدمات{% endblock %}
 
 {% block content %}
-<div class="mobile-dashboard">
-    <div class="user-info">
-        <h2>مرحباً، {{ current_user.name }}</h2>
-        <p>البريد الإلكتروني: {{ current_user.email }}</p>
-        <!-- Add other user information as needed -->
+<div class="mobile-services-page">
+    <!-- البنرات المتحركة -->
+    <div class="banner-slider">
+        <div class="banner-slides">
+            <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1616444543692-1072ece0696d?q=80&w=2070&auto=format&fit=crop');">
+                <div class="banner-slide-content">
+                    <h3 class="banner-slide-title">خدمات متميزة</h3>
+                    <p class="banner-slide-text">تصفح أفضل الخدمات في منطقتك</p>
+                </div>
+            </div>
+            <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop');">
+                <div class="banner-slide-content">
+                    <h3 class="banner-slide-title">خدمات منزلية</h3>
+                    <p class="banner-slide-text">حلول منزلية متكاملة بأسعار تنافسية</p>
+                </div>
+            </div>
+            <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop');">
+                <div class="banner-slide-content">
+                    <h3 class="banner-slide-title">خدمات مهنية</h3>
+                    <p class="banner-slide-text">استشارات وخدمات احترافية</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="banner-indicators">
+            <div class="banner-indicator active"></div>
+            <div class="banner-indicator"></div>
+            <div class="banner-indicator"></div>
+        </div>
+        
+        <div class="banner-nav banner-prev">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+        <div class="banner-nav banner-next">
+            <i class="fas fa-chevron-left"></i>
+        </div>
     </div>
 
-    {% if current_user.is_admin %}
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">لوحة تحكم المسؤول</a>
-    {% elif current_user.is_provider %}
-        <a href="{{ url_for('provider_dashboard') }}" class="btn btn-primary">لوحة تحكم مقدم الخدمة</a>
+    <!-- بحث وتصفية -->
+    <div class="mobile-card">
+        <form action="{{ url_for('mobile_services') }}" method="get" class="mb-2">
+            <div class="input-group">
+                <input type="text" name="query" class="form-control" placeholder="ابحث عن خدمة..." value="{{ request.args.get('query', '') }}">
+                <select name="category" class="form-select" style="max-width: 120px;">
+                    <option value="" {% if not category %}selected{% endif %}>الكل</option>
+                    <option value="صيانة" {% if category == 'صيانة' %}selected{% endif %}>صيانة</option>
+                    <option value="تنظيف" {% if category == 'تنظيف' %}selected{% endif %}>تنظيف</option>
+                    <option value="تعليم" {% if category == 'تعليم' %}selected{% endif %}>تعليم</option>
+                    <option value="صحة" {% if category == 'صحة' %}selected{% endif %}>صحة</option>
+                    <option value="طعام" {% if category == 'طعام' %}selected{% endif %}>طعام</option>
+                    <option value="أخرى" {% if category == 'أخرى' %}selected{% endif %}>أخرى</option>
+                </select>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- تبويبات الفئات -->
+    {% if not request.args.get('query') %}
+    <div class="mobile-card">
+        <h5 class="text-center mb-3">
+            <span class="emoji">🔍</span> تصفح حسب الفئة
+        </h5>
+        <div class="categories-scroll">
+            <a href="{{ url_for('mobile_services') }}" class="category-item {% if not category %}active{% endif %}">
+                <div class="category-circle">
+                    <i class="fas fa-th"></i>
+                </div>
+                <span class="category-name">الكل</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='صيانة') }}" class="category-item {% if category == 'صيانة' %}active{% endif %}">
+                <div class="category-circle">
+                    <span class="emoji">🔧</span>
+                </div>
+                <span class="category-name">صيانة</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='تنظيف') }}" class="category-item {% if category == 'تنظيف' %}active{% endif %}">
+                <div class="category-circle">
+                    <span class="emoji">🧹</span>
+                </div>
+                <span class="category-name">تنظيف</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='تعليم') }}" class="category-item {% if category == 'تعليم' %}active{% endif %}">
+                <div class="category-circle">
+                    <span class="emoji">📚</span>
+                </div>
+                <span class="category-name">تعليم</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='صحة') }}" class="category-item {% if category == 'صحة' %}active{% endif %}">
+                <div class="category-circle">
+                    <span class="emoji">⚕️</span>
+                </div>
+                <span class="category-name">صحة</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='طعام') }}" class="category-item {% if category == 'طعام' %}active{% endif %}">
+                <div class="category-circle">
+                    <span class="emoji">🍽️</span>
+                </div>
+                <span class="category-name">طعام</span>
+            </a>
+            <a href="{{ url_for('mobile_services', category='أخرى') }}" class="category-item {% if category == 'أخرى' %}active{% endif %}">
+                <div class="category-circle">
+                    <span class="emoji">📦</span>
+                </div>
+                <span class="category-name">أخرى</span>
+            </a>
+        </div>
+    </div>
     {% endif %}
 
-    <a href="{{ url_for('logout') }}" class="btn btn-secondary">تسجيل الخروج</a>
+    <!-- قائمة الخدمات -->
+    {% if services %}
+    <div class="services-grid">
+        {% for service in services %}
+        <div class="service-card">
+            <div class="service-card-inner">
+                <div class="service-image">
+                    {% if service.image %}
+                    <img src="{{ url_for('static', filename='' + service.image) }}" alt="{{ service.name }}">
+                    {% else %}
+                    <div class="service-placeholder">
+                        <i class="fas fa-concierge-bell"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="service-price">
+                        <span class="price-amount">{{ "%.0f"|format(service.price) }}</span>
+                        <span class="price-currency">ر.س</span>
+                    </div>
+                    
+                    <div class="service-badges">
+                        <span class="service-badge">
+                            <i class="fas fa-tag"></i>
+                            {{ service.category }}
+                        </span>
+                        <span class="service-badge">
+                            <i class="fas fa-clock"></i>
+                            {{ service.duration }} دقيقة
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="service-content">
+                    <div class="service-provider">
+                        <div class="provider-avatar">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="provider-info">
+                            <h5 class="service-title">{{ service.name }}</h5>
+                            <p class="provider-name">{{ service.provider.company_name }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="service-footer">
+                        <div class="rating-display" data-rating="{{ service.provider.rating }}"></div>
+                        <a href="{{ url_for('mobile_service_details', service_id=service.id) }}" class="book-now-btn">
+                            احجز الآن
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="mobile-card empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        <h4 class="empty-state-title">لا توجد خدمات</h4>
+        <p class="empty-state-text">
+            {% if request.args.get('query') %}
+            لم يتم العثور على نتائج تطابق بحثك "{{ request.args.get('query') }}"
+            {% elif category %}
+            لا توجد خدمات في فئة "{{ category }}" حالياً
+            {% else %}
+            لا توجد خدمات متاحة حالياً
+            {% endif %}
+        </p>
+        <a href="{{ url_for('mobile_services') }}" class="btn btn-primary">
+            <i class="fas fa-home me-1"></i> عرض جميع الخدمات
+        </a>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Add any necessary scripts here.
+document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة عناصر التقييم
+    initRatingDisplays();
+
+    // جعل بطاقة الخدمة كاملة قابلة للنقر
+    const serviceCards = document.querySelectorAll('.service-card[data-href]');
+    serviceCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const href = this.getAttribute('data-href');
+            if (href) {
+                window.location.href = href;
+            }
+        });
+    });
+});
+
+function initRatingDisplays() {
+    const ratingDisplays = document.querySelectorAll('.rating-display');
+    ratingDisplays.forEach(display => {
+        const rating = parseFloat(display.getAttribute('data-rating')) || 0;
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                stars += '<i class="fas fa-star text-warning"></i>';
+            } else if (i - 0.5 <= rating) {
+                stars += '<i class="fas fa-star-half-alt text-warning"></i>';
+            } else {
+                stars += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        display.innerHTML = stars;
+    });
+}
 </script>
 {% endblock %}
 
 {% block styles %}
 <style>
-.mobile-dashboard {
-    text-align: center;
-    padding: 20px;
+.services-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
 }
 
-.user-info {
-    margin-bottom: 20px;
+.service-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.btn {
-    margin: 10px;
-    display: block;
-    width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.service-card-inner {
+    display: flex;
+    flex-direction: column;
+}
+
+.service-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.service-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.service-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    color: #adb5bd;
+    font-size: 2rem;
+}
+
+.service-price {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex;
+    align-items: baseline;
+    gap: 0.2rem;
+}
+
+.price-amount {
+    font-size: 1.5rem;
+}
+
+.price-currency {
+    font-size: 0.9rem;
+}
+
+.service-badges {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.service-badge {
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.service-content {
+    padding: 1rem;
+    background-color: white;
+}
+
+.service-provider {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.provider-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #adb5bd;
+}
+
+.provider-info {
+    flex-grow: 1;
+    margin-left: 1rem;
+}
+
+.service-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.provider-name {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.service-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.book-now-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.book-now-btn:hover {
+    background-color: var(--primary-color-dark);
 }
 </style>
 {% endblock %}

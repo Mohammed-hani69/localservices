@@ -3,25 +3,25 @@
 {% block title %}لوحة تحكم المدير{% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="py-3 py-md-5">
     <div class="container">
         <div class="row mb-4">
-            <div class="col-md-6">
-                <h2><i class="fas fa-tachometer-alt me-2"></i> لوحة تحكم المدير</h2>
-                <p class="text-muted">مرحباً، {{ current_user.username }}</p>
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+                <h2 class="h3"><i class="fas fa-tachometer-alt me-2"></i> لوحة تحكم المدير</h2>
+                <p class="text-muted mb-0">مرحباً، {{ current_user.username }}</p>
             </div>
-            <div class="col-md-6 text-md-end">
-                <div class="btn-group" role="group">
-                    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary">
+            <div class="col-12 col-md-6">
+                <div class="btn-group-vertical btn-group-md-horizontal w-100" role="group">
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary mb-2 mb-md-0">
                         <i class="fas fa-users me-1"></i> المستخدمين
                     </a>
-                    <a href="{{ url_for('admin_services') }}" class="btn btn-outline-primary">
+                    <a href="{{ url_for('admin_services') }}" class="btn btn-outline-primary mb-2 mb-md-0">
                         <i class="fas fa-cogs me-1"></i> الخدمات
                     </a>
-                    <a href="{{ url_for('admin_bookings') }}" class="btn btn-outline-primary">
+                    <a href="{{ url_for('admin_bookings') }}" class="btn btn-outline-primary mb-2 mb-md-0">
                         <i class="fas fa-calendar-alt me-1"></i> الحجوزات
                     </a>
-                    <a href="{{ url_for('admin_payments') }}" class="btn btn-outline-primary">
+                    <a href="{{ url_for('admin_payments') }}" class="btn btn-outline-primary mb-2 mb-md-0">
                         <i class="fas fa-money-bill-wave me-1"></i> المدفوعات
                     </a>
                     <a href="{{ url_for('admin_reports') }}" class="btn btn-outline-success">
@@ -32,7 +32,7 @@
         </div>
         
         <!-- Stats Cards -->
-        <div class="row mb-4">
+        <div class="row g-3 mb-4">
             <div class="col-md-3 mb-3">
                 <div class="card shadow-sm h-100 text-center">
                     <div class="card-body">
@@ -71,9 +71,9 @@
             </div>
         </div>
         
-        <div class="row">
+        <div class="row g-3">
             <!-- Recent Users -->
-            <div class="col-md-6 mb-4">
+            <div class="col-12 col-md-6">
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-white">
                         <div class="d-flex justify-content-between align-items-center">
@@ -113,7 +113,7 @@
             </div>
             
             <!-- Recent Bookings -->
-            <div class="col-md-6 mb-4">
+            <div class="col-12 col-md-6">
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-white">
                         <div class="d-flex justify-content-between align-items-center">
@@ -159,17 +159,17 @@
         </div>
         
         <!-- System Status -->
-        <div class="row">
+        <div class="row mt-4">
             <div class="col-12">
                 <div class="card shadow-sm">
                     <div class="card-header bg-white">
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                             <h5 class="card-title mb-0"><i class="fas fa-server me-2"></i> حالة النظام</h5>
-                            <div class="btn-group">
-                                <a href="{{ url_for('admin_send_review_notifications') }}" class="btn btn-sm btn-primary">
+                            <div class="btn-group-vertical btn-group-md-horizontal">
+                                <a href="{{ url_for('admin_send_review_notifications') }}" class="btn btn-primary mb-2 mb-md-0">
                                     <i class="fas fa-envelope me-1"></i> إرسال إشعارات التقييم
                                 </a>
-                                <a href="{{ url_for('admin_export_database') }}" class="btn btn-sm btn-success">
+                                <a href="{{ url_for('admin_export_database') }}" class="btn btn-success">
                                     <i class="fas fa-database me-1"></i> تصدير قاعدة البيانات
                                 </a>
                             </div>
@@ -242,4 +242,18 @@
         </div>
     </div>
 </section>
+
+<style>
+@media (min-width: 768px) {
+    .btn-group-md-horizontal {
+        flex-direction: row !important;
+    }
+    .btn-group-md-horizontal .btn {
+        margin-right: 0.5rem;
+    }
+    .btn-group-md-horizontal .btn:last-child {
+        margin-right: 0;
+    }
+}
+</style>
 {% endblock %}

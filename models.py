@@ -15,8 +15,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     phone = db.Column(db.String(20))
     address = db.Column(db.String(200))
-    role = db.Column(db.Integer, default=ROLE_USER)
-    is_active = db.Column(db.Boolean, default=True)
+    role = db.Column(db.Integer, default=ROLE_USER)  # 0=User, 1=Provider, 2=Admin
+    is_active = db.Column(db.Boolean, default=True, nullable=False)  # إضافة حقل الحالة
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Define relationships
@@ -36,6 +36,11 @@ class User(UserMixin, db.Model):
 
     def is_provider(self):
         return self.role == ROLE_SERVICE_PROVIDER
+
+    # تعديل property لفحص الحالة
+    @property
+    def is_authenticated(self):
+        return True if self.is_active else False
 
 class ServiceProvider(db.Model):
     id = db.Column(db.Integer, primary_key=True)
