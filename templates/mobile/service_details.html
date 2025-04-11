@@ -63,22 +63,36 @@
     <div class="mobile-card">
         <h5 class="mb-3">التقييمات والمراجعات</h5>
         {% if service.reviews.count() > 0 %}
-            {% for review in service.reviews %}
-            <div class="review-item mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                        <h6 class="mb-0">{{ review.user.username }}</h6>
-                        <div class="rating-display" data-rating="{{ review.rating }}"></div>
+            <div class="reviews-list">
+                {% for review in service.reviews %}
+                <div class="review-item mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-0">{{ review.user.username }}</h6>
+                            <div class="rating-display" data-rating="{{ review.rating }}"></div>
+                        </div>
+                        <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
                     </div>
-                    <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                    <p class="mb-0">{{ review.comment }}</p>
                 </div>
-                <p class="mb-0">{{ review.comment }}</p>
+                {% endfor %}
             </div>
-            {% endfor %}
         {% else %}
-            <p class="text-muted text-center py-3">لا توجد تقييمات بعد لهذه الخدمة.</p>
+            <div class="empty-reviews py-4 text-center">
+                <i class="far fa-star fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-0">لا توجد تقييمات بعد لهذه الخدمة.</p>
+            </div>
         {% endif %}
     </div>
+    
+    <!-- Review Button (if eligible) -->
+    {% if current_user.is_authenticated and not current_user.is_provider() %}
+        <div class="d-grid gap-2 mb-4 mt-3">
+            <button class="btn btn-outline-primary review-button" data-service-id="{{ service.id }}">
+                <i class="fas fa-star me-1"></i> تقييم الخدمة
+            </button>
+        </div>
+    {% endif %}
 
     <!-- Booking Button -->
     {% if current_user.is_authenticated and not current_user.is_provider() and service.is_active %}
@@ -109,6 +123,7 @@
 </div>
 {% endblock %}
 
+{% block modals %}
 <!-- Modal for adding review -->
 <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -119,8 +134,8 @@
             </div>
             <div class="modal-body">
                 <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
-                    {{ review_form.csrf_token }}
-                    {{ review_form.service_id(id="modal_service_id", value=service.id) }}
+                    {{ review_form.csrf_token if review_form }}
+                    <input type="hidden" name="service_id" id="modal_service_id" value="{{ service.id }}">
                     <div class="mb-3">
                         <label class="form-label">التقييم:</label>
                         <div class="rating-input-container">
@@ -131,12 +146,12 @@
                                 <i class="far fa-star star-rating" data-value="4"></i>
                                 <i class="far fa-star star-rating" data-value="5"></i>
                             </div>
-                            {{ review_form.rating(type="hidden", id="rating_input") }}
+                            <input type="hidden" name="rating" id="rating_input" value="">
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="comment" class="form-label">تعليقك:</label>
-                        {{ review_form.comment(class="form-control", rows="4", placeholder="يرجى كتابة تعليقك على الخدمة...") }}
+                        <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="يرجى كتابة تعليقك على الخدمة..."></textarea>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -147,118 +162,27 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize rating displays
+    // تهيئة عرض التقييمات
     initRatingDisplays();
+    
+    // تهيئة نظام التقييم
+    initReviewSystem();
 
-    // إضافة زر التقييم إذا كان المستخدم قد استخدم الخدمة واكتملت
-    {% if current_user.is_authenticated and not current_user.is_provider() %}
-    const serviceId = {{ service.id }};
-
-    // التحقق مما إذا كان المستخدم لديه حجز مكتمل لهذه الخدمة
-    fetch('/api/check_completed_booking/' + serviceId)
-        .then(response => response.json())
-        .then(data => {
-            if (data.has_completed && !data.has_review) {
-                // إضافة زر التقييم
-                const bookingBtn = document.querySelector('.d-grid.gap-2.mb-4');
-                if (bookingBtn) {
-                    const reviewBtn = document.createElement('a');
-                    reviewBtn.href = "#";
-                    reviewBtn.className = "btn btn-outline-primary btn-lg";
-                    reviewBtn.innerHTML = '<i class="fas fa-star me-1"></i> تقييم الخدمة';
-                    reviewBtn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
-                        reviewModal.show();
-                    });
-                    bookingBtn.parentNode.insertBefore(reviewBtn, bookingBtn.nextSibling);
-                }
-            }
-        })
-        .catch(error => console.error('Error checking booking status:', error));
-    {% endif %}
-
-    // معالجة تقييم النجوم
-    const stars = document.querySelectorAll('.star-rating');
-    const ratingInput = document.getElementById('rating_input');
-
-    // إضافة الاستماع إلى حدث النقر لكل نجمة
-    stars.forEach(star => {
-        star.addEventListener('click', function() {
-            const value = parseInt(this.getAttribute('data-value'));
-            ratingInput.value = value;
-
-            // تحديث شكل النجوم
-            stars.forEach(s => {
-                const starValue = parseInt(s.getAttribute('data-value'));
-                if (starValue <= value) {
-                    s.className = 'fas fa-star star-rating text-warning';
-                } else {
-                    s.className = 'far fa-star star-rating';
-                }
-            });
-        });
-
-        // إضافة تأثير التحويم
-        star.addEventListener('mouseover', function() {
-            const value = parseInt(this.getAttribute('data-value'));
-
-            stars.forEach(s => {
-                const starValue = parseInt(s.getAttribute('data-value'));
-                if (starValue <= value) {
-                    s.className = 'fas fa-star star-rating text-warning';
-                } else {
-                    s.className = 'far fa-star star-rating';
-                }
-            });
+    // إضافة أحداث لزر التقييم الثابت
+    document.querySelectorAll('.review-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const serviceId = this.getAttribute('data-service-id');
+            checkAndShowReviewModal(serviceId);
         });
     });
-
-    // استعادة حالة النجوم عند الخروج من منطقة التقييم
-    const ratingContainer = document.querySelector('.rating-input-container');
-    if (ratingContainer) {
-        ratingContainer.addEventListener('mouseleave', function() {
-            const value = parseInt(ratingInput.value) || 0;
-
-            stars.forEach(s => {
-                const starValue = parseInt(s.getAttribute('data-value'));
-                if (starValue <= value) {
-                    s.className = 'fas fa-star star-rating text-warning';
-                } else {
-                    s.className = 'far fa-star star-rating';
-                }
-            });
-        });
-    }
-
-    // التحقق من صحة النموذج عند الإرسال
-    const reviewForm = document.getElementById('reviewForm');
-    if (reviewForm) {
-        reviewForm.addEventListener('submit', function(e) {
-            const rating = parseInt(ratingInput.value) || 0;
-            const comment = document.getElementById('comment').value.trim();
-
-            if (rating === 0 || rating > 5) {
-                e.preventDefault();
-                alert('يرجى تحديد تقييم بين 1 و 5 نجوم');
-                return false;
-            }
-
-            if (comment.length < 10) {
-                e.preventDefault();
-                alert('يرجى كتابة تعليق مناسب (10 أحرف على الأقل)');
-                return false;
-            }
-
-            return true;
-        });
-    }
 });
 
+// عرض التقييمات
 function initRatingDisplays() {
     const ratingDisplays = document.querySelectorAll('.rating-display');
     ratingDisplays.forEach(display => {
@@ -275,6 +199,192 @@ function initRatingDisplays() {
         }
         display.innerHTML = stars;
     });
+}
+
+// التحقق من إمكانية التقييم وإظهار النافذة
+function checkAndShowReviewModal(serviceId) {
+    console.log('التحقق من إمكانية التقييم للخدمة:', serviceId);
+    
+    fetch('/api/check_completed_booking/' + serviceId)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.has_completed) {
+                showAlert('warning', 'لا يمكنك تقييم هذه الخدمة حتى تكتمل عملية الحجز.');
+                return;
+            }
+            
+            if (data.has_review) {
+                showAlert('info', 'لقد قمت بتقييم هذه الخدمة بالفعل.');
+                return;
+            }
+            
+            // إظهار نافذة التقييم
+            const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+            reviewModal.show();
+            
+            // تأكيد من ظهور النافذة
+            const modalElement = document.getElementById('reviewModal');
+            modalElement.classList.add('show');
+            modalElement.style.display = 'block';
+            document.body.classList.add('modal-open');
+            
+            // إضافة backdrop إذا لم يتم إنشاؤه
+            if (!document.querySelector('.modal-backdrop')) {
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
+            }
+        })
+        .catch(error => {
+            console.error('خطأ في التحقق من حالة الحجز:', error);
+            showAlert('danger', 'حدث خطأ أثناء التحقق من إمكانية التقييم');
+        });
+}
+
+// عرض تنبيهات للمستخدم
+function showAlert(type, message) {
+    const alertBox = document.createElement('div');
+    alertBox.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alertBox.style.zIndex = '9999';
+    alertBox.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.body.appendChild(alertBox);
+    
+    setTimeout(() => {
+        alertBox.classList.remove('show');
+        setTimeout(() => alertBox.remove(), 300);
+    }, 3000);
+}
+
+// تهيئة نظام التقييم
+function initReviewSystem() {
+    const reviewModalElement = document.getElementById('reviewModal');
+    if (!reviewModalElement) {
+        console.error('لم يتم العثور على نافذة التقييم في الصفحة');
+        return;
+    }
+    
+    let reviewModal;
+    try {
+        reviewModal = new bootstrap.Modal(reviewModalElement);
+    } catch (e) {
+        console.error('خطأ في تهيئة نافذة التقييم:', e);
+        return;
+    }
+
+    // معالجة تقييم النجوم
+    const stars = document.querySelectorAll('.star-rating');
+    const ratingInput = document.getElementById('rating_input');
+
+    if (stars.length && ratingInput) {
+        // إضافة الاستماع إلى حدث النقر لكل نجمة
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                ratingInput.value = value;
+                
+                console.log('تم اختيار تقييم: ' + value);
+
+                // تحديث شكل النجوم
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
+            });
+
+            // إضافة تأثير التحويم
+            star.addEventListener('mouseover', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
+            });
+        });
+
+        // استعادة حالة النجوم عند الخروج من منطقة التقييم
+        const ratingContainer = document.querySelector('.rating-input-container');
+        if (ratingContainer) {
+            ratingContainer.addEventListener('mouseleave', function() {
+                const value = parseInt(ratingInput.value) || 0;
+
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
+            });
+        }
+    }
+
+    // التحقق من صحة النموذج عند الإرسال
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // منع الإرسال الافتراضي
+            
+            const rating = parseInt(ratingInput.value) || 0;
+            const comment = document.getElementById('comment').value.trim();
+
+            if (rating === 0 || rating > 5) {
+                showAlert('warning', 'يرجى تحديد تقييم بين 1 و 5 نجوم');
+                return false;
+            }
+
+            if (comment.length < 10) {
+                showAlert('warning', 'يرجى كتابة تعليق مناسب (10 أحرف على الأقل)');
+                return false;
+            }
+
+            // إرسال النموذج باستخدام AJAX
+            const formData = new FormData(reviewForm);
+            
+            fetch(reviewForm.getAttribute('action'), {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    showAlert('success', 'تم إرسال التقييم بنجاح!');
+                    reviewModal.hide();
+                    
+                    // إعادة تحميل الصفحة بعد ثانيتين
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showAlert('danger', data ? data.message : 'حدث خطأ أثناء إرسال التقييم');
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting review:', error);
+                showAlert('danger', 'حدث خطأ أثناء إرسال التقييم');
+            });
+            
+            return false;
+        });
+    }
 }
 </script>
 
@@ -328,7 +438,7 @@ function initRatingDisplays() {
 
 /* ضمان ظهور النافذة المنبثقة */
 .modal.show {
-    display: block;
+    display: block !important;
     background-color: rgba(0, 0, 0, 0.5);
 }
 
@@ -360,6 +470,40 @@ function initRatingDisplays() {
 #reviewForm .btn-primary {
     border-radius: 10px;
     padding: 10px 30px;
+}
+
+/* تحسين عرض التقييمات */
+.review-item {
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.rating-display {
+    display: inline-flex;
+    gap: 2px;
+    margin: 5px 0;
+}
+
+.review-button {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 12px;
+    background-color: #fff;
+    border: 1px solid #3498db;
+    color: #3498db;
+    transition: all 0.3s ease;
+}
+
+.review-button:hover, .review-button:active {
+    background-color: #3498db;
+    color: #fff;
+}
+
+.empty-reviews i {
+    opacity: 0.3;
 }
 </style>
 {% endblock %}

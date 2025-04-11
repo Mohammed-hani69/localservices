@@ -467,6 +467,7 @@
 </div>
 {% endblock %}
 
+{% block modals %}
 <!-- Modal for adding review -->
 <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -505,6 +506,7 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block scripts %}
 <script>
@@ -600,36 +602,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const data = await response.json();
 
-                    if (data.success && data.deleted) {
-                        // حذف بطاقة الحجز من الواجهة
-                        const bookingCard = btn.closest('.booking-card');
-                        if (bookingCard) {
-                            bookingCard.remove();
-
-                            // التحقق مما إذا كانت هناك حجوزات متبقية
-                            const remainingBookings = document.querySelectorAll('.booking-card');
-                            if (remainingBookings.length === 0) {
-                                const bookingsList = document.querySelector('.bookings-list');
-                                bookingsList.innerHTML = `
-                                    <div class="empty-state">
-                                        <div class="empty-icon">
-                                            <i class="fas fa-calendar-times"></i>
-                                        </div>
-                                        <h6>لا توجد حجوزات</h6>
-                                        <p>لم تقم بأي حجوزات بعد</p>
-                                    </div>
-                                `;
-                            }
-                        }
-
+                    if (data.success) {
                         // عرض رسالة نجاح
                         const alertBox = document.createElement('div');
                         alertBox.className = 'alert alert-success';
                         alertBox.textContent = data.message;
                         document.querySelector('.mobile-dashboard-page').prepend(alertBox);
 
-                        // إزالة الرسالة بعد 3 ثواني
-                        setTimeout(() => alertBox.remove(), 3000);
+                        // إعادة تحميل الصفحة بعد 2 ثانية
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
                     } else {
                         throw new Error(data.message || 'حدث خطأ أثناء إلغاء الحجز');
                     }
@@ -665,129 +648,166 @@ document.addEventListener('DOMContentLoaded', function() {
     addTouchEffect(document.querySelectorAll('.service-item'));
     addTouchEffect(document.querySelectorAll('.booking-item'));
     addTouchEffect(document.querySelectorAll('.action-buttons .btn'));
+    
+    // تهيئة عرض التقييمات
+    initRatingDisplays();
+    
+    // تهيئة نظام التقييم
+    initReviewSystem();
+});
 
-    // معالجة نافذة التقييم
+// تهيئة عرض التقييمات
+function initRatingDisplays() {
+    const ratingDisplays = document.querySelectorAll('.rating-display');
+    ratingDisplays.forEach(display => {
+        const rating = parseFloat(display.getAttribute('data-rating')) || 0;
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                stars += '<i class="fas fa-star text-warning"></i>';
+            } else if (i - 0.5 <= rating) {
+                stars += '<i class="fas fa-star-half-alt text-warning"></i>';
+            } else {
+                stars += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        display.innerHTML = stars;
+    });
+}
+
+// تهيئة نظام التقييم
+function initReviewSystem() {
     const reviewModalElement = document.getElementById('reviewModal');
-    let reviewModal;
-
-    if (reviewModalElement) {
-        reviewModal = new bootstrap.Modal(reviewModalElement);
-
-        // تحديد زر التقييم وإضافة حدث النقر عليه
-        document.querySelectorAll('.add-review').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const serviceId = this.getAttribute('data-service-id');
-                
-                // التحقق من إمكانية التقييم عبر API
-                try {
-                    const response = await fetch(`/api/check_completed_booking/${serviceId}`);
-                    const data = await response.json();
-                    
-                    if (!data.has_completed) {
-                        alert('لا يمكنك تقييم هذه الخدمة حتى تكتمل عملية الحجز.');
-                        return;
-                    }
-                    
-                    if (data.has_review) {
-                        alert('لقد قمت بتقييم هذه الخدمة بالفعل.');
-                        return;
-                    }
-                    
-                    // تعيين معرف الخدمة في النموذج
-                    document.getElementById('modal_service_id').value = serviceId;
-                    
-                    // عرض النافذة
-                    reviewModal.show();
-                    
-                    // تأكيد أن النافذة مرئية من خلال إضافة فئة CSS
-                    reviewModalElement.classList.add('show');
-                    reviewModalElement.style.display = 'block';
-                    document.body.classList.add('modal-open');
-                    
-                    console.log('تم النقر على زر التقييم للخدمة: ' + serviceId);
-                } catch (error) {
-                    console.error('خطأ في التحقق من إمكانية التقييم:', error);
-                    alert('حدث خطأ أثناء التحقق من إمكانية التقييم. الرجاء المحاولة مرة أخرى.');
-                }
-            });
-        });
-
-        console.log('تم تهيئة نافذة التقييم');
-    } else {
+    if (!reviewModalElement) {
         console.error('لم يتم العثور على نافذة التقييم في الصفحة');
+        return;
     }
+    
+    let reviewModal;
+    try {
+        reviewModal = new bootstrap.Modal(reviewModalElement);
+    } catch (e) {
+        console.error('خطأ في تهيئة نافذة التقييم:', e);
+        return;
+    }
+
+    // تحديد زر التقييم وإضافة حدث النقر عليه
+    document.querySelectorAll('.add-review').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const serviceId = this.getAttribute('data-service-id');
+            console.log('تم النقر على زر التقييم للخدمة:', serviceId);
+            
+            // التحقق من إمكانية التقييم عبر API
+            try {
+                const response = await fetch(`/api/check_completed_booking/${serviceId}`);
+                const data = await response.json();
+                
+                if (!data.has_completed) {
+                    alert('لا يمكنك تقييم هذه الخدمة حتى تكتمل عملية الحجز.');
+                    return;
+                }
+                
+                if (data.has_review) {
+                    alert('لقد قمت بتقييم هذه الخدمة بالفعل.');
+                    return;
+                }
+                
+                // تعيين معرف الخدمة في النموذج
+                document.getElementById('modal_service_id').value = serviceId;
+                
+                // عرض النافذة
+                reviewModal.show();
+                
+                // تأكيد أن النافذة مرئية
+                document.querySelector('.modal-backdrop').classList.add('show');
+                document.body.classList.add('modal-open');
+            } catch (error) {
+                console.error('خطأ في التحقق من إمكانية التقييم:', error);
+                alert('حدث خطأ أثناء التحقق من إمكانية التقييم. الرجاء المحاولة مرة أخرى.');
+            }
+        });
+    });
 
     // معالجة تقييم النجوم
     const stars = document.querySelectorAll('.star-rating');
     const ratingInput = document.getElementById('rating_input');
 
-    // إضافة الاستماع إلى حدث النقر لكل نجمة
-    stars.forEach(star => {
-        star.addEventListener('click', function() {
-            const value = parseInt(this.getAttribute('data-value'));
-            ratingInput.value = value;
+    if (stars.length && ratingInput) {
+        // إضافة الاستماع إلى حدث النقر لكل نجمة
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                ratingInput.value = value;
+                
+                console.log('تم اختيار تقييم: ' + value);
 
-            // تحديث شكل النجوم
-            stars.forEach(s => {
-                const starValue = parseInt(s.getAttribute('data-value'));
-                if (starValue <= value) {
-                    s.className = 'fas fa-star star-rating text-warning';
-                } else {
-                    s.className = 'far fa-star star-rating';
-                }
+                // تحديث شكل النجوم
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
+            });
+
+            // إضافة تأثير التحويم
+            star.addEventListener('mouseover', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
             });
         });
 
-        // إضافة تأثير التحويم
-        star.addEventListener('mouseover', function() {
-            const value = parseInt(this.getAttribute('data-value'));
+        // استعادة حالة النجوم عند الخروج من منطقة التقييم
+        const ratingContainer = document.querySelector('.rating-input-container');
+        if (ratingContainer) {
+            ratingContainer.addEventListener('mouseleave', function() {
+                const value = parseInt(ratingInput.value) || 0;
 
-            stars.forEach(s => {
-                const starValue = parseInt(s.getAttribute('data-value'));
-                if (starValue <= value) {
-                    s.className = 'fas fa-star star-rating text-warning';
-                } else {
-                    s.className = 'far fa-star star-rating';
-                }
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
             });
-        });
-    });
-
-    // استعادة حالة النجوم عند الخروج من منطقة التقييم
-    const ratingContainer = document.querySelector('.rating-input-container');
-    ratingContainer.addEventListener('mouseleave', function() {
-        const value = parseInt(ratingInput.value) || 0;
-
-        stars.forEach(s => {
-            const starValue = parseInt(s.getAttribute('data-value'));
-            if (starValue <= value) {
-                s.className = 'fas fa-star star-rating text-warning';
-            } else {
-                s.className = 'far fa-star star-rating';
-            }
-        });
-    });
+        }
+    }
 
     // التحقق من صحة النموذج عند الإرسال
-    document.getElementById('reviewForm').addEventListener('submit', function(e) {
-        const rating = parseInt(ratingInput.value) || 0;
-        const comment = document.getElementById('comment').value.trim();
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            const rating = parseInt(ratingInput.value) || 0;
+            const comment = document.getElementById('comment').value.trim();
 
-        if (rating === 0 || rating > 5) {
-            e.preventDefault();
-            alert('يرجى تحديد تقييم بين 1 و 5 نجوم');
-            return false;
-        }
+            if (rating === 0 || rating > 5) {
+                e.preventDefault();
+                alert('يرجى تحديد تقييم بين 1 و 5 نجوم');
+                return false;
+            }
 
-        if (comment.length < 10) {
-            e.preventDefault();
-            alert('يرجى كتابة تعليق مناسب (10 أحرف على الأقل)');
-            return false;
-        }
+            if (comment.length < 10) {
+                e.preventDefault();
+                alert('يرجى كتابة تعليق مناسب (10 أحرف على الأقل)');
+                return false;
+            }
 
-        return true;
-    });
-});
+            return true;
+        });
+    }
+}
 </script>
 
 <style>
@@ -840,7 +860,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* ضمان ظهور النافذة المنبثقة */
 .modal.show {
-    display: block;
+    display: block !important;
     background-color: rgba(0, 0, 0, 0.5);
 }
 
@@ -871,7 +891,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 #reviewForm .btn-primary {
     border-radius: 10px;
-    padding10px 30px;
+    padding: 10px 30px;
+}
+
+/* تحسينات لعرض التقييمات */
+.rating-display {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.booking-card .booking-actions {
+    margin-top: 10px;
+}
+
+.booking-card .btn {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.75rem;
 }
 </style>
 {% endblock %}
