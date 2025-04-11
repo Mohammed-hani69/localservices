@@ -504,58 +504,199 @@ function initReviewModals() {
     // تنفيذ تهيئة التقييمات
     initRatingDisplays();
     initReviewModals();
-});
 
-// التحقق من إمكانية التقييم وإظهار النافذة
-function checkAndShowReviewModal(serviceId) {
-    console.log('التحقق من إمكانية التقييم للخدمة:', serviceId);
+    // تهيئة نجوم التقييم
+    function initRatingStars() {
+        const ratingContainers = document.querySelectorAll('.rating-input-container');
 
-    // تحقق من وجود نافذة التقييم في الصفحة الحالية
-    const modalElement = document.getElementById('reviewModal');
-    if (!modalElement) {
-        console.error('لم يتم العثور على نافذة التقييم في الصفحة الحالية');
-        showAlert('danger', 'لا يمكن فتح نافذة التقييم، يرجى تحديث الصفحة');
-        return;
+        ratingContainers.forEach(container => {
+            const stars = container.querySelectorAll('.star-rating');
+            const ratingInput = container.querySelector('input[type="hidden"]');
+
+            if (stars.length > 0 && ratingInput) {
+                stars.forEach(star => {
+                    star.addEventListener('click', function() {
+                        const value = parseInt(this.getAttribute('data-value'));
+                        ratingInput.value = value;
+
+                        // تحديث مظهر النجوم
+                        stars.forEach(s => {
+                            const starValue = parseInt(s.getAttribute('data-value'));
+                            if (starValue <= value) {
+                                s.classList.remove('far');
+                                s.classList.add('fas');
+                            } else {
+                                s.classList.remove('fas');
+                                s.classList.add('far');
+                            }
+                        });
+                    });
+
+                    // إضافة تأثير عند المرور على النجوم
+                    star.addEventListener('mouseover', function() {
+                        const value = parseInt(this.getAttribute('data-value'));
+
+                        stars.forEach(s => {
+                            const starValue = parseInt(s.getAttribute('data-value'));
+                            if (starValue <= value) {
+                                s.classList.remove('far');
+                                s.classList.add('fas');
+                            }
+                        });
+                    });
+
+                    // استعادة الحالة الأصلية عند إبعاد المؤشر
+                    star.addEventListener('mouseout', function() {
+                        const currentRating = parseInt(ratingInput.value) || 0;
+
+                        stars.forEach(s => {
+                            const starValue = parseInt(s.getAttribute('data-value'));
+                            if (starValue <= currentRating) {
+                                s.classList.remove('far');
+                                s.classList.add('fas');
+                            } else {
+                                s.classList.remove('fas');
+                                s.classList.add('far');
+                            }
+                        });
+                    });
+                });
+            }
+        });
     }
 
-    fetch('/api/check_completed_booking/' + serviceId)
-        .then(response => response.json())
-        .then(data => {
-            if (!data.has_completed) {
-                showAlert('warning', 'لا يمكنك تقييم هذه الخدمة حتى تكتمل عملية الحجز.');
-                return;
-            }
+    // فتح نافذة التقييم عند الضغط على زر التقييم
+    function setupReviewModal() {
+        const reviewButtons = document.querySelectorAll('.open-review-modal');
 
-            if (data.has_review) {
-                showAlert('info', 'لقد قمت بتقييم هذه الخدمة بالفعل.');
-                return;
-            }
+        reviewButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const serviceId = this.getAttribute('data-service-id');
+                const reviewModal = document.getElementById('reviewModal');
 
-            // تعيين معرف الخدمة في النموذج
-            document.getElementById('modal_service_id').value = serviceId;
+                if (serviceId && reviewModal) {
+                    const modalServiceIdInput = document.getElementById('modal_service_id');
+                    if (modalServiceIdInput) {
+                        modalServiceIdInput.value = serviceId;
+                    }
 
-            // إنشاء وإظهار نافذة التقييم
-            try {
-                const reviewModal = new bootstrap.Modal(modalElement);
-                reviewModal.show();
-
-                // تأكيد من أن النافذة المنبثقة تظهر بشكل صحيح
-                modalElement.classList.add('show');
-                document.body.classList.add('modal-open');
-
-                // إضافة backdrop إذا لم يكن موجودًا
-                if (!document.querySelector('.modal-backdrop')) {
-                    const backdrop = document.createElement('div');
-                    backdrop.className = 'modal-backdrop fade show';
-                    document.body.appendChild(backdrop);
+                    // استخدام الطريقة الحديثة لإظهار النوافذ المنبثقة
+                    const bsModal = new bootstrap.Modal(reviewModal);
+                    bsModal.show();
+                } else {
+                    console.log("لم يتم العثور على نافذة التقييم في الصفحة الحالية");
                 }
-            } catch (e) {
-                console.error('خطأ في فتح نافذة التقييم:', e);
-                showAlert('danger', 'حدث خطأ أثناء فتح نافذة التقييم');
-            }
-        })
-        .catch(error => {
-            console.error('خطأ في التحقق من حالة الحجز:', error);
-            showAlert('danger', 'حدث خطأ أثناء التحقق من إمكانية التقييم');
+            });
         });
-}
+    }
+
+    // استدعاء الدوال عند تحميل الصفحة
+    try {
+        initRatingStars();
+    } catch(e) {
+        console.error("خطأ في تهيئة نجوم التقييم:", e);
+    }
+
+    try {
+        setupReviewModal();
+    } catch(e) {
+        console.error("خطأ في تهيئة نافذة التقييم:", e);
+    }
+
+    try {
+        setupBookingStatus();
+    } catch(e) {
+        console.error("خطأ في تهيئة حالة الحجز:", e);
+    }
+
+    try {
+        setupServiceStatus();
+    } catch(e) {
+        console.error("خطأ في تهيئة حالة الخدمة:", e);
+    }
+
+    try {
+        setupPaymentForms();
+    } catch(e) {
+        console.error("خطأ في تهيئة نماذج الدفع:", e);
+    }
+
+    try {
+        setupProviderControls();
+    } catch(e) {
+        console.error("خطأ في تهيئة أدوات مزود الخدمة:", e);
+    }
+
+    try {
+        setupNotifications();
+    } catch(e) {
+        console.error("خطأ في تهيئة الإشعارات:", e);
+    }
+
+    try {
+        setupFilePreview();
+    } catch(e) {
+        console.error("خطأ في تهيئة معاينة الملفات:", e);
+    }
+
+    try {
+        setupForms();
+    } catch(e) {
+        console.error("خطأ في تهيئة النماذج:", e);
+    }
+
+    // التحقق من إمكانية التقييم وإظهار النافذة
+    function checkAndShowReviewModal(serviceId) {
+        console.log('التحقق من إمكانية التقييم للخدمة:', serviceId);
+
+        // تحقق من وجود نافذة التقييم في الصفحة الحالية
+        const modalElement = document.getElementById('reviewModal');
+        if (!modalElement) {
+            console.error('لم يتم العثور على نافذة التقييم في الصفحة الحالية');
+            showAlert('danger', 'لا يمكن فتح نافذة التقييم، يرجى تحديث الصفحة');
+            return;
+        }
+
+        fetch('/api/check_completed_booking/' + serviceId)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.has_completed) {
+                    showAlert('warning', 'لا يمكنك تقييم هذه الخدمة حتى تكتمل عملية الحجز.');
+                    return;
+                }
+
+                if (data.has_review) {
+                    showAlert('info', 'لقد قمت بتقييم هذه الخدمة بالفعل.');
+                    return;
+                }
+
+                // تعيين معرف الخدمة في النموذج
+                document.getElementById('modal_service_id').value = serviceId;
+
+                // إنشاء وإظهار نافذة التقييم
+                try {
+                    const reviewModal = new bootstrap.Modal(modalElement);
+                    reviewModal.show();
+
+                    // تأكيد من أن النافذة المنبثقة تظهر بشكل صحيح
+                    modalElement.classList.add('show');
+                    document.body.classList.add('modal-open');
+
+                    // إضافة backdrop إذا لم يكن موجودًا
+                    if (!document.querySelector('.modal-backdrop')) {
+                        const backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                } catch (e) {
+                    console.error('خطأ في فتح نافذة التقييم:', e);
+                    showAlert('danger', 'حدث خطأ أثناء فتح نافذة التقييم');
+                }
+            })
+            .catch(error => {
+                console.error('خطأ في التحقق من حالة الحجز:', error);
+                showAlert('danger', 'حدث خطأ أثناء التحقق من إمكانية التقييم');
+            });
+    }
+});

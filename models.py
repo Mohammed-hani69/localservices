@@ -81,12 +81,42 @@ class Booking(db.Model):
     client_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
     booking_date = db.Column(db.DateTime, nullable=False)
-    status = db.Column(db.String(20), default='pending')  # pending, confirmed, cancelled, completed
     notes = db.Column(db.Text)
+    status = db.Column(db.String(20), default='pending')  # pending, confirmed, completed, cancelled
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Define relationships
-    payment = db.relationship('Payment', foreign_keys='Payment.booking_id', backref='booking', uselist=False)
+    # تفاصيل خاصة بالحجز حسب نوع الخدمة
+    # حجز صيانة
+    issue_description = db.Column(db.Text)
+    device_type = db.Column(db.String(100))
+    maintenance_type = db.Column(db.String(50))
+
+    # حجز تنظيف
+    cleaning_area = db.Column(db.String(50))
+    area_size = db.Column(db.String(50))
+    cleaning_type = db.Column(db.String(50))
+    additional_services = db.Column(db.String(200))
+
+    # حجز تعليم
+    subject = db.Column(db.String(100))
+    education_level = db.Column(db.String(50))
+    preferred_days = db.Column(db.String(100))
+
+    # حجز صحة
+    medical_issue = db.Column(db.Text)
+    patient_age = db.Column(db.Integer)
+    medical_history = db.Column(db.Text)
+
+    # حجز طعام
+    meal_type = db.Column(db.String(50))
+    persons_count = db.Column(db.Integer)
+    dietary_restrictions = db.Column(db.String(200))
+    delivery_time = db.Column(db.DateTime)
+
+    client = db.relationship('User', backref='bookings')
+    service = db.relationship('Service', backref='bookings')
+    payments = db.relationship('Payment', backref='booking', lazy=True)
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

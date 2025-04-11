@@ -170,13 +170,23 @@
     </div>
 
     <!-- System Actions -->
-    <div class="system-actions-container">
-        <div class="d-grid gap-2">
-            <a href="{{ url_for('admin_send_review_notifications') }}" class="btn btn-primary">
-                <i class="fas fa-envelope me-1"></i> إرسال إشعارات التقييم
+    <div class="system-actions-container mb-4">
+        <h5 class="mb-3"><i class="fas fa-cogs me-2"></i> إدارة النظام</h5>
+        <div class="system-actions">
+            <a href="{{ url_for('mobile_admin_users') }}" class="btn btn-primary w-100 text-start">
+                <i class="fas fa-users me-2"></i> إدارة المستخدمين
             </a>
-            <a href="{{ url_for('admin_export_database') }}" class="btn btn-success">
-                <i class="fas fa-database me-1"></i> تصدير قاعدة البيانات
+            <a href="{{ url_for('mobile_admin_services') }}" class="btn btn-success w-100 text-start">
+                <i class="fas fa-cogs me-2"></i> إدارة الخدمات
+            </a>
+            <a href="{{ url_for('mobile_admin_bookings') }}" class="btn btn-info w-100 text-start">
+                <i class="fas fa-calendar-alt me-2"></i> إدارة الحجوزات
+            </a>
+            <a href="{{ url_for('mobile_admin_payments') }}" class="btn btn-warning w-100 text-start">
+                <i class="fas fa-money-bill-wave me-2"></i> إدارة المدفوعات
+            </a>
+            <a href="{{ url_for('mobile_admin_reports') }}" class="btn btn-dark w-100 text-start">
+                <i class="fas fa-chart-line me-2"></i> تقارير النظام
             </a>
         </div>
     </div>
