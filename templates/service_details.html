@@ -219,16 +219,32 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // معالجة نافذة التقييم
-        const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
-
-        // تحديد زر التقييم وإضافة حدث النقر عليه
-        document.querySelectorAll('.add-review').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const serviceId = this.getAttribute('data-service-id');
-                document.getElementById('modal_service_id').value = serviceId;
-                reviewModal.show();
+        const reviewModalElement = document.getElementById('reviewModal');
+        let reviewModal;
+        
+        if (reviewModalElement) {
+            reviewModal = new bootstrap.Modal(reviewModalElement);
+            
+            // تحديد زر التقييم وإضافة حدث النقر عليه
+            document.querySelectorAll('.add-review').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const serviceId = this.getAttribute('data-service-id');
+                    document.getElementById('modal_service_id').value = serviceId;
+                    reviewModal.show();
+                    
+                    // تأكيد أن النافذة مرئية من خلال إضافة فئة CSS
+                    reviewModalElement.classList.add('show');
+                    reviewModalElement.style.display = 'block';
+                    document.body.classList.add('modal-open');
+                    
+                    console.log('تم النقر على زر التقييم للخدمة: ' + serviceId);
+                });
             });
-        });
+            
+            console.log('تم تهيئة نافذة التقييم');
+        } else {
+            console.error('لم يتم العثور على نافذة التقييم في الصفحة');
+        }
 
         // معالجة تقييم النجوم
         const stars = document.querySelectorAll('.star-rating');

@@ -496,7 +496,8 @@
                         <label for="comment" class="form-label">تعليقك:</label>
                         {{ review_form.comment(class="form-control", rows="4", placeholder="يرجى كتابة تعليقك على الخدمة...") }}
                     </div>
-                    <div class="text-center">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                         <button type="submit" class="btn btn-primary">إرسال التقييم</button>
                     </div>
                 </form>
@@ -666,16 +667,32 @@ document.addEventListener('DOMContentLoaded', function() {
     addTouchEffect(document.querySelectorAll('.action-buttons .btn'));
     
     // معالجة نافذة التقييم
-    const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+    const reviewModalElement = document.getElementById('reviewModal');
+    let reviewModal;
     
-    // تحديد زر التقييم وإضافة حدث النقر عليه
-    document.querySelectorAll('.add-review').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const serviceId = this.getAttribute('data-service-id');
-            document.getElementById('modal_service_id').value = serviceId;
-            reviewModal.show();
+    if (reviewModalElement) {
+        reviewModal = new bootstrap.Modal(reviewModalElement);
+        
+        // تحديد زر التقييم وإضافة حدث النقر عليه
+        document.querySelectorAll('.add-review').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const serviceId = this.getAttribute('data-service-id');
+                document.getElementById('modal_service_id').value = serviceId;
+                reviewModal.show();
+                
+                // تأكيد أن النافذة مرئية من خلال إضافة فئة CSS
+                reviewModalElement.classList.add('show');
+                reviewModalElement.style.display = 'block';
+                document.body.classList.add('modal-open');
+                
+                console.log('تم النقر على زر التقييم للخدمة: ' + serviceId);
+            });
         });
-    });
+        
+        console.log('تم تهيئة نافذة التقييم');
+    } else {
+        console.error('لم يتم العثور على نافذة التقييم في الصفحة');
+    }
     
     // معالجة تقييم النجوم
     const stars = document.querySelectorAll('.star-rating');
@@ -776,6 +793,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .modal-content {
     border-radius: 15px;
+    position: relative;
+    z-index: 1051;
 }
 
 .modal-header {
@@ -787,6 +806,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .modal-body {
     padding: 20px;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ضمان ظهور النافذة المنبثقة */
+.modal.show {
+    display: block;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+.modal-open {
+    overflow: hidden;
 }
 
 /* أنماط إضافية للنموذج */
