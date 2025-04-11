@@ -15,15 +15,3 @@ def require_role(*roles):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
-
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            flash('يجب تسجيل الدخول للوصول إلى هذه الصفحة', 'warning')
-            return redirect(url_for('login'))
-        if not current_user.is_admin():
-            flash('هذه الصفحة مخصصة للمشرفين فقط', 'warning')
-            return redirect(url_for('index'))
-        return f(*args, **kwargs)
-    return decorated_function

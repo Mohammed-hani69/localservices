@@ -678,7 +678,7 @@
             data: {
                 labels: ['مكتملة', 'قيد الانتظار', 'أخرى'],
                 datasets: [{
-                    data: [{{ completed_payments if completed_payments is defined else 0 }}, {{ pending_payments if pending_payments is defined else 0 }}, {{ total_payments - (completed_payments if completed_payments is defined else 0) - (pending_payments if pending_payments is defined else 0) }}],
+                    data: [{{ completed_payments }}, {{ pending_payments }}, {{ total_payments - completed_payments - pending_payments }}],
                     backgroundColor: ['#1cc88a', '#f6c23e', '#858796'],
                     borderWidth: 1
                 }]

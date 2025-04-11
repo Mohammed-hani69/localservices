@@ -1,3 +1,4 @@
+
 import logging
 import os
 import secrets
@@ -15,7 +16,7 @@ from notifications import send_review_notification, check_completed_bookings, cr
 from models import User, ServiceProvider, Service, Booking, Payment, Review, Notification, Meal, MealOrder, TableReservation, ROLE_USER, ROLE_SERVICE_PROVIDER, ROLE_ADMIN
 from forms import LoginForm, RegistrationForm, ServiceProviderForm, ServiceForm, BookingForm, PaymentForm, ReviewForm, SearchForm, MealForm, TableReservationForm
 from stripe_payment import create_checkout_session, verify_payment_session, get_payment_status, cancel_payment
-from auth import require_role, admin_required
+from auth import require_role
 
 # Set up date context for all requests
 @app.before_request
@@ -100,25 +101,25 @@ def login():
 
         # Move login_user here after all checks pass
         login_user(user, remember=form.remember_me.data)
-
+        
         # Get next page or default to dashboard
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
             next_page = url_for('dashboard')
-
+            
         # Check if mobile device and redirect accordingly  
         user_agent = request.headers.get('User-Agent', '').lower()
         is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent
         if is_mobile:
             next_page = url_for('mobile_dashboard')
-
+            
         return redirect(next_page)
 
     # Choose appropriate template for GET requests
     user_agent = request.headers.get('User-Agent', '').lower()
     is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent
     template = 'mobile/login.html' if is_mobile else 'login.html'
-
+    
     return render_template(template, title='تسجيل الدخول', form=form)
 
 # Logout
@@ -482,7 +483,7 @@ def add_service():
     # اختيار النموذج المناسب بناءً على تخصص مقدم الخدمة
     category = provider.specialization
     form = None
-
+    
     if category == 'صيانة':
         form = MaintenanceServiceForm()
     elif category == 'تنظيف':
@@ -495,7 +496,7 @@ def add_service():
         form = FoodServiceForm()
     else:
         form = OtherServiceForm()
-
+    
     if form.validate_on_submit():
         # معالجة تحميل الصورة إن وجدت
         image_path = None
@@ -515,10 +516,10 @@ def add_service():
             image=image_path,
             is_active=form.is_active.data
         )
-
+        
         # إضافة البيانات المتخصصة حسب نوع الخدمة إلى حقل additional_info
         specialized_data = {}
-
+        
         if category == 'صيانة':
             specialized_data = {
                 'tools_provided': form.tools_provided.data,
@@ -567,7 +568,7 @@ def add_service():
                 'service_mode': form.service_mode.data,
                 'custom_fields': form.custom_fields.data
             }
-
+        
         # تحويل البيانات المتخصصة إلى نص JSON وإضافتها إلى حقل additional_info
         import json
         if service.additional_info:
@@ -583,7 +584,7 @@ def add_service():
                 service.additional_info = json.dumps(specialized_data)
         else:
             service.additional_info = json.dumps(specialized_data)
-
+        
         db.session.add(service)
         db.session.commit()
         flash('تمت إضافة الخدمة بنجاح!', 'success')
@@ -610,7 +611,7 @@ def add_service():
         except:
             # استخدام القالب العام في حالة عدم وجود قالب متخصص
             template = 'service_form.html'
-
+    
     return render_template(template, form=form, category=category)
 
 # Edit Service
@@ -628,7 +629,7 @@ def edit_service(service_id):
     # اختيار النموذج المناسب بناءً على تصنيف الخدمة
     category = service.category
     form = None
-
+    
     if category == 'صيانة':
         form = MaintenanceServiceForm(obj=service)
     elif category == 'تنظيف':
@@ -660,7 +661,7 @@ def edit_service(service_id):
                         form.emergency_service.data = specialized_data.get('emergency_service')
                     if 'experience_years' in specialized_data:
                         form.experience_years.data = specialized_data.get('experience_years')
-
+                
                 elif category == 'تنظيف':
                     if 'materials_included' in specialized_data:
                         form.materials_included.data = specialized_data.get('materials_included')
@@ -672,7 +673,7 @@ def edit_service(service_id):
                         form.min_area.data = specialized_data.get('min_area')
                     if 'max_area' in specialized_data:
                         form.max_area.data = specialized_data.get('max_area')
-
+                
                 elif category == 'تعليم':
                     if 'education_level' in specialized_data:
                         form.education_level.data = specialized_data.get('education_level')
@@ -684,7 +685,7 @@ def edit_service(service_id):
                         form.max_students.data = specialized_data.get('max_students')
                     if 'has_certificate' in specialized_data:
                         form.has_certificate.data = specialized_data.get('has_certificate')
-
+                
                 elif category == 'صحة':
                     if 'consultation_type' in specialized_data:
                         form.consultation_type.data = specialized_data.get('consultation_type')
@@ -698,7 +699,7 @@ def edit_service(service_id):
                         form.accepts_insurance.data = specialized_data.get('accepts_insurance')
                     if 'medical_license' in specialized_data:
                         form.medical_license.data = specialized_data.get('medical_license')
-
+                
                 elif category == 'طعام':
                     if 'delivery_available' in specialized_data:
                         form.delivery_available.data = specialized_data.get('delivery_available')
@@ -714,7 +715,7 @@ def edit_service(service_id):
                         form.catering_service.data = specialized_data.get('catering_service')
                     if 'dietary_info' in specialized_data:
                         form.dietary_info.data = specialized_data.get('dietary_info')
-
+                
                 elif category == 'أخرى':
                     if 'service_mode' in specialized_data:
                         form.service_mode.data = specialized_data.get('service_mode')
@@ -738,7 +739,7 @@ def edit_service(service_id):
         # تحديث البيانات المتخصصة
         import json
         specialized_data = {}
-
+        
         if category == 'صيانة':
             specialized_data = {
                 'tools_provided': form.tools_provided.data,
@@ -787,13 +788,13 @@ def edit_service(service_id):
                 'service_mode': form.service_mode.data,
                 'custom_fields': form.custom_fields.data
             }
-
+        
         # دمج النص المدخل في حقل المعلومات الإضافية مع البيانات المتخصصة
         if form.additional_info.data:
             specialized_data['user_notes'] = form.additional_info.data
-
+        
         service.additional_info = json.dumps(specialized_data)
-
+        
         db.session.commit()
         flash('تم تحديث الخدمة بنجاح!', 'success')
         return redirect(url_for('dashboard'))
@@ -819,7 +820,7 @@ def edit_service(service_id):
         except:
             # استخدام القالب العام في حالة عدم وجود قالب متخصص
             template = 'service_form.html'
-
+    
     return render_template(template, form=form, service=service, category=category)
 
 # View all services
@@ -887,7 +888,7 @@ def book_service(service_id):
     # اختيار النموذج المناسب حسب نوع الخدمة
     form = None
     category = service.category
-
+    
     if category == 'صيانة':
         form = MaintenanceBookingForm()
     elif category == 'تنظيف':
@@ -900,7 +901,7 @@ def book_service(service_id):
         form = FoodBookingForm()
     else:
         form = BookingForm()
-
+    
     form.service_id.data = service_id
 
     # Calculate the minimum date for booking (today)
@@ -927,7 +928,7 @@ def book_service(service_id):
         except:
             # استخدام القالب العام في حالة عدم وجود قالب متخصص
             template = 'booking.html'
-
+    
     return render_template(template, title='حجز موعد',
                           service=service, booking_form=form,
                           min_date=min_date, category=category)
@@ -940,7 +941,7 @@ def process_booking():
     form = BookingForm()
     if form.validate_on_submit():
         service = Service.query.get_or_404(form.service_id.data)
-
+        
         booking = Booking(
             client_id=current_user.id,
             service_id=service.id,
@@ -960,12 +961,12 @@ def process_booking():
             payment_method=form.payment_method.data
         )
         db.session.add(payment)
-
+        
         # Update payment status based on payment method
         if payment.payment_method == 'cash':
             payment.status = 'awaiting_confirmation'
             booking.status = 'pending'
-
+        
         db.session.commit()
 
         # Create notification for service provider
@@ -984,7 +985,7 @@ def process_booking():
                 'success': True,
                 'redirect_url': url_for('mobile_dashboard' if 'mobile' in request.referrer else 'dashboard')
             })
-
+        
         # Regular form submission redirect
         flash('تم إنشاء الحجز بنجاح!', 'success')
         if 'mobile' in request.referrer:
@@ -997,7 +998,7 @@ def process_booking():
             'success': False,
             'message': 'حدث خطأ في معالجة النموذج'
         })
-
+    
     flash('حدث خطأ أثناء إنشاء الحجز. الرجاء المحاولة مرة أخرى.', 'danger')
     return redirect(url_for('mobile_services' if 'mobile' in request.referrer else 'services'))
 
@@ -1068,7 +1069,7 @@ def add_review():
             service_id=service_id,
             status='completed'
         ).first()
-
+        
         if not user_bookings:
             flash('يمكنك فقط تقييم الخدمات التي قمت بحجزها وتم إكمالها.', 'warning')
             return redirect(url_for('service_details', service_id=service_id))
@@ -1109,19 +1110,19 @@ def add_review():
         if service_reviews:
             service_avg_rating = sum(r.rating for r in service_reviews) / len(service_reviews)
             # يمكن إضافة حقل متوسط التقييم إلى جدول الخدمات إذا لزم الأمر
-
+        
         # تحديث متوسط تقييم مزود الخدمة
         provider = ServiceProvider.query.get(service.provider_id)
         provider_services = Service.query.filter_by(provider_id=provider.id).all()
         all_provider_reviews = []
-
+        
         for srv in provider_services:
             service_reviews = Review.query.filter_by(service_id=srv.id).all()
             all_provider_reviews.extend(service_reviews)
-
+            
         if all_provider_reviews:
             provider.rating = sum(r.rating for r in all_provider_reviews) / len(all_provider_reviews)
-
+        
         # إنشاء إشعار لمزود الخدمة
         create_notification(
             provider.user_id,
@@ -1134,10 +1135,10 @@ def add_review():
 
         # حفظ التغييرات
         db.session.commit()
-
+        
         # إظهار رسالة نجاح
         flash('شكراً على مشاركة تقييمك! سيساعد ذلك الآخرين في اختيار الخدمة المناسبة.', 'success')
-
+        
         # التوجيه إلى الصفحة المناسبة
         referer = request.headers.get('Referer', '')
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -1159,18 +1160,18 @@ def add_review():
         for field, error_messages in form.errors.items():
             for error in error_messages:
                 errors.append(f"خطأ في حقل {field}: {error}")
-
+        
         error_message = "حدث خطأ في تقديم التقييم. " + " ".join(errors)
         flash(error_message, 'warning')
-
+        
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({
                 'success': False,
                 'message': error_message
             })
-
+        
         return redirect(url_for('service_details', service_id=form.service_id.data))
-
+        
     return redirect(url_for('service_details', service_id=form.service_id.data))
 
 # إضافة وجبة جديدة (لمقدمي خدمات الطعام)
@@ -1312,8 +1313,11 @@ def reserve_table(provider_id):
 # Admin Dashboard
 @app.route('/admin')
 @login_required
-@admin_required
 def admin_dashboard():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
+        
     # Check if the user is requesting from a mobile device
     user_agent = request.headers.get('User-Agent', '').lower()
     is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent
@@ -1346,8 +1350,11 @@ def admin_dashboard():
 
 @app.route('/mobile/admin/dashboard')
 @login_required
-@admin_required
 def mobile_admin_dashboard():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('mobile_index'))
+
     users_count = User.query.count()
     providers_count = ServiceProvider.query.count()
     services_count = Service.query.count()
@@ -1370,19 +1377,29 @@ def mobile_admin_dashboard():
 # Admin Reports
 @app.route('/admin/reports')
 @login_required
-@admin_required
 def admin_reports():
-    # إجمالي المستخدمين
-    total_users = User.query.count()
-    total_regular_users = User.query.filter_by(role=ROLE_USER).count()
-    total_providers = User.query.filter_by(role=ROLE_PROVIDER).count()
-    verified_providers = User.query.join(ServiceProvider).filter(User.role==ROLE_PROVIDER, ServiceProvider.verified==True).count()
-    unverified_providers = total_providers - verified_providers
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
 
-    # إجمالي الخدمات
+    # التحقق من نوع الجهاز
+    is_mobile = request.args.get('mobile') or 'mobile' in request.headers.get('User-Agent', '').lower()
+
+    # استخراج إحصائيات المستخدمين
+    total_users = User.query.count()
+    total_providers = ServiceProvider.query.count()
+    total_regular_users = User.query.filter_by(role=ROLE_USER).count()
+    verified_providers = ServiceProvider.query.filter_by(verified=True).count()
+    unverified_providers = total_providers - verified_providers  # إضافة هذا المتغير
+
+    # استخراج إحصائيات الخدمات
     total_services = Service.query.count()
     active_services = Service.query.filter_by(is_active=True).count()
-    inactive_services = total_services - active_services
+
+    # توزيع الخدمات حسب الفئات
+    categories = db.session.query(Service.category, db.func.count(Service.id)).group_by(Service.category).all()
+    category_labels = [category[0] for category in categories]
+    category_data = [category[1] for category in categories]
 
     # إحصائيات الحجوزات
     total_bookings = Booking.query.count()
@@ -1394,86 +1411,85 @@ def admin_reports():
     # إحصائيات المدفوعات
     total_payments = Payment.query.count()
     completed_payments = Payment.query.filter_by(status='completed').count()
-    pending_payments = Payment.query.filter_by(status='pending').count()
-    total_sales = db.session.query(db.func.sum(Payment.amount)).filter(Payment.status == 'completed').scalar() or 0
+    payment_amounts = db.session.query(Payment.status, db.func.sum(Payment.amount)).group_by(Payment.status).all()
 
-    # توزيع الخدمات حسب الفئات
-    categories = db.session.query(Service.category, db.func.count(Service.id)).group_by(Service.category).all()
-    category_labels = [category[0] for category in categories]
-    category_data = [category[1] for category in categories]
+    # إجمالي المبيعات
+    total_sales = 0
+    for payment in payment_amounts:
+        if payment[0] == 'completed':
+            total_sales = payment[1] if payment[1] else 0
 
-    # إحصائيات التقييمات
-    avg_rating = db.session.query(db.func.avg(Review.rating)).scalar() or 0
-    rating_counts = db.session.query(Review.rating, db.func.count(Review.id)).group_by(Review.rating).all()
-    rating_data = [0, 0, 0, 0, 0]  # للتقييمات من 1 إلى 5
-    for rating, count in rating_counts:
-        if 1 <= rating <= 5:
-            rating_data[rating-1] = count
-
-    # إحصائيات الحجوزات الشهرية
+    # استخراج إحصائيات الحجوزات الشهرية
+    monthly_bookings = []
     current_year = datetime.now().year
-    monthly_bookings = [0] * 12
-    month_bookings = db.session.query(
-        db.func.extract('month', Booking.created_at).label('month'),
-        db.func.count(Booking.id)
-    ).filter(db.func.extract('year', Booking.created_at) == current_year).group_by('month').all()
+    for month in range(1, 13):
+        start_date = datetime(current_year, month, 1)
+        if month == 12:
+            end_date = datetime(current_year + 1, 1, 1)
+        else:
+            end_date = datetime(current_year, month + 1, 1)
+        count = Booking.query.filter(
+            Booking.created_at >= start_date,
+            Booking.created_at < end_date
+        ).count()
+        monthly_bookings.append(count)
 
-    for month, count in month_bookings:
-        if 1 <= month <= 12:
-            monthly_bookings[int(month)-1] = count
+    # استخراج إحصائيات التقييمات
+    avg_rating = db.session.query(db.func.avg(Review.rating)).scalar() or 0
+    rating_distribution = db.session.query(Review.rating, db.func.count(Review.id)).group_by(Review.rating).all()
+    rating_data = [0, 0, 0, 0, 0]  # تمثل التقييمات من 1 إلى 5
+    for rating in rating_distribution:
+        if 1 <= rating[0] <= 5:
+            rating_data[rating[0]-1] = rating[1]
 
-    # الحصول على أفضل مزودي الخدمة
-    top_providers_data = db.session.query(
-        ServiceProvider,
-        User,
-        db.func.avg(Review.rating).label('avg_rating'),
-        db.func.count(db.func.distinct(Service.id)).label('service_count'),
-        db.func.count(db.func.distinct(Booking.id)).label('booking_count')
-    ).join(User, ServiceProvider.user_id == User.id)\
-     .join(Service, ServiceProvider.id == Service.provider_id, isouter=True)\
-     .join(Booking, Service.id == Booking.service_id, isouter=True)\
-     .join(Review, Service.id == Review.service_id, isouter=True)\
-     .group_by(ServiceProvider.id, User.id)\
-     .order_by(db.func.desc('avg_rating'), db.func.desc('booking_count'))\
-     .limit(5).all()
-
-    top_providers = []
-    for provider_data in top_providers_data:
-        top_providers.append({
-            'id': provider_data[0].id,
-            'company_name': provider_data[0].company_name,
-            'rating': provider_data[2] or 0,
-            'service_count': provider_data[3] or 0,
-            'booking_count': provider_data[4] or 0
-        })
-
-    # الحصول على أكثر الخدمات حجزاً
-    top_services_data = db.session.query(
-        Service,
+    # تقرير أفضل مزودي الخدمة
+    top_providers = db.session.query(
+        ServiceProvider.id,
+        ServiceProvider.company_name,
+        ServiceProvider.rating,
+        db.func.count(Service.id).label('service_count'),
         db.func.count(Booking.id).label('booking_count')
-    ).join(Booking, Service.id == Booking.service_id)\
-     .group_by(Service.id)\
-     .order_by(db.func.desc('booking_count'))\
+    ).join(Service, ServiceProvider.id == Service.provider_id, isouter=True)\
+     .join(Booking, Service.id == Booking.service_id, isouter=True)\
+     .group_by(ServiceProvider.id)\
+     .order_by(ServiceProvider.rating.desc())\
      .limit(5).all()
 
-    top_services = []
-    for service_data in top_services_data:
-        top_services.append({
-            'id': service_data[0].id,
-            'name': service_data[0].name,
-            'category': service_data[0].category,
-            'booking_count': service_data[1] or 0
-        })
+    if is_mobile:
+        return render_template('mobile/admin/reports.html', 
+                             title='تقارير النظام',
+                             total_users=total_users,
+                             total_providers=total_providers,
+                             total_regular_users=total_regular_users,
+                             verified_providers=verified_providers,
+                             unverified_providers=unverified_providers,  # إضافة هذا المتغير
+                             total_services=total_services,
+                             active_services=active_services,
+                             category_labels=category_labels,
+                             category_data=category_data,
+                             total_bookings=total_bookings,
+                             pending_bookings=pending_bookings,
+                             confirmed_bookings=confirmed_bookings,
+                             completed_bookings=completed_bookings,
+                             cancelled_bookings=cancelled_bookings,
+                             total_payments=total_payments,
+                             completed_payments=completed_payments,
+                             total_sales=total_sales,
+                             monthly_bookings=monthly_bookings,
+                             avg_rating=avg_rating,
+                             rating_data=rating_data,
+                             top_providers=top_providers)
 
     return render_template('admin/reports.html', title='تقارير النظام',
                           total_users=total_users,
-                          total_regular_users=total_regular_users,
                           total_providers=total_providers,
+                          total_regular_users=total_regular_users,
                           verified_providers=verified_providers,
-                          unverified_providers=unverified_providers,
+                          unverified_providers=unverified_providers,  # إضافة هذا المتغير
                           total_services=total_services,
                           active_services=active_services,
-                          inactive_services=inactive_services,
+                          category_labels=category_labels,
+                          category_data=category_data,
                           total_bookings=total_bookings,
                           pending_bookings=pending_bookings,
                           confirmed_bookings=confirmed_bookings,
@@ -1481,159 +1497,47 @@ def admin_reports():
                           cancelled_bookings=cancelled_bookings,
                           total_payments=total_payments,
                           completed_payments=completed_payments,
-                          pending_payments=pending_payments,
                           total_sales=total_sales,
-                          category_labels=category_labels,
-                          category_data=category_data,
+                          monthly_bookings=monthly_bookings,
                           avg_rating=avg_rating,
                           rating_data=rating_data,
-                          monthly_bookings=monthly_bookings,
-                          top_providers=top_providers,
-                          top_services=top_services)
-
-@app.route('/mobile/admin/reports')
-@login_required
-@admin_required
-def mobile_admin_reports():
-    # إجمالي المستخدمين
-    total_users = User.query.count()
-    total_regular_users = User.query.filter_by(role=ROLE_USER).count()
-    total_providers = User.query.filter_by(role=ROLE_PROVIDER).count()
-    verified_providers = User.query.join(ServiceProvider).filter(User.role==ROLE_PROVIDER, ServiceProvider.verified==True).count()
-    unverified_providers = total_providers - verified_providers
-
-    # إجمالي الخدمات
-    total_services = Service.query.count()
-    active_services = Service.query.filter_by(is_active=True).count()
-    inactive_services = total_services - active_services
-
-    # إحصائيات الحجوزات
-    total_bookings = Booking.query.count()
-    pending_bookings = Booking.query.filter_by(status='pending').count()
-    confirmed_bookings = Booking.query.filter_by(status='confirmed').count()
-    completed_bookings = Booking.query.filter_by(status='completed').count()
-    cancelled_bookings = Booking.query.filter_by(status='cancelled').count()
-
-    # إحصائيات المدفوعات
-    total_payments = Payment.query.count()
-    completed_payments = Payment.query.filter_by(status='completed').count()
-    pending_payments = Payment.query.filter_by(status='pending').count()
-    total_sales = db.session.query(db.func.sum(Payment.amount)).filter(Payment.status == 'completed').scalar() or 0
-
-    # توزيع الخدمات حسب الفئات
-    categories = db.session.query(Service.category, db.func.count(Service.id)).group_by(Service.category).all()
-    category_labels = [category[0] for category in categories]
-    category_data = [category[1] for category in categories]
-
-    # إحصائيات التقييمات
-    avg_rating = db.session.query(db.func.avg(Review.rating)).scalar() or 0
-    rating_counts = db.session.query(Review.rating, db.func.count(Review.id)).group_by(Review.rating).all()
-    rating_data = [0, 0, 0, 0, 0]  # للتقييمات من 1 إلى 5
-    for rating, count in rating_counts:
-        if 1 <= rating <= 5:
-            rating_data[rating-1] = count
-
-    # إحصائيات الحجوزات الشهرية
-    current_year = datetime.now().year
-    monthly_bookings = [0] * 12
-    month_bookings = db.session.query(
-        db.func.extract('month', Booking.created_at).label('month'),
-        db.func.count(Booking.id)
-    ).filter(db.func.extract('year', Booking.created_at) == current_year).group_by('month').all()
-
-    for month, count in month_bookings:
-        if 1 <= month <= 12:
-            monthly_bookings[int(month)-1] = count
-
-    # الحصول على أفضل مزودي الخدمة
-    top_providers_data = db.session.query(
-        ServiceProvider,
-        User,
-        db.func.avg(Review.rating).label('avg_rating'),
-        db.func.count(db.func.distinct(Service.id)).label('service_count'),
-        db.func.count(db.func.distinct(Booking.id)).label('booking_count')
-    ).join(User, ServiceProvider.user_id == User.id)\
-     .join(Service, ServiceProvider.id == Service.provider_id, isouter=True)\
-     .join(Booking, Service.id == Booking.service_id, isouter=True)\
-     .join(Review, Service.id == Review.service_id, isouter=True)\
-     .group_by(ServiceProvider.id, User.id)\
-     .order_by(db.func.desc('avg_rating'), db.func.desc('booking_count'))\
-     .limit(5).all()
-
-    top_providers = []
-    for provider_data in top_providers_data:
-        top_providers.append({
-            'id': provider_data[0].id,
-            'company_name': provider_data[0].company_name,
-            'rating': provider_data[2] or 0,
-            'service_count': provider_data[3] or 0,
-            'booking_count': provider_data[4] or 0
-        })
-
-    # الحصول على أكثر الخدمات حجزاً
-    top_services_data = db.session.query(
-        Service,
-        db.func.count(Booking.id).label('booking_count')
-    ).join(Booking, Service.id == Booking.service_id)\
-     .group_by(Service.id)\
-     .order_by(db.func.desc('booking_count'))\
-     .limit(5).all()
-
-    top_services = []
-    for service_data in top_services_data:
-        top_services.append({
-            'id': service_data[0].id,
-            'name': service_data[0].name,
-            'category': service_data[0].category,
-            'booking_count': service_data[1] or 0
-        })
-
-    return render_template('mobile/admin/reports.html', title='تقارير النظام',
-                          total_users=total_users,
-                          total_regular_users=total_regular_users,
-                          total_providers=total_providers,
-                          verified_providers=verified_providers,
-                          unverified_providers=unverified_providers,
-                          total_services=total_services,
-                          active_services=active_services,
-                          inactive_services=inactive_services,
-                          total_bookings=total_bookings,
-                          pending_bookings=pending_bookings,
-                          confirmed_bookings=confirmed_bookings,
-                          completed_bookings=completed_bookings,
-                          cancelled_bookings=cancelled_bookings,
-                          total_payments=total_payments,
-                          completed_payments=completed_payments,
-                          pending_payments=pending_payments,
-                          total_sales=total_sales,
-                          category_labels=category_labels,
-                          category_data=category_data,
-                          avg_rating=avg_rating,
-                          rating_data=rating_data,
-                          monthly_bookings=monthly_bookings,
-                          top_providers=top_providers,
-                          top_services=top_services)
+                          top_providers=top_providers)
 
 # Admin - Users
 @app.route('/admin/users')
 @login_required
-@admin_required
 def admin_users():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
+
+    # التحقق من نوع الجهاز
+    is_mobile = request.args.get('mobile') or 'mobile' in request.headers.get('User-Agent', '').lower()
+    
     users = User.query.all()
-    return render_template('admin/users.html', title='إدارة المستخدمين', users=users)
+    
+    # اختيار القالب المناسب حسب نوع الجهاز
+    template = 'mobile/admin/users.html' if is_mobile else 'admin/users.html'
+    return render_template(template, title='إدارة المستخدمين', users=users)
 
 # Admin - Services
 @app.route('/admin/services')
 @login_required
-@admin_required
 def admin_services():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
+
     services = Service.query.all()
     return render_template('admin/services.html', title='إدارة الخدمات', services=services)
 
 @app.route('/mobile/admin/services')
 @login_required
-@admin_required
 def mobile_admin_services():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('mobile_index'))
+
     services = Service.query.all()
     return render_template('mobile/admin/services.html', 
                          title='إدارة الخدمات',
@@ -1642,24 +1546,46 @@ def mobile_admin_services():
 # Admin - Bookings
 @app.route('/admin/bookings')
 @login_required
-@admin_required
 def admin_bookings():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
+
+    # التحقق من نوع الجهاز
+    is_mobile = request.args.get('mobile') or 'mobile' in request.headers.get('User-Agent', '').lower()
+
     bookings = Booking.query.all()
+    
+    if is_mobile:
+        return render_template('mobile/admin/bookings.html', title='إدارة الحجوزات', bookings=bookings)
+    
     return render_template('admin/bookings.html', title='إدارة الحجوزات', bookings=bookings)
 
 # Admin - Payments
 @app.route('/admin/payments')
 @login_required
-@admin_required
 def admin_payments():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
+
+    # التحقق من نوع الجهاز
+    is_mobile = request.args.get('mobile') or 'mobile' in request.headers.get('User-Agent', '').lower()
+
     payments = Payment.query.all()
+    
+    if is_mobile:
+        return render_template('mobile/admin/payments.html', title='إدارة المدفوعات', payments=payments)
+    
     return render_template('admin/payments.html', title='إدارة المدفوعات', payments=payments)
 
 # Toggle user active status
 @app.route('/admin/users/<int:user_id>/toggle_active', methods=['POST'])
 @login_required
-@admin_required
 def toggle_user_active(user_id):
+    if not current_user.is_admin():
+        return jsonify({'success': False, 'message': 'غير مصرح بهذه العملية'})
+
     user = User.query.get_or_404(user_id)
     user.is_active = not user.is_active
     db.session.commit()
@@ -1673,8 +1599,10 @@ def toggle_user_active(user_id):
 # Toggle service active status
 @app.route('/admin/services/<int:service_id>/toggle_active', methods=['POST'])
 @login_required
-@admin_required
 def toggle_service_active(service_id):
+    if not current_user.is_admin():
+        return jsonify({'success': False, 'message': 'غير مصرح بهذه العملية'})
+
     service = Service.query.get_or_404(service_id)
     service.is_active = not service.is_active
     db.session.commit()
@@ -1698,7 +1626,7 @@ def manage_booking(booking_id, action):
     is_authorized = (booking.client_id == current_user.id or 
                     provider.user_id == current_user.id or 
                     current_user.is_admin())
-
+    
     if not is_authorized:
         return jsonify({
             'success': False,
@@ -1712,7 +1640,7 @@ def manage_booking(booking_id, action):
                 'success': False,
                 'message': 'فقط مزود الخدمة يمكنه تأكيد الحجز'
             })
-
+            
         booking.status = 'confirmed'
         message = 'تم تأكيد الحجز بنجاح'
 
@@ -1745,7 +1673,7 @@ def manage_booking(booking_id, action):
         # تحديد من سيتلقى الإشعار
         notify_user_id = provider.user_id if current_user.id == booking.client_id else booking.client_id
         notifier_name = "العميل" if current_user.id == booking.client_id else "مزود الخدمة"
-
+        
         create_notification(
             notify_user_id,
             "تم إلغاء الحجز",
@@ -1761,7 +1689,7 @@ def manage_booking(booking_id, action):
                 'success': False,
                 'message': 'فقط مزود الخدمة يمكنه إكمال الحجز'
             })
-
+            
         booking.status = 'completed'
         message = 'تم إكمال الحجز بنجاح'
 
@@ -1793,13 +1721,13 @@ def manage_booking(booking_id, action):
             f'تم {message} رقم {booking_id}',
             booking_id=booking_id
         )
-
+        
         return jsonify({
             'success': True,
             'message': message,
             'status': booking.status
         })
-
+        
     except Exception as e:
         db.session.rollback()
         logging.error(f"Error in {action} booking {booking_id}: {str(e)}")
@@ -1893,8 +1821,11 @@ def confirm_payment(payment_id):
 # إرسال إشعارات التقييم يدويًا (للاختبار)
 @app.route('/admin/send-review-notifications')
 @login_required
-@admin_required
 def admin_send_review_notifications():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
+
     try:
         result = check_completed_bookings()
         if result:
@@ -1909,8 +1840,11 @@ def admin_send_review_notifications():
 # تصدير قاعدة البيانات (للمشرفين)
 @app.route('/admin/export-database')
 @login_required
-@admin_required
 def admin_export_database():
+    if not current_user.is_admin():
+        flash('عذراً، هذه الصفحة مخصصة للمشرفين فقط.', 'warning')
+        return redirect(url_for('index'))
+
     backup_file = export_database()
 
     if backup_file and os.path.exists(backup_file):
@@ -2065,13 +1999,13 @@ def mobile_service_details(service_id):
     service = Service.query.get_or_404(service_id)
     provider = ServiceProvider.query.get(service.provider_id)
     reviews = Review.query.filter_by(service_id=service_id).all()
-
+    
     # Get similar services from the same category
     similar_services = Service.query.filter_by(category=service.category).filter(Service.id != service_id).limit(5).all()
-
+    
     booking_form = BookingForm()
     booking_form.service_id.data = service_id
-
+    
     review_form = None
     if current_user.is_authenticated:
         # Check if user has booked this service before
@@ -2301,8 +2235,10 @@ def log_action(user_id, action_type, action_details, booking_id=None, payment_id
 # Delete Service
 @app.route('/admin/services/<int:service_id>/delete', methods=['POST'])
 @login_required
-@admin_required
 def delete_service(service_id):
+    if not current_user.is_admin():
+        return jsonify({'success': False, 'message': 'غير مصرح بهذه العملية'})
+
     service = Service.query.get_or_404(service_id)
     try:
         db.session.delete(service)
@@ -2328,13 +2264,13 @@ def check_completed_booking(service_id):
         service_id=service_id, 
         status='completed'
     ).first()
-
+    
     # التحقق مما إذا كان المستخدم لديه مراجعة لهذه الخدمة
     has_review = Review.query.filter_by(
         user_id=current_user.id,
         service_id=service_id
     ).first() is not None
-
+    
     # التحقق من التفاصيل الإضافية للحجز
     booking_details = {}
     if completed_booking:
@@ -2342,9 +2278,9 @@ def check_completed_booking(service_id):
         booking_details = {
             'service_name': service.name,
             'booking_date': completed_booking.booking_date.strftime('%Y-%m-%d %H:%M'),
-            'completion_date': completed_booking.created_at.strftime('%Y-%m-%d') if completed_booking.created_at else None
+            'completion_date': completed_booking.updated_at.strftime('%Y-%m-%d') if completed_booking.updated_at else None
         }
-
+    
     return jsonify({
         'has_completed': completed_booking is not None,
         'has_review': has_review,
