@@ -1,0 +1,124 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "username": "عبدالله هاني ",
+            "email": "abdallah@gmail.com",
+            "phone": "01145885807",
+            "address": "ههيا",
+            "role": 0,
+            "is_active": true,
+            "created_at": "2025-04-11T09:35:01.726857"
+        },
+        {
+            "id": 2,
+            "username": "محمد علي",
+            "email": "moali@gmail.com",
+            "phone": "01245785412",
+            "address": "الزقازيق",
+            "role": 1,
+            "is_active": true,
+            "created_at": "2025-04-11T09:35:58.026217"
+        },
+        {
+            "id": 3,
+            "username": "admin",
+            "email": "admin@gmail.com",
+            "phone": "0000000000",
+            "address": "Admin Address",
+            "role": 2,
+            "is_active": true,
+            "created_at": "2025-04-11T10:44:39.918954"
+        }
+    ],
+    "service_providers": [
+        {
+            "id": 1,
+            "user_id": 2,
+            "company_name": "مستشفى فريد حبيب",
+            "description": "مستشفى فريد حبيب",
+            "logo": null,
+            "website": "",
+            "verified": false,
+            "rating": 0.0,
+            "created_at": "2025-04-11T09:36:16.221337"
+        }
+    ],
+    "services": [
+        {
+            "id": 1,
+            "provider_id": 1,
+            "name": "كشف عيادة العلاج الطبيعي",
+            "description": "كشف عيادة العلاج الطبيعي",
+            "price": 350.0,
+            "duration": 45,
+            "category": "صحة",
+            "service_type": "علاج طبيعي",
+            "is_active": true,
+            "image": "uploads/services/0bafbb63f5c99945.jpeg",
+            "additional_info": "كشف عيادة العلاج الطبيعي",
+            "created_at": "2025-04-11T09:42:20.363739"
+        }
+    ],
+    "bookings": [
+        {
+            "id": 1,
+            "client_id": 1,
+            "service_id": 1,
+            "booking_date": "2025-04-12T07:00:00",
+            "status": "completed",
+            "notes": "",
+            "created_at": "2025-04-11T09:42:46.162898"
+        }
+    ],
+    "payments": [
+        {
+            "id": 1,
+            "booking_id": 1,
+            "user_id": 1,
+            "amount": 350.0,
+            "currency": "SAR",
+            "status": "awaiting_confirmation",
+            "payment_method": "cash",
+            "transaction_id": null,
+            "payment_date": null,
+            "created_at": "2025-04-11T09:42:46.213860"
+        }
+    ],
+    "reviews": [],
+    "notifications": [
+        {
+            "id": 1,
+            "user_id": 2,
+            "title": "حجز جديد",
+            "content": "لديك حجز جديد للخدمة كشف عيادة العلاج الطبيعي",
+            "notification_type": "info",
+            "related_id": 1,
+            "related_type": "booking",
+            "is_read": true,
+            "created_at": "2025-04-11T09:42:46.242389"
+        },
+        {
+            "id": 2,
+            "user_id": 1,
+            "title": "تم تأكيد الحجز",
+            "content": "تم تأكيد حجزك للخدمة كشف عيادة العلاج الطبيعي",
+            "notification_type": "success",
+            "related_id": 1,
+            "related_type": "booking",
+            "is_read": true,
+            "created_at": "2025-04-11T09:43:20.082686"
+        },
+        {
+            "id": 3,
+            "user_id": 1,
+            "title": "تم إكمال الخدمة",
+            "content": "تم إكمال تقديم الخدمة كشف عيادة العلاج الطبيعي. يمكنك الآن تقييم الخدمة",
+            "notification_type": "info",
+            "related_id": 1,
+            "related_type": "booking",
+            "is_read": true,
+            "created_at": "2025-04-11T09:43:59.501820"
+        }
+    ]
+}
