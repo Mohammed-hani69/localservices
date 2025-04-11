@@ -1921,15 +1921,15 @@ def delete_service(service_id):
         return jsonify({
             'success': False,
             'message': 'حدث خطأ أثناء حذف الخدمة'
+        })
 
 # أضف هذه النقطة API في المكان المناسب في routes.py
-
 @app.route('/api/check_completed_booking/<int:service_id>')
 @login_required
 def check_completed_booking(service_id):
     # التحقق مما إذا كان المستخدم لديه حجز مكتمل لهذه الخدمة
     completed_booking = Booking.query.filter_by(
-        user_id=current_user.id, 
+        client_id=current_user.id, 
         service_id=service_id, 
         status='completed'
     ).first()
@@ -1944,5 +1944,3 @@ def check_completed_booking(service_id):
         'has_completed': completed_booking is not None,
         'has_review': has_review
     })
-
-        })
