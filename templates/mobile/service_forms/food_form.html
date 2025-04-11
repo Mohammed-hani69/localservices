@@ -1,0 +1,151 @@
+
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}{% if service %}تعديل خدمة طعام{% else %}إضافة خدمة طعام جديدة{% endif %}{% endblock %}
+
+{% block header_title %}{% if service %}تعديل خدمة طعام{% else %}إضافة خدمة طعام جديدة{% endif %}{% endblock %}
+
+{% block content %}
+<div class="mobile-service-form-page">
+    <form method="POST" enctype="multipart/form-data" class="mobile-form" novalidate>
+        {{ form.hidden_tag() }}
+        {{ form.category }}
+
+        <!-- اسم الخدمة -->
+        <div class="form-group mb-3">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+            {% for error in form.name.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- نوع الخدمة -->
+        <div class="form-group mb-3">
+            {{ form.service_type.label(class="form-label") }}
+            {{ form.service_type(class="form-select" + (" is-invalid" if form.service_type.errors else "")) }}
+            {% for error in form.service_type.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- وصف الخدمة -->
+        <div class="form-group mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4) }}
+            {% for error in form.description.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- السعر والمدة -->
+        <div class="row mb-3">
+            <div class="col-6">
+                <div class="form-group">
+                    {{ form.price.label(class="form-label") }}
+                    {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else ""), type="number", step="0.01", placeholder="السعر بالجنيه") }}
+                    {% for error in form.price.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    {{ form.duration.label(class="form-label") }}
+                    {{ form.duration(class="form-control" + (" is-invalid" if form.duration.errors else ""), type="number", placeholder="المدة بالدقائق") }}
+                    {% for error in form.duration.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- معلومات خدمة الطعام -->
+        <div class="service-specialized-info mb-3">
+            <h5 class="mb-3">معلومات خدمة الطعام</h5>
+            
+            <div class="form-check form-switch mb-3">
+                {{ form.delivery_available(class="form-check-input" + (" is-invalid" if form.delivery_available.errors else "")) }}
+                {{ form.delivery_available.label(class="form-check-label") }}
+            </div>
+            
+            <div class="form-group mb-3">
+                {{ form.preparation_time.label(class="form-label") }}
+                <div class="input-group">
+                    {{ form.preparation_time(class="form-control" + (" is-invalid" if form.preparation_time.errors else ""), type="number") }}
+                    <span class="input-group-text">دقيقة</span>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                {{ form.min_order_quantity.label(class="form-label") }}
+                {{ form.min_order_quantity(class="form-control" + (" is-invalid" if form.min_order_quantity.errors else ""), type="number") }}
+            </div>
+            
+            <div class="form-group mb-3">
+                {{ form.menu_items.label(class="form-label") }}
+                {{ form.menu_items(class="form-control" + (" is-invalid" if form.menu_items.errors else ""), rows=4) }}
+                <small class="form-text text-muted">أدخل عناصر القائمة المتاحة (كل عنصر في سطر جديد)</small>
+            </div>
+            
+            <div class="form-group mb-3">
+                {{ form.dietary_info.label(class="form-label") }}
+                {{ form.dietary_info(class="form-control" + (" is-invalid" if form.dietary_info.errors else ""), rows=3) }}
+            </div>
+            
+            <div class="form-check form-switch mb-3">
+                {{ form.vegetarian_options(class="form-check-input" + (" is-invalid" if form.vegetarian_options.errors else "")) }}
+                {{ form.vegetarian_options.label(class="form-check-label") }}
+            </div>
+            
+            <div class="form-check form-switch mb-3">
+                {{ form.vegan_options(class="form-check-input" + (" is-invalid" if form.vegan_options.errors else "")) }}
+                {{ form.vegan_options.label(class="form-check-label") }}
+            </div>
+            
+            <div class="form-check form-switch mb-3">
+                {{ form.catering_service(class="form-check-input" + (" is-invalid" if form.catering_service.errors else "")) }}
+                {{ form.catering_service.label(class="form-check-label") }}
+            </div>
+        </div>
+
+        <!-- معلومات إضافية -->
+        <div class="form-group mb-3">
+            {{ form.additional_info.label(class="form-label") }}
+            {{ form.additional_info(class="form-control" + (" is-invalid" if form.additional_info.errors else ""), rows=3) }}
+            {% for error in form.additional_info.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+            <small class="form-text text-muted">أضف أي معلومات إضافية مهمة عن خدمة الطعام.</small>
+        </div>
+
+        <!-- صورة الخدمة -->
+        <div class="form-group mb-3">
+            {{ form.image.label(class="form-label") }}
+            {{ form.image(class="form-control" + (" is-invalid" if form.image.errors else "")) }}
+            {% for error in form.image.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+            {% if service and service.image %}
+            <div class="mt-2">
+                <p class="text-muted">الصورة الحالية:</p>
+                <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid rounded" style="max-height: 150px;">
+            </div>
+            {% endif %}
+            <div class="form-text text-muted">اختر صورة للخدمة (jpg, jpeg, png, gif)</div>
+        </div>
+
+        <!-- حالة الخدمة -->
+        <div class="form-check form-switch mb-3">
+            {{ form.is_active(class="form-check-input" + (" is-invalid" if form.is_active.errors else "")) }}
+            {{ form.is_active.label(class="form-check-label") }}
+        </div>
+
+        <!-- أزرار الإجراءات -->
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary w-100") }}
+            <a href="{{ url_for('mobile_dashboard') }}" class="btn btn-outline-secondary w-100 mt-2">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

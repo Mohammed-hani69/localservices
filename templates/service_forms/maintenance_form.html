@@ -1,0 +1,167 @@
+
+{% extends "base.html" %}
+
+{% block title %}{% if service %}تعديل خدمة صيانة{% else %}إضافة خدمة صيانة جديدة{% endif %}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">{% if service %}تعديل خدمة صيانة{% else %}إضافة خدمة صيانة جديدة{% endif %}</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" novalidate>
+                            {{ form.hidden_tag() }}
+                            {{ form.category }}
+                            
+                            <div class="mb-3">
+                                <label for="name" class="form-label">{{ form.name.label }}</label>
+                                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                                {% for error in form.name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="service_type" class="form-label">{{ form.service_type.label }}</label>
+                                {{ form.service_type(class="form-select" + (" is-invalid" if form.service_type.errors else "")) }}
+                                {% for error in form.service_type.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">{{ form.description.label }}</label>
+                                {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4) }}
+                                {% for error in form.description.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="price" class="form-label">{{ form.price.label }}</label>
+                                        <div class="input-group">
+                                            {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else "")) }}
+                                            <span class="input-group-text">جنيه</span>
+                                            {% for error in form.price.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="duration" class="form-label">{{ form.duration.label }}</label>
+                                        <div class="input-group">
+                                            {{ form.duration(class="form-control" + (" is-invalid" if form.duration.errors else "")) }}
+                                            <span class="input-group-text">دقيقة</span>
+                                            {% for error in form.duration.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-light rounded p-3 mb-3">
+                                <h5 class="mb-3">معلومات خدمة الصيانة</h5>
+                                
+                                <div class="mb-3 form-check">
+                                    {{ form.tools_provided(class="form-check-input" + (" is-invalid" if form.tools_provided.errors else "")) }}
+                                    <label class="form-check-label" for="tools_provided">{{ form.tools_provided.label }}</label>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    {{ form.has_warranty(class="form-check-input" + (" is-invalid" if form.has_warranty.errors else ""), id="has_warranty_check") }}
+                                    <label class="form-check-label" for="has_warranty_check">{{ form.has_warranty.label }}</label>
+                                </div>
+                                
+                                <div class="mb-3 warranty-period-div">
+                                    <label for="warranty_period" class="form-label">{{ form.warranty_period.label }}</label>
+                                    <div class="input-group">
+                                        {{ form.warranty_period(class="form-control" + (" is-invalid" if form.warranty_period.errors else "")) }}
+                                        <span class="input-group-text">يوم</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    {{ form.emergency_service(class="form-check-input" + (" is-invalid" if form.emergency_service.errors else "")) }}
+                                    <label class="form-check-label" for="emergency_service">{{ form.emergency_service.label }}</label>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="experience_years" class="form-label">{{ form.experience_years.label }}</label>
+                                    <div class="input-group">
+                                        {{ form.experience_years(class="form-control" + (" is-invalid" if form.experience_years.errors else "")) }}
+                                        <span class="input-group-text">سنة</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="additional_info" class="form-label">{{ form.additional_info.label }}</label>
+                                {{ form.additional_info(class="form-control" + (" is-invalid" if form.additional_info.errors else ""), rows=3) }}
+                                {% for error in form.additional_info.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text text-muted">أضف أي معلومات إضافية مهمة عن خدمة الصيانة.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="image" class="form-label">{{ form.image.label }}</label>
+                                {{ form.image(class="form-control" + (" is-invalid" if form.image.errors else "")) }}
+                                {% for error in form.image.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                {% if service and service.image %}
+                                <div class="mt-2">
+                                    <p>الصورة الحالية:</p>
+                                    <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-thumbnail" style="max-height: 150px;">
+                                </div>
+                                {% endif %}
+                                <div class="form-text text-muted">اختر صورة للخدمة (jpg, jpeg, png, gif)</div>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                {{ form.is_active(class="form-check-input" + (" is-invalid" if form.is_active.errors else "")) }}
+                                <label class="form-check-label" for="is_active">{{ form.is_active.label }}</label>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                {{ form.submit(class="btn btn-primary") }}
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">إلغاء</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // إظهار/إخفاء حقل مدة الضمان بناءً على حالة الضمان
+        const hasWarrantyCheck = document.getElementById('has_warranty_check');
+        const warrantyPeriodDiv = document.querySelector('.warranty-period-div');
+        
+        function toggleWarrantyPeriod() {
+            if (hasWarrantyCheck.checked) {
+                warrantyPeriodDiv.style.display = 'block';
+            } else {
+                warrantyPeriodDiv.style.display = 'none';
+            }
+        }
+        
+        toggleWarrantyPeriod(); // تطبيق الحالة الأولية
+        hasWarrantyCheck.addEventListener('change', toggleWarrantyPeriod);
+    });
+</script>
+{% endblock %}
+{% endblock %}

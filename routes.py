@@ -480,11 +480,22 @@ def add_service():
         flash('يجب إنشاء ملف مقدم الخدمة أولاً.', 'warning')
         return redirect(url_for('create_provider_profile'))
 
-    form = ServiceForm()
+    # اختيار النموذج المناسب بناءً على تخصص مقدم الخدمة
+    category = provider.specialization
+    form = None
     
-    # تثبيت التصنيف بناءً على تخصص مقدم الخدمة
-    form.category.data = provider.specialization
-    form.category.render_kw = {'readonly': True, 'disabled': 'disabled'}
+    if category == 'صيانة':
+        form = MaintenanceServiceForm()
+    elif category == 'تنظيف':
+        form = CleaningServiceForm()
+    elif category == 'تعليم':
+        form = EducationServiceForm()
+    elif category == 'صحة':
+        form = HealthServiceForm()
+    elif category == 'طعام':
+        form = FoodServiceForm()
+    else:
+        form = OtherServiceForm()
     
     if form.validate_on_submit():
         # معالجة تحميل الصورة إن وجدت
@@ -492,67 +503,88 @@ def add_service():
         if form.image.data:
             image_path = save_image(form.image.data)
 
+        # إنشاء كائن الخدمة بالحقول المشتركة
         service = Service(
             provider_id=provider.id,
             name=form.name.data,
             description=form.description.data,
             price=form.price.data,
             duration=form.duration.data,
-            category=form.category.data,
+            category=category,
             service_type=form.service_type.data,
             additional_info=form.additional_info.data,
             image=image_path,
             is_active=form.is_active.data
         )
-        db.session.add(service)
-        db.session.commit()
-        flash('تمت إضافة الخدمة بنجاح!', 'success')
-        return redirect(url_for('dashboard'))
         
-    # التحقق من أن المستخدم هو مقدم خدمة
-    if not current_user.is_provider():
-        flash('عذراً، هذه الصفحة مخصصة لمقدمي الخدمات فقط.', 'warning')
-        return redirect(url_for('index'))
-
-    provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
-    if not provider:
-        flash('الرجاء إكمال ملف مقدم الخدمة أولاً.', 'warning')
-        return redirect(url_for('create_provider_profile'))
-
-    # تحديث اختيارات نوع الخدمة بناءً على الفئة المحددة
-    if form.category.data:
-        service_types = {
-            'صيانة': [('كهرباء', 'كهرباء'), ('سباكة', 'سباكة'), ('تكييف', 'تكييف'),
-                    ('أجهزة', 'أجهزة'), ('حاسوب', 'حاسوب')],
-            'تنظيف': [('منزلي', 'منزلي'), ('مكتبي', 'مكتبي'), ('سجاد', 'سجاد'),
-                    ('واجهات', 'واجهات'), ('سيارات', 'سيارات')],
-            'تعليم': [('لغات', 'لغات'), ('رياضيات', 'رياضيات'), ('علوم', 'علوم'),
-                    ('حاسوب', 'حاسوب'), ('موسيقى', 'موسيقى')],
-            'صحة': [('استشارات', 'استشارات'), ('علاج طبيعي', 'علاج طبيعي'),
-                   ('تغذية', 'تغذية'), ('لياقة', 'لياقة'), ('تمريض', 'تمريض')],
-            'طعام': [('وجبات', 'وجبات'), ('حلويات', 'حلويات'), ('مشروبات', 'مشروبات'),
-                   ('طعام صحي', 'طعام صحي'), ('مناسبات', 'مناسبات')]
-        }
-        form.service_type.choices = service_types.get(form.category.data, [])
-
-    if form.validate_on_submit():
-        # معالجة تحميل الصورة إن وجدت
-        image_path = None
-        if form.image.data:
-            image_path = save_image(form.image.data)
-
-        service = Service(
-            provider_id=provider.id,
-            name=form.name.data,
-            description=form.description.data,
-            price=form.price.data,
-            duration=form.duration.data,
-            category=form.category.data,
-            service_type=form.service_type.data,
-            additional_info=form.additional_info.data,
-            image=image_path,
-            is_active=form.is_active.data
-        )
+        # إضافة البيانات المتخصصة حسب نوع الخدمة إلى حقل additional_info
+        specialized_data = {}
+        
+        if category == 'صيانة':
+            specialized_data = {
+                'tools_provided': form.tools_provided.data,
+                'has_warranty': form.has_warranty.data,
+                'warranty_period': form.warranty_period.data,
+                'emergency_service': form.emergency_service.data,
+                'experience_years': form.experience_years.data
+            }
+        elif category == 'تنظيف':
+            specialized_data = {
+                'materials_included': form.materials_included.data,
+                'equipment_provided': form.equipment_provided.data,
+                'eco_friendly': form.eco_friendly.data,
+                'min_area': form.min_area.data,
+                'max_area': form.max_area.data
+            }
+        elif category == 'تعليم':
+            specialized_data = {
+                'education_level': form.education_level.data,
+                'teaching_method': form.teaching_method.data,
+                'group_class': form.group_class.data,
+                'max_students': form.max_students.data,
+                'has_certificate': form.has_certificate.data
+            }
+        elif category == 'صحة':
+            specialized_data = {
+                'consultation_type': form.consultation_type.data,
+                'medical_specialty': form.medical_specialty.data,
+                'years_experience': form.years_experience.data,
+                'home_visit': form.home_visit.data,
+                'accepts_insurance': form.accepts_insurance.data,
+                'medical_license': form.medical_license.data
+            }
+        elif category == 'طعام':
+            specialized_data = {
+                'delivery_available': form.delivery_available.data,
+                'min_order_quantity': form.min_order_quantity.data,
+                'preparation_time': form.preparation_time.data,
+                'vegetarian_options': form.vegetarian_options.data,
+                'vegan_options': form.vegan_options.data,
+                'catering_service': form.catering_service.data,
+                'dietary_info': form.dietary_info.data
+            }
+        elif category == 'أخرى':
+            specialized_data = {
+                'service_mode': form.service_mode.data,
+                'custom_fields': form.custom_fields.data
+            }
+        
+        # تحويل البيانات المتخصصة إلى نص JSON وإضافتها إلى حقل additional_info
+        import json
+        if service.additional_info:
+            # دمج البيانات المدخلة من المستخدم مع البيانات المتخصصة
+            try:
+                existing_data = json.loads(service.additional_info)
+                if isinstance(existing_data, dict):
+                    existing_data.update(specialized_data)
+                    service.additional_info = json.dumps(existing_data)
+                else:
+                    service.additional_info = json.dumps(specialized_data)
+            except:
+                service.additional_info = json.dumps(specialized_data)
+        else:
+            service.additional_info = json.dumps(specialized_data)
+        
         db.session.add(service)
         db.session.commit()
         flash('تمت إضافة الخدمة بنجاح!', 'success')
@@ -562,9 +594,25 @@ def add_service():
     user_agent = request.headers.get('User-Agent', '').lower()
     is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
 
-    # اختيار القالب المناسب
-    template = 'mobile/service_form.html' if is_mobile else 'service_form.html'
-    return render_template(template, form=form)
+    # اختيار القالب المناسب حسب نوع الخدمة ونوع الجهاز
+    if is_mobile:
+        template = f'mobile/service_forms/{category}_form.html'
+        # التحقق من وجود القالب المتخصص
+        try:
+            render_template(template, form=form)
+        except:
+            # استخدام القالب العام في حالة عدم وجود قالب متخصص
+            template = 'mobile/service_form.html'
+    else:
+        template = f'service_forms/{category}_form.html'
+        # التحقق من وجود القالب المتخصص
+        try:
+            render_template(template, form=form)
+        except:
+            # استخدام القالب العام في حالة عدم وجود قالب متخصص
+            template = 'service_form.html'
+    
+    return render_template(template, form=form, category=category)
 
 # Edit Service
 @app.route('/services/edit/<int:service_id>', methods=['GET', 'POST'])
@@ -578,36 +626,202 @@ def edit_service(service_id):
         flash('ليس لديك صلاحية تعديل هذه الخدمة.', 'danger')
         return redirect(url_for('dashboard'))
 
-    form = ServiceForm(obj=service)
+    # اختيار النموذج المناسب بناءً على تصنيف الخدمة
+    category = service.category
+    form = None
+    
+    if category == 'صيانة':
+        form = MaintenanceServiceForm(obj=service)
+    elif category == 'تنظيف':
+        form = CleaningServiceForm(obj=service)
+    elif category == 'تعليم':
+        form = EducationServiceForm(obj=service)
+    elif category == 'صحة':
+        form = HealthServiceForm(obj=service)
+    elif category == 'طعام':
+        form = FoodServiceForm(obj=service)
+    else:
+        form = OtherServiceForm(obj=service)
 
-    # تحديث اختيارات نوع الخدمة حسب الفئة المحددة حالياً
-    if service.category:
-        form.service_type.choices = form.service_types.get(service.category, [('', 'اختر نوع الخدمة')])
-
-    # تحديث اختيارات نوع الخدمة عند تغيير الفئة
-    if request.method == 'GET' and request.args.get('category'):
-        category = request.args.get('category')
-        form.service_type.choices = form.service_types.get(category, [('', 'اختر نوع الخدمة')])
+    # استرجاع البيانات المتخصصة من additional_info وتعبئة النموذج
+    if service.additional_info:
+        import json
+        try:
+            specialized_data = json.loads(service.additional_info)
+            if isinstance(specialized_data, dict):
+                # تعبئة الحقول المتخصصة حسب نوع الخدمة
+                if category == 'صيانة':
+                    if 'tools_provided' in specialized_data:
+                        form.tools_provided.data = specialized_data.get('tools_provided')
+                    if 'has_warranty' in specialized_data:
+                        form.has_warranty.data = specialized_data.get('has_warranty')
+                    if 'warranty_period' in specialized_data:
+                        form.warranty_period.data = specialized_data.get('warranty_period')
+                    if 'emergency_service' in specialized_data:
+                        form.emergency_service.data = specialized_data.get('emergency_service')
+                    if 'experience_years' in specialized_data:
+                        form.experience_years.data = specialized_data.get('experience_years')
+                
+                elif category == 'تنظيف':
+                    if 'materials_included' in specialized_data:
+                        form.materials_included.data = specialized_data.get('materials_included')
+                    if 'equipment_provided' in specialized_data:
+                        form.equipment_provided.data = specialized_data.get('equipment_provided')
+                    if 'eco_friendly' in specialized_data:
+                        form.eco_friendly.data = specialized_data.get('eco_friendly')
+                    if 'min_area' in specialized_data:
+                        form.min_area.data = specialized_data.get('min_area')
+                    if 'max_area' in specialized_data:
+                        form.max_area.data = specialized_data.get('max_area')
+                
+                elif category == 'تعليم':
+                    if 'education_level' in specialized_data:
+                        form.education_level.data = specialized_data.get('education_level')
+                    if 'teaching_method' in specialized_data:
+                        form.teaching_method.data = specialized_data.get('teaching_method')
+                    if 'group_class' in specialized_data:
+                        form.group_class.data = specialized_data.get('group_class')
+                    if 'max_students' in specialized_data:
+                        form.max_students.data = specialized_data.get('max_students')
+                    if 'has_certificate' in specialized_data:
+                        form.has_certificate.data = specialized_data.get('has_certificate')
+                
+                elif category == 'صحة':
+                    if 'consultation_type' in specialized_data:
+                        form.consultation_type.data = specialized_data.get('consultation_type')
+                    if 'medical_specialty' in specialized_data:
+                        form.medical_specialty.data = specialized_data.get('medical_specialty')
+                    if 'years_experience' in specialized_data:
+                        form.years_experience.data = specialized_data.get('years_experience')
+                    if 'home_visit' in specialized_data:
+                        form.home_visit.data = specialized_data.get('home_visit')
+                    if 'accepts_insurance' in specialized_data:
+                        form.accepts_insurance.data = specialized_data.get('accepts_insurance')
+                    if 'medical_license' in specialized_data:
+                        form.medical_license.data = specialized_data.get('medical_license')
+                
+                elif category == 'طعام':
+                    if 'delivery_available' in specialized_data:
+                        form.delivery_available.data = specialized_data.get('delivery_available')
+                    if 'min_order_quantity' in specialized_data:
+                        form.min_order_quantity.data = specialized_data.get('min_order_quantity')
+                    if 'preparation_time' in specialized_data:
+                        form.preparation_time.data = specialized_data.get('preparation_time')
+                    if 'vegetarian_options' in specialized_data:
+                        form.vegetarian_options.data = specialized_data.get('vegetarian_options')
+                    if 'vegan_options' in specialized_data:
+                        form.vegan_options.data = specialized_data.get('vegan_options')
+                    if 'catering_service' in specialized_data:
+                        form.catering_service.data = specialized_data.get('catering_service')
+                    if 'dietary_info' in specialized_data:
+                        form.dietary_info.data = specialized_data.get('dietary_info')
+                
+                elif category == 'أخرى':
+                    if 'service_mode' in specialized_data:
+                        form.service_mode.data = specialized_data.get('service_mode')
+                    if 'custom_fields' in specialized_data:
+                        form.custom_fields.data = specialized_data.get('custom_fields')
+        except:
+            pass
 
     if form.validate_on_submit():
         service.name = form.name.data
         service.description = form.description.data
         service.price = form.price.data
         service.duration = form.duration.data
-        service.category = form.category.data
         service.service_type = form.service_type.data
-        service.additional_info = form.additional_info.data
         service.is_active = form.is_active.data
 
         # تحديث الصورة إذا تم تحميل صورة جديدة
         if form.image.data:
             service.image = save_image(form.image.data)
 
+        # تحديث البيانات المتخصصة
+        import json
+        specialized_data = {}
+        
+        if category == 'صيانة':
+            specialized_data = {
+                'tools_provided': form.tools_provided.data,
+                'has_warranty': form.has_warranty.data,
+                'warranty_period': form.warranty_period.data,
+                'emergency_service': form.emergency_service.data,
+                'experience_years': form.experience_years.data
+            }
+        elif category == 'تنظيف':
+            specialized_data = {
+                'materials_included': form.materials_included.data,
+                'equipment_provided': form.equipment_provided.data,
+                'eco_friendly': form.eco_friendly.data,
+                'min_area': form.min_area.data,
+                'max_area': form.max_area.data
+            }
+        elif category == 'تعليم':
+            specialized_data = {
+                'education_level': form.education_level.data,
+                'teaching_method': form.teaching_method.data,
+                'group_class': form.group_class.data,
+                'max_students': form.max_students.data,
+                'has_certificate': form.has_certificate.data
+            }
+        elif category == 'صحة':
+            specialized_data = {
+                'consultation_type': form.consultation_type.data,
+                'medical_specialty': form.medical_specialty.data,
+                'years_experience': form.years_experience.data,
+                'home_visit': form.home_visit.data,
+                'accepts_insurance': form.accepts_insurance.data,
+                'medical_license': form.medical_license.data
+            }
+        elif category == 'طعام':
+            specialized_data = {
+                'delivery_available': form.delivery_available.data,
+                'min_order_quantity': form.min_order_quantity.data,
+                'preparation_time': form.preparation_time.data,
+                'vegetarian_options': form.vegetarian_options.data,
+                'vegan_options': form.vegan_options.data,
+                'catering_service': form.catering_service.data,
+                'dietary_info': form.dietary_info.data
+            }
+        elif category == 'أخرى':
+            specialized_data = {
+                'service_mode': form.service_mode.data,
+                'custom_fields': form.custom_fields.data
+            }
+        
+        # دمج النص المدخل في حقل المعلومات الإضافية مع البيانات المتخصصة
+        if form.additional_info.data:
+            specialized_data['user_notes'] = form.additional_info.data
+        
+        service.additional_info = json.dumps(specialized_data)
+        
         db.session.commit()
         flash('تم تحديث الخدمة بنجاح!', 'success')
         return redirect(url_for('dashboard'))
 
-    return render_template('service_form.html', form=form, service=service)
+    # التحقق من نوع الجهاز
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
+
+    # اختيار القالب المناسب حسب نوع الخدمة ونوع الجهاز
+    if is_mobile:
+        template = f'mobile/service_forms/{category}_form.html'
+        # التحقق من وجود القالب المتخصص
+        try:
+            render_template(template, form=form, service=service)
+        except:
+            # استخدام القالب العام في حالة عدم وجود قالب متخصص
+            template = 'mobile/service_form.html'
+    else:
+        template = f'service_forms/{category}_form.html'
+        # التحقق من وجود القالب المتخصص
+        try:
+            render_template(template, form=form, service=service)
+        except:
+            # استخدام القالب العام في حالة عدم وجود قالب متخصص
+            template = 'service_form.html'
+    
+    return render_template(template, form=form, service=service, category=category)
 
 # View all services
 @app.route('/services')
@@ -671,15 +885,53 @@ def book_service(service_id):
         flash('عذراً، لا يمكنك حجز هذه الخدمة.', 'warning')
         return redirect(url_for('service_details', service_id=service_id))
 
-    booking_form = BookingForm()
-    booking_form.service_id.data = service_id
+    # اختيار النموذج المناسب حسب نوع الخدمة
+    form = None
+    category = service.category
+    
+    if category == 'صيانة':
+        form = MaintenanceBookingForm()
+    elif category == 'تنظيف':
+        form = CleaningBookingForm()
+    elif category == 'تعليم':
+        form = EducationBookingForm()
+    elif category == 'صحة':
+        form = HealthBookingForm()
+    elif category == 'طعام':
+        form = FoodBookingForm()
+    else:
+        form = BookingForm()
+    
+    form.service_id.data = service_id
 
     # Calculate the minimum date for booking (today)
     min_date = datetime.now().strftime('%Y-%m-%dT%H:%M')
 
-    return render_template('booking.html', title='حجز موعد',
-                          service=service, booking_form=booking_form,
-                          min_date=min_date)
+    # التحقق من نوع الجهاز
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
+
+    # اختيار القالب المناسب للحجز
+    if is_mobile:
+        template = f'mobile/booking_forms/{category}_booking.html'
+        # التحقق من وجود القالب المتخصص
+        try:
+            render_template(template, service=service, booking_form=form, min_date=min_date)
+        except:
+            # استخدام القالب العام في حالة عدم وجود قالب متخصص
+            template = 'mobile/booking.html'
+    else:
+        template = f'booking_forms/{category}_booking.html'
+        # التحقق من وجود القالب المتخصص
+        try:
+            render_template(template, service=service, booking_form=form, min_date=min_date)
+        except:
+            # استخدام القالب العام في حالة عدم وجود قالب متخصص
+            template = 'booking.html'
+    
+    return render_template(template, title='حجز موعد',
+                          service=service, booking_form=form,
+                          min_date=min_date, category=category)
 
 # Process booking
 @app.route('/booking/process', methods=['POST'])

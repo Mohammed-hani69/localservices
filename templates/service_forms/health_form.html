@@ -1,0 +1,157 @@
+
+{% extends "base.html" %}
+
+{% block title %}{% if service %}تعديل خدمة صحية{% else %}إضافة خدمة صحية جديدة{% endif %}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">{% if service %}تعديل خدمة صحية{% else %}إضافة خدمة صحية جديدة{% endif %}</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" novalidate>
+                            {{ form.hidden_tag() }}
+                            {{ form.category }}
+                            
+                            <div class="mb-3">
+                                <label for="name" class="form-label">{{ form.name.label }}</label>
+                                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                                {% for error in form.name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="service_type" class="form-label">{{ form.service_type.label }}</label>
+                                {{ form.service_type(class="form-select" + (" is-invalid" if form.service_type.errors else "")) }}
+                                {% for error in form.service_type.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">{{ form.description.label }}</label>
+                                {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4) }}
+                                {% for error in form.description.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="price" class="form-label">{{ form.price.label }}</label>
+                                        <div class="input-group">
+                                            {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else "")) }}
+                                            <span class="input-group-text">جنيه</span>
+                                            {% for error in form.price.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="duration" class="form-label">{{ form.duration.label }}</label>
+                                        <div class="input-group">
+                                            {{ form.duration(class="form-control" + (" is-invalid" if form.duration.errors else "")) }}
+                                            <span class="input-group-text">دقيقة</span>
+                                            {% for error in form.duration.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-light rounded p-3 mb-3">
+                                <h5 class="mb-3">معلومات الخدمة الصحية</h5>
+                                
+                                <div class="mb-3">
+                                    <label for="consultation_type" class="form-label">{{ form.consultation_type.label }}</label>
+                                    {{ form.consultation_type(class="form-select" + (" is-invalid" if form.consultation_type.errors else "")) }}
+                                    {% for error in form.consultation_type.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="medical_specialty" class="form-label">{{ form.medical_specialty.label }}</label>
+                                    {{ form.medical_specialty(class="form-control" + (" is-invalid" if form.medical_specialty.errors else "")) }}
+                                    {% for error in form.medical_specialty.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="years_experience" class="form-label">{{ form.years_experience.label }}</label>
+                                    <div class="input-group">
+                                        {{ form.years_experience(class="form-control" + (" is-invalid" if form.years_experience.errors else "")) }}
+                                        <span class="input-group-text">سنة</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="medical_license" class="form-label">{{ form.medical_license.label }}</label>
+                                    {{ form.medical_license(class="form-control" + (" is-invalid" if form.medical_license.errors else "")) }}
+                                    {% for error in form.medical_license.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    {{ form.home_visit(class="form-check-input" + (" is-invalid" if form.home_visit.errors else "")) }}
+                                    <label class="form-check-label" for="home_visit">{{ form.home_visit.label }}</label>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    {{ form.accepts_insurance(class="form-check-input" + (" is-invalid" if form.accepts_insurance.errors else "")) }}
+                                    <label class="form-check-label" for="accepts_insurance">{{ form.accepts_insurance.label }}</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="additional_info" class="form-label">{{ form.additional_info.label }}</label>
+                                {{ form.additional_info(class="form-control" + (" is-invalid" if form.additional_info.errors else ""), rows=3) }}
+                                {% for error in form.additional_info.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text text-muted">أضف أي معلومات إضافية مهمة عن الخدمة الصحية.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="image" class="form-label">{{ form.image.label }}</label>
+                                {{ form.image(class="form-control" + (" is-invalid" if form.image.errors else "")) }}
+                                {% for error in form.image.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                {% if service and service.image %}
+                                <div class="mt-2">
+                                    <p>الصورة الحالية:</p>
+                                    <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-thumbnail" style="max-height: 150px;">
+                                </div>
+                                {% endif %}
+                                <div class="form-text text-muted">اختر صورة للخدمة (jpg, jpeg, png, gif)</div>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                {{ form.is_active(class="form-check-input" + (" is-invalid" if form.is_active.errors else "")) }}
+                                <label class="form-check-label" for="is_active">{{ form.is_active.label }}</label>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                {{ form.submit(class="btn btn-primary") }}
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">إلغاء</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
