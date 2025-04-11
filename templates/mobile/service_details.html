@@ -97,11 +97,154 @@
 </div>
 {% endblock %}
 
+<!-- Modal for adding review -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewModalLabel">تقييم الخدمة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
+                    {{ review_form.csrf_token }}
+                    {{ review_form.service_id(id="modal_service_id", value=service.id) }}
+                    <div class="mb-3">
+                        <label class="form-label">التقييم:</label>
+                        <div class="rating-input-container">
+                            <div class="stars">
+                                <i class="far fa-star star-rating" data-value="1"></i>
+                                <i class="far fa-star star-rating" data-value="2"></i>
+                                <i class="far fa-star star-rating" data-value="3"></i>
+                                <i class="far fa-star star-rating" data-value="4"></i>
+                                <i class="far fa-star star-rating" data-value="5"></i>
+                            </div>
+                            {{ review_form.rating(type="hidden", id="rating_input") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">تعليقك:</label>
+                        {{ review_form.comment(class="form-control", rows="4", placeholder="يرجى كتابة تعليقك على الخدمة...") }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">إرسال التقييم</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize rating displays
     initRatingDisplays();
+    
+    // إضافة زر التقييم إذا كان المستخدم قد استخدم الخدمة واكتملت
+    {% if current_user.is_authenticated and not current_user.is_provider() %}
+    const serviceId = {{ service.id }};
+    
+    // التحقق مما إذا كان المستخدم لديه حجز مكتمل لهذه الخدمة
+    fetch('/api/check_completed_booking/' + serviceId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.has_completed && !data.has_review) {
+                // إضافة زر التقييم
+                const bookingBtn = document.querySelector('.d-grid.gap-2.mb-4');
+                if (bookingBtn) {
+                    const reviewBtn = document.createElement('a');
+                    reviewBtn.href = "#";
+                    reviewBtn.className = "btn btn-outline-primary btn-lg";
+                    reviewBtn.innerHTML = '<i class="fas fa-star me-1"></i> تقييم الخدمة';
+                    reviewBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+                        reviewModal.show();
+                    });
+                    bookingBtn.parentNode.insertBefore(reviewBtn, bookingBtn.nextSibling);
+                }
+            }
+        })
+        .catch(error => console.error('Error checking booking status:', error));
+    {% endif %}
+    
+    // معالجة تقييم النجوم
+    const stars = document.querySelectorAll('.star-rating');
+    const ratingInput = document.getElementById('rating_input');
+    
+    // إضافة الاستماع إلى حدث النقر لكل نجمة
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const value = parseInt(this.getAttribute('data-value'));
+            ratingInput.value = value;
+            
+            // تحديث شكل النجوم
+            stars.forEach(s => {
+                const starValue = parseInt(s.getAttribute('data-value'));
+                if (starValue <= value) {
+                    s.className = 'fas fa-star star-rating text-warning';
+                } else {
+                    s.className = 'far fa-star star-rating';
+                }
+            });
+        });
+        
+        // إضافة تأثير التحويم
+        star.addEventListener('mouseover', function() {
+            const value = parseInt(this.getAttribute('data-value'));
+            
+            stars.forEach(s => {
+                const starValue = parseInt(s.getAttribute('data-value'));
+                if (starValue <= value) {
+                    s.className = 'fas fa-star star-rating text-warning';
+                } else {
+                    s.className = 'far fa-star star-rating';
+                }
+            });
+        });
+    });
+    
+    // استعادة حالة النجوم عند الخروج من منطقة التقييم
+    const ratingContainer = document.querySelector('.rating-input-container');
+    if (ratingContainer) {
+        ratingContainer.addEventListener('mouseleave', function() {
+            const value = parseInt(ratingInput.value) || 0;
+            
+            stars.forEach(s => {
+                const starValue = parseInt(s.getAttribute('data-value'));
+                if (starValue <= value) {
+                    s.className = 'fas fa-star star-rating text-warning';
+                } else {
+                    s.className = 'far fa-star star-rating';
+                }
+            });
+        });
+    }
+    
+    // التحقق من صحة النموذج عند الإرسال
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            const rating = parseInt(ratingInput.value) || 0;
+            const comment = document.getElementById('comment').value.trim();
+            
+            if (rating === 0 || rating > 5) {
+                e.preventDefault();
+                alert('يرجى تحديد تقييم بين 1 و 5 نجوم');
+                return false;
+            }
+            
+            if (comment.length < 10) {
+                e.preventDefault();
+                alert('يرجى كتابة تعليق مناسب (10 أحرف على الأقل)');
+                return false;
+            }
+            
+            return true;
+        });
+    }
 });
 
 function initRatingDisplays() {
@@ -122,4 +265,89 @@ function initRatingDisplays() {
     });
 }
 </script>
+
+<style>
+/* أنماط نافذة التقييم */
+.rating-input-container {
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.stars {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    font-size: 1.8rem;
+}
+
+.star-rating {
+    cursor: pointer;
+    padding: 5px;
+    transition: all 0.2s ease;
+}
+
+.star-rating:hover {
+    transform: scale(1.2);
+}
+
+.modal-content {
+    border-radius: 15px;
+    position: relative;
+    z-index: 1051;
+}
+
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ضمان ظهور النافذة المنبثقة */
+.modal.show {
+    display: block;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+.modal-open {
+    overflow: hidden;
+}
+
+/* أنماط إضافية للنموذج */
+#reviewForm .form-control {
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 12px;
+}
+
+#reviewForm .btn-primary {
+    border-radius: 10px;
+    padding: 10px 30px;
+}
+</style>
 {% endblock %}
