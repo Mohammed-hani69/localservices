@@ -69,7 +69,8 @@ def send_review_notification(booking_id):
             return False
         
         # التحقق من انتهاء الموعد
-        if booking.booking_date + timedelta(minutes=booking.service.duration) > datetime.utcnow():
+        now = datetime.utcnow()
+        if booking.booking_date + timedelta(minutes=booking.service.duration) > now:
             logging.info(f"الموعد رقم {booking_id} لم ينته بعد.")
             return False
         
@@ -81,20 +82,39 @@ def send_review_notification(booking_id):
         user = User.query.get(booking.client_id)
         service = Service.query.get(booking.service_id)
         
-        # إنشاء رابط التقييم
-        review_url = f"{request.host_url}services/{service.id}#review"
+        # التحقق مما إذا كان المستخدم قام بالتقييم بالفعل
+        from models import Review
+        existing_review = Review.query.filter_by(
+            user_id=booking.client_id,
+            service_id=booking.service_id
+        ).first()
+        
+        if existing_review:
+            logging.info(f"المستخدم {user.id} قام بالفعل بتقييم الخدمة {service.id}.")
+            return False
+        
+        # إنشاء رابط التقييم - إما لصفحة التفاصيل أو للوحة التحكم
+        dashboard_url = f"{request.host_url}dashboard"
+        service_url = f"{request.host_url}services/{service.id}"
         
         # إنشاء إشعار داخلي في الموقع
         notification_title = f"🌟 قيّم تجربتك مع {service.name}"
-        notification_content = f"نأمل أن تكون قد استمتعت بخدمة {service.name}. نرجو تخصيص لحظة لتقييم الخدمة ومساعدة الآخرين."
-        create_notification(
+        notification_content = (
+            f"نأمل أن تكون قد استمتعت بخدمة {service.name}. "
+            f"يمكنك الآن تقييم الخدمة من خلال الضغط على زر 'تقييم' في قائمة الحجوزات."
+        )
+        
+        notification = create_notification(
             user_id=user.id,
             title=notification_title,
             content=notification_content,
             notification_type='info',
-            related_id=service.id,
-            related_type='service'
+            related_id=booking.id,
+            related_type='review_reminder'
         )
+        
+        if notification:
+            logging.info(f"تم إنشاء إشعار تقييم بنجاح للمستخدم {user.id}، للحجز {booking_id}")
         
         # إنشاء محتوى البريد الإلكتروني
         subject = notification_title
@@ -104,26 +124,41 @@ def send_review_notification(booking_id):
             <style>
                 body {{ font-family: Arial, sans-serif; line-height: 1.6; direction: rtl; text-align: right; }}
                 .container {{ padding: 20px; border: 1px solid #eee; border-radius: 10px; }}
-                .header {{ color: #e63946; font-size: 24px; margin-bottom: 20px; }}
-                .button {{ background-color: #e63946; color: white; padding: 10px 20px; text-decoration: none;
+                .header {{ color: #4361ee; font-size: 24px; margin-bottom: 20px; }}
+                .button {{ background-color: #4361ee; color: white; padding: 10px 20px; text-decoration: none;
                         border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 15px; }}
                 .footer {{ margin-top: 30px; font-size: 12px; color: #777; }}
+                .highlight {{ color: #4361ee; font-weight: bold; }}
             </style>
         </head>
         <body>
             <div class="container">
-                <div class="header">شكراً لاستخدامك خدماتنا!</div>
+                <div class="header">تقييم الخدمة</div>
                 
-                <p>مرحباً {user.username}،</p>
+                <p>مرحباً <span class="highlight">{user.username}</span>،</p>
                 
                 <p>نأمل أن تكون قد استمتعت بخدمة <strong>{service.name}</strong> التي حجزتها.</p>
                 
-                <p>نود أن نسمع رأيك في الخدمة المقدمة. تقييمك سيساعدنا على تحسين خدماتنا وسيساعد
-                المستخدمين الآخرين على اتخاذ قرارات أفضل.</p>
+                <p>تقييمك يساعدنا على تحسين خدماتنا ويساعد المستخدمين الآخرين على اتخاذ قرارات أفضل.</p>
                 
-                <a href="{review_url}" class="button">تقييم الخدمة الآن</a>
+                <p>يمكنك تقييم الخدمة بسهولة من خلال:</p>
+                <ol>
+                  <li>الدخول إلى صفحة الحجوزات الخاصة بك</li>
+                  <li>البحث عن حجز خدمة {service.name}</li>
+                  <li>النقر على زر "تقييم" الموجود أسفل بطاقة الحجز</li>
+                </ol>
                 
-                <p>شكراً لثقتك بنا!</p>
+                <div style="text-align: center; margin: 20px 0;">
+                  <a href="{dashboard_url}" class="button">الذهاب إلى لوحة التحكم</a>
+                </div>
+                
+                <p>أو يمكنك زيارة صفحة الخدمة مباشرة والتقييم من هناك:</p>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                  <a href="{service_url}" class="button">عرض تفاصيل الخدمة</a>
+                </div>
+                
+                <p>شكراً لثقتك بنا ولاستخدامك منصتنا!</p>
                 
                 <div class="footer">
                     هذا بريد إلكتروني تلقائي، يرجى عدم الرد عليه.
@@ -133,8 +168,12 @@ def send_review_notification(booking_id):
         </html>
         """
         
-        # إرسال البريد الإلكتروني
-        return send_email(user.email, subject, html_content)
+        # إرسال البريد الإلكتروني إذا كان مفعلاً
+        email_sent = send_email(user.email, subject, html_content)
+        if email_sent:
+            logging.info(f"تم إرسال بريد إلكتروني للمستخدم {user.id} لتقييم الخدمة {service.id}")
+        
+        return True
         
     except Exception as e:
         logging.error(f"خطأ في إرسال إشعار التقييم: {str(e)}")
@@ -150,6 +189,8 @@ def check_completed_bookings():
             Booking.booking_date <= now
         ).all()
         
+        notifications_sent = 0
+        
         for booking in completed_bookings:
             # التحقق مما إذا كان وقت الخدمة قد انتهى
             service = Service.query.get(booking.service_id)
@@ -159,6 +200,29 @@ def check_completed_bookings():
                 # تغيير حالة الحجز إلى مكتملة إذا كان مؤكدًا
                 if booking.status == 'confirmed':
                     booking.status = 'completed'
+                    
+                    # إنشاء إشعار للعميل بإكمال الخدمة
+                    create_notification(
+                        user_id=booking.client_id,
+                        title="تم إكمال الخدمة",
+                        content=f"تم إكمال خدمة {service.name} بنجاح. نشكرك على استخدام منصتنا.",
+                        notification_type="success",
+                        related_id=booking.id,
+                        related_type="booking"
+                    )
+                    
+                    # إنشاء إشعار لمزود الخدمة بإكمال الخدمة
+                    provider = ServiceProvider.query.get(service.provider_id)
+                    create_notification(
+                        user_id=provider.user_id,
+                        title="تم إكمال الخدمة",
+                        content=f"تم إكمال خدمة {service.name} بنجاح للعميل.",
+                        notification_type="success",
+                        related_id=booking.id,
+                        related_type="booking"
+                    )
+                    
+                    notifications_sent += 2
                     db.session.commit()
                 
                 # التحقق مما إذا كان المستخدم قام بالتقييم بالفعل
@@ -169,9 +233,19 @@ def check_completed_bookings():
                 ).first()
                 
                 if not existing_review:
-                    # إرسال إشعار التقييم
-                    send_review_notification(booking.id)
+                    # إرسال إشعار التقييم إذا لم يتم إرسال إشعار في الـ 24 ساعة الماضية
+                    last_notification = Notification.query.filter_by(
+                        user_id=booking.client_id,
+                        related_id=booking.id,
+                        related_type="review_reminder"
+                    ).order_by(Notification.created_at.desc()).first()
+                    
+                    # التحقق إذا لم يسبق إرسال إشعار أو إذا كان الإشعار الأخير قبل أكثر من 24 ساعة
+                    if not last_notification or (now - last_notification.created_at > timedelta(hours=24)):
+                        send_review_notification(booking.id)
+                        notifications_sent += 1
         
+        logging.info(f"تم إرسال {notifications_sent} إشعارات لحجوزات مكتملة")
         return True
     except Exception as e:
         logging.error(f"خطأ في التحقق من الحجوزات المكتملة: {str(e)}")

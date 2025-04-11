@@ -277,7 +277,7 @@
                                                             {% endif %}
 
                                                             {% if booking.status == 'completed' and not has_review(booking.service_id, current_user.id) %}
-                                                                <button class="btn btn-sm btn-outline-warning add-review" data-service-id="{{ booking.service_id }}"><i class="fas fa-star"></i> تقييم الخدمة</button>
+                                                                <button class="btn btn-sm btn-outline-warning review-button" data-service-id="{{ booking.service.id }}"><i class="fas fa-star"></i> تقييم الخدمة</button>
                                                             {% endif %}
                                                         </div>
                                                     </td>
@@ -398,11 +398,10 @@
         {% endif %}
     </div>
 </section>
-{% endblock %}
 
 <!-- Modal for adding review -->
 <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="reviewModalLabel">تقييم الخدمة</h5>
@@ -441,169 +440,139 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // تهيئة Bootstrap tooltips
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة Bootstrap tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 
-        // تفعيل التبويبات عند النقر
-        const activeTab = localStorage.getItem('activeBookingTab');
-        if (activeTab) {
-            document.querySelector(`[data-bs-target="${activeTab}"]`).click();
-        }
+    // تفعيل التبويبات عند النقر
+    const activeTab = localStorage.getItem('activeBookingTab');
+    if (activeTab) {
+        document.querySelector(`[data-bs-target="${activeTab}"]`).click();
+    }
 
-        // حفظ التبويب النشط
-        document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(tab => {
-            tab.addEventListener('shown.bs.tab', function(e) {
-                localStorage.setItem('activeBookingTab', e.target.getAttribute('data-bs-target'));
-            });
+    // حفظ التبويب النشط
+    document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(e) {
+            localStorage.setItem('activeBookingTab', e.target.getAttribute('data-bs-target'));
         });
+    });
 
-        // معالجة أزرار الحجوزات
-        const handleBookingAction = async (action, bookingId) => {
-            try {
-                const response = await fetch(`/booking/${bookingId}/${action}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    // عرض رسالة نجاح
-                    showAlert('success', data.message);
-
-                    // إعادة تحميل الصفحة
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    // عرض رسالة الخطأ
-                    showAlert('danger', data.message || 'حدث خطأ أثناء تنفيذ العملية');
+    // معالجة أزرار الحجوزات
+    const handleBookingAction = async (action, bookingId) => {
+        try {
+            const response = await fetch(`/booking/${bookingId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                showAlert('danger', 'حدث خطأ في الاتصال بالخادم');
-            }
-        };
+            });
 
-        // عرض رسالة تنبيه
-        function showAlert(type, message) {
-            const alertBox = document.createElement('div');
-            alertBox.className = `alert alert-${type} alert-dismissible fade show`;
-            alertBox.setAttribute('role', 'alert');
-            alertBox.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            `;
+            const data = await response.json();
 
-            const alertsContainer = document.getElementById('alerts-container');
-            alertsContainer.appendChild(alertBox);
+            if (data.success) {
+                // عرض رسالة نجاح
+                showAlert('success', data.message);
 
-            // إزالة الرسالة بعد 3 ثوان
-            setTimeout(() => {
-                alertBox.classList.remove('show');
+                // إعادة تحميل الصفحة
                 setTimeout(() => {
-                    alertBox.remove();
-                }, 300);
-            }, 3000);
+                    window.location.reload();
+                }, 1500);
+            } else {
+                // عرض رسالة الخطأ
+                showAlert('danger', data.message || 'حدث خطأ أثناء تنفيذ العملية');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('danger', 'حدث خطأ في الاتصال بالخادم');
         }
+    };
 
-        // تعيين معالجات الأحداث لأزرار الإجراءات
-        document.querySelectorAll('.cancel-booking').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const bookingId = btn.getAttribute('data-booking-id');
-                if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
-                    await handleBookingAction('cancel', bookingId);
-                }
+    // عرض رسالة تنبيه
+    function showAlert(type, message) {
+        const alertBox = document.createElement('div');
+        alertBox.className = `alert alert-${type} alert-dismissible fade show`;
+        alertBox.setAttribute('role', 'alert');
+        alertBox.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        const alertsContainer = document.getElementById('alerts-container');
+        alertsContainer.appendChild(alertBox);
+
+        // إزالة الرسالة بعد 3 ثوان
+        setTimeout(() => {
+            alertBox.classList.remove('show');
+            setTimeout(() => {
+                alertBox.remove();
+            }, 300);
+        }, 3000);
+    }
+
+    // تعيين معالجات الأحداث لأزرار الإجراءات
+    document.querySelectorAll('.cancel-booking').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
+                await handleBookingAction('cancel', bookingId);
+            }
+        });
+    });
+
+    document.querySelectorAll('.confirm-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('confirm', bookingId);
+        });
+    });
+
+    document.querySelectorAll('.complete-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('complete', bookingId);
+        });
+    });
+
+    // معالجة نافذة التقييم
+    const reviewModalElement = document.getElementById('reviewModal');
+    let reviewModal;
+
+    if (reviewModalElement) {
+        reviewModal = new bootstrap.Modal(reviewModalElement);
+
+        // تحديد زر التقييم وإضافة حدث النقر عليه
+        document.querySelectorAll('.review-button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const serviceId = this.getAttribute('data-service-id');
+                document.getElementById('modal_service_id').value = serviceId;
+                reviewModal.show();
+
+                // تأكيد أن النافذة مرئية من خلال إضافة فئة CSS
+                reviewModalElement.classList.add('show');
+                reviewModalElement.style.display = 'block';
+                document.body.classList.add('modal-open');
+
+                console.log('تم النقر على زر التقييم للخدمة: ' + serviceId);
             });
         });
 
-        document.querySelectorAll('.confirm-booking').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const bookingId = btn.getAttribute('data-booking-id');
-                handleBookingAction('confirm', bookingId);
-            });
-        });
+        console.log('تم تهيئة نافذة التقييم');
+    } else {
+        console.error('لم يتم العثور على نافذة التقييم في الصفحة');
+    }
 
-        document.querySelectorAll('.complete-booking').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const bookingId = btn.getAttribute('data-booking-id');
-                handleBookingAction('complete', bookingId);
-            });
-        });
+    // معالجة تقييم النجوم
+    const stars = document.querySelectorAll('.star-rating');
+    const ratingInput = document.getElementById('rating_input');
 
-        // معالجة نافذة التقييم
-        const reviewModalElement = document.getElementById('reviewModal');
-        let reviewModal;
-        
-        if (reviewModalElement) {
-            reviewModal = new bootstrap.Modal(reviewModalElement);
-            
-            // تحديد زر التقييم وإضافة حدث النقر عليه
-            document.querySelectorAll('.add-review').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const serviceId = this.getAttribute('data-service-id');
-                    document.getElementById('modal_service_id').value = serviceId;
-                    reviewModal.show();
-                    
-                    // تأكيد أن النافذة مرئية من خلال إضافة فئة CSS
-                    reviewModalElement.classList.add('show');
-                    reviewModalElement.style.display = 'block';
-                    document.body.classList.add('modal-open');
-                    
-                    console.log('تم النقر على زر التقييم للخدمة: ' + serviceId);
-                });
-            });
-            
-            console.log('تم تهيئة نافذة التقييم');
-        } else {
-            console.error('لم يتم العثور على نافذة التقييم في الصفحة');
-        }
+    // إضافة الاستماع إلى حدث النقر لكل نجمة
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const value = parseInt(this.getAttribute('data-value'));
+            ratingInput.value = value;
 
-        // معالجة تقييم النجوم
-        const stars = document.querySelectorAll('.star-rating');
-        const ratingInput = document.getElementById('rating_input');
-
-        // إضافة الاستماع إلى حدث النقر لكل نجمة
-        stars.forEach(star => {
-            star.addEventListener('click', function() {
-                const value = parseInt(this.getAttribute('data-value'));
-                ratingInput.value = value;
-
-                // تحديث شكل النجوم
-                stars.forEach(s => {
-                    const starValue = parseInt(s.getAttribute('data-value'));
-                    if (starValue <= value) {
-                        s.className = 'fas fa-star star-rating text-warning';
-                    } else {
-                        s.className = 'far fa-star star-rating';
-                    }
-                });
-            });
-
-            // إضافة تأثير التحويم
-            star.addEventListener('mouseover', function() {
-                const value = parseInt(this.getAttribute('data-value'));
-
-                stars.forEach(s => {
-                    const starValue = parseInt(s.getAttribute('data-value'));
-                    if (starValue <= value) {
-                        s.className = 'fas fa-star star-rating text-warning';
-                    } else {
-                        s.className = 'far fa-star star-rating';
-                    }
-                });
-            });
-        });
-
-        // استعادة حالة النجوم عند الخروج من منطقة التقييم
-        const ratingContainer = document.querySelector('.rating-input-container');
-        ratingContainer.addEventListener('mouseleave', function() {
-            const value = parseInt(ratingInput.value) || 0;
-
+            // تحديث شكل النجوم
             stars.forEach(s => {
                 const starValue = parseInt(s.getAttribute('data-value'));
                 if (starValue <= value) {
@@ -614,26 +583,56 @@
             });
         });
 
-        // التحقق من صحة النموذج عند الإرسال
-        document.getElementById('reviewForm').addEventListener('submit', function(e) {
-            const rating = parseInt(ratingInput.value) || 0;
-            const comment = document.getElementById('comment').value.trim();
+        // إضافة تأثير التحويم
+        star.addEventListener('mouseover', function() {
+            const value = parseInt(this.getAttribute('data-value'));
 
-            if (rating === 0 || rating > 5) {
-                e.preventDefault();
-                alert('يرجى تحديد تقييم بين 1 و 5 نجوم');
-                return false;
-            }
-
-            if (comment.length < 10) {
-                e.preventDefault();
-                alert('يرجى كتابة تعليق مناسب (10 أحرف على الأقل)');
-                return false;
-            }
-
-            return true;
+            stars.forEach(s => {
+                const starValue = parseInt(s.getAttribute('data-value'));
+                if (starValue <= value) {
+                    s.className = 'fas fa-star star-rating text-warning';
+                } else {
+                    s.className = 'far fa-star star-rating';
+                }
+            });
         });
     });
+
+    // استعادة حالة النجوم عند الخروج من منطقة التقييم
+    const ratingContainer = document.querySelector('.rating-input-container');
+    ratingContainer.addEventListener('mouseleave', function() {
+        const value = parseInt(ratingInput.value) || 0;
+
+        stars.forEach(s => {
+            const starValue = parseInt(s.getAttribute('data-value'));
+            if (starValue <= value) {
+                s.className = 'fas fa-star star-rating text-warning';
+            } else {
+                s.className = 'far fa-star star-rating';
+            }
+        });
+    });
+
+    // التحقق من صحة النموذج عند الإرسال
+    document.getElementById('reviewForm').addEventListener('submit', function(e) {
+        const rating = parseInt(ratingInput.value) || 0;
+        const comment = document.getElementById('comment').value.trim();
+
+        if (rating === 0 || rating > 5) {
+            e.preventDefault();
+            alert('يرجى تحديد تقييم بين 1 و 5 نجوم');
+            return false;
+        }
+
+        if (comment.length < 10) {
+            e.preventDefault();
+            alert('يرجى كتابة تعليق مناسب (10 أحرف على الأقل)');
+            return false;
+        }
+
+        return true;
+    });
+});
 </script>
 
 <style>
