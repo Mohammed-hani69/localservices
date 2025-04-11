@@ -435,46 +435,47 @@
                             </div>
                         </div>
                     {% endfor %}
-                    {% if loop.last and review_form %}
-                        <!-- Modal for adding review -->
-                        <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="reviewModalLabel">تقييم الخدمة</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
-                                            {{ review_form.csrf_token }}
-                                            <input type="hidden" name="service_id" id="modal_service_id" value="">
-                                            <div class="mb-3">
-                                                <label class="form-label">التقييم:</label>
-                                                <div class="rating-input-container">
-                                                    <div class="stars">
-                                                        <i class="far fa-star star-rating" data-value="1"></i>
-                                                        <i class="far fa-star star-rating" data-value="2"></i>
-                                                        <i class="far fa-star star-rating" data-value="3"></i>
-                                                        <i class="far fa-star star-rating" data-value="4"></i>
-                                                        <i class="far fa-star star-rating" data-value="5"></i>
-                                                    </div>
-                                                    <input type="hidden" name="rating" id="rating_input" value="">
+                
+                {% if review_form %}
+                    <!-- Modal for adding review -->
+                    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="reviewModalLabel">تقييم الخدمة</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
+                                        {{ review_form.csrf_token }}
+                                        <input type="hidden" name="service_id" id="modal_service_id" value="">
+                                        <div class="mb-3">
+                                            <label class="form-label">التقييم:</label>
+                                            <div class="rating-input-container">
+                                                <div class="stars">
+                                                    <i class="far fa-star star-rating" data-value="1"></i>
+                                                    <i class="far fa-star star-rating" data-value="2"></i>
+                                                    <i class="far fa-star star-rating" data-value="3"></i>
+                                                    <i class="far fa-star star-rating" data-value="4"></i>
+                                                    <i class="far fa-star star-rating" data-value="5"></i>
                                                 </div>
+                                                <input type="hidden" name="rating" id="rating_input" value="">
                                             </div>
-                                            <div class="mb-3">
-                                                <label for="comment" class="form-label">تعليقك:</label>
-                                                <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="يرجى كتابة تعليقك على الخدمة..."></textarea>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                                <button type="submit" class="btn btn-primary">إرسال التقييم</button>
-                                            </div>
-                                        </form>
-                                    </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="comment" class="form-label">تعليقك:</label>
+                                            <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="يرجى كتابة تعليقك على الخدمة..."></textarea>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                            <button type="submit" class="btn btn-primary">إرسال التقييم</button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                    {% endif %}
+                    </div>
+                {% endif %}
                 </div>
             {% else %}
                 <div class="empty-state">
