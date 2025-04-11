@@ -1,40 +1,42 @@
+
 import os
 import shutil
-from app import app, db
+from flask import Flask
+from database import db
 from models import User, ROLE_ADMIN
 from werkzeug.security import generate_password_hash
 
 def reset_database():
+    # تهيئة تطبيق Flask
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///local_services.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
+
     with app.app_context():
-        # Remove existing database
-        if os.path.exists('local_services.db'):
-            os.remove('local_services.db')
-            print("Removed existing database.")
+        # حذف قاعدة البيانات الحالية
+        if os.path.exists('instance/local_services.db'):
+            os.remove('instance/local_services.db')
+            print("تم حذف قاعدة البيانات الحالية.")
 
-        # Remove migrations folder
-        migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
-        if os.path.exists(migrations_dir):
-            shutil.rmtree(migrations_dir)
-            print("Removed migrations folder.")
-
-        # Create new tables
+        # إنشاء الجداول الجديدة
         db.create_all()
-        print("Created new database tables.")
+        print("تم إنشاء جداول قاعدة البيانات الجديدة.")
 
-        # Create admin user
+        # إنشاء مستخدم مدير
         admin = User(
             username='admin',
-            email='admin@gmail.com',
+            email='admin@example.com',
             role=ROLE_ADMIN,
             is_active=True,
             phone='0000000000',
-            address='Admin Address'
+            address='عنوان المشرف'
         )
-        admin.password_hash = generate_password_hash('12345678')
+        admin.set_password('12345678')
         db.session.add(admin)
         db.session.commit()
         
-        print("Database reset completed successfully!")
+        print("تم إعادة ضبط قاعدة البيانات بنجاح!")
 
 if __name__ == "__main__":
     reset_database()

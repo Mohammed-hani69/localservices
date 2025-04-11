@@ -21,7 +21,7 @@ class User(UserMixin, db.Model):
 
     # Define relationships
     provider_profile = db.relationship('ServiceProvider', backref='user', uselist=False)
-    bookings = db.relationship('Booking', backref='client', lazy='dynamic')
+    bookings = db.relationship('Booking', foreign_keys='Booking.client_id', backref=db.backref('client', lazy='joined'), lazy='dynamic')
     payments = db.relationship('Payment', backref='client', lazy='dynamic')
     notifications = db.relationship('Notification', backref='user', lazy='dynamic')
 
@@ -74,7 +74,7 @@ class Service(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Define relationships
-    bookings = db.relationship('Booking', backref='service', lazy='dynamic')
+    bookings = db.relationship('Booking', foreign_keys='Booking.service_id', backref=db.backref('service_rel', lazy='joined'), lazy='dynamic')
 
 class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -114,9 +114,8 @@ class Booking(db.Model):
     dietary_restrictions = db.Column(db.String(200))
     delivery_time = db.Column(db.DateTime)
 
-    # إزالة تعريف العلاقة المكررة مع User لأنها معرفة بالفعل في نموذج User
-    user = db.relationship('User', foreign_keys=[client_id])
-    service = db.relationship('Service', backref='bookings')
+    # تعريف علاقة إضافية مع Service بدون تحديد backref
+    service = db.relationship('Service', foreign_keys=[service_id])
     payments = db.relationship('Payment', backref='booking', lazy=True)
 
 class Payment(db.Model):
