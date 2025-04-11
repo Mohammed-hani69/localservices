@@ -11,12 +11,12 @@
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
                         <h1 class="card-title h2 mb-3">{{ service.name }}</h1>
-                        
+
                         <div class="d-flex align-items-center mb-3">
                             <div class="rating-display me-2" data-rating="{{ service.provider.rating }}"></div>
                             <span class="text-muted">({{ "%.1f"|format(service.provider.rating) }})</span>
                         </div>
-                        
+
                         <div class="mb-4">
                             <span class="badge bg-primary">{{ service.category }}</span>
                             {% if service.is_active %}
@@ -25,7 +25,7 @@
                                 <span class="badge bg-danger">غير متاح</span>
                             {% endif %}
                         </div>
-                        
+
                         <div class="service-image bg-white p-3 text-center mb-4" style="border-radius: 5px;">
                             {% if service.image %}
                                 <img src="{{ url_for('static', filename=service.image) }}" alt="{{ service.name }}" class="img-fluid" style="max-height: 300px;">
@@ -45,7 +45,7 @@
                                 {% endif %}
                             {% endif %}
                         </div>
-                        
+
                         <h4>الوصف</h4>
                         <p class="card-text">{{ service.description }}</p>
                         {% if service.service_type %}
@@ -57,7 +57,7 @@
                             <p>{{ service.additional_info|nl2br }}</p>
                         </div>
                         {% endif %}
-                        
+
                         <div class="d-flex justify-content-between align-items-center mt-4">
                             <div>
                                 <h4 class="text-primary mb-0">{{ "%.0f"|format(service.price) }} جنيه</h4>
@@ -71,7 +71,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- تقييمات الخدمة -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white py-3">
@@ -99,31 +99,62 @@
                         {% else %}
                             <p class="text-center text-muted py-3">لا توجد تقييمات حتى الآن</p>
                         {% endif %}
-                        
+
                         {% if current_user.is_authenticated and current_user.id != service.provider.user_id and not current_user.is_admin() and not has_review(service.id, current_user.id) %}
                             {% if review_form %}
-                            <div class="mt-4">
-                                <h6 class="mb-3">إضافة تقييم</h6>
-                                <form action="{{ url_for('add_review') }}" method="post">
-                                    {{ review_form.hidden_tag() }}
-                                    {{ review_form.service_id(value=service.id) }}
-                                    <div class="mb-3">
-                                        <label for="{{ review_form.rating.id }}" class="form-label">التقييم</label>
-                                        {{ review_form.rating(class="form-select") }}
+                                <div class="card mb-4">
+                                    <div class="card-header bg-light"><i class="fas fa-star me-2"></i> أضف تقييمك للخدمة</div>
+                                    <div class="card-body">
+                                        <button class="btn btn-primary add-review w-100" data-service-id="{{ service.id }}">
+                                            <i class="fas fa-star me-2"></i> إضافة تقييم الآن
+                                        </button>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="{{ review_form.comment.id }}" class="form-label">التعليق</label>
-                                        {{ review_form.comment(class="form-control", rows=3) }}
+                                </div>
+
+                                <!-- Modal for adding review -->
+                                <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="reviewModalLabel">تقييم الخدمة</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
+                                                    {{ review_form.csrf_token }}
+                                                    {{ review_form.service_id(id="modal_service_id") }}
+                                                    <div class="mb-3">
+                                                        <label class="form-label">التقييم:</label>
+                                                        <div class="rating-input-container">
+                                                            <div class="stars">
+                                                                <i class="far fa-star star-rating" data-value="1"></i>
+                                                                <i class="far fa-star star-rating" data-value="2"></i>
+                                                                <i class="far fa-star star-rating" data-value="3"></i>
+                                                                <i class="far fa-star star-rating" data-value="4"></i>
+                                                                <i class="far fa-star star-rating" data-value="5"></i>
+                                                            </div>
+                                                            {{ review_form.rating(type="hidden", id="rating_input") }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="comment" class="form-label">تعليقك:</label>
+                                                        {{ review_form.comment(class="form-control", rows="4", placeholder="يرجى كتابة تعليقك على الخدمة...") }}
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                                        <button type="submit" class="btn btn-primary">إرسال التقييم</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
-                                    {{ review_form.submit(class="btn btn-primary") }}
-                                </form>
-                            </div>
+                                </div>
                             {% endif %}
                         {% endif %}
                     </div>
                 </div>
             </div>
-            
+
             <!-- sidebar -->
             <div class="col-lg-4">
                 <!-- معلومات مقدم الخدمة -->
@@ -152,7 +183,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- خدمات مشابهة -->
                 <div class="card shadow-sm">
                     <div class="card-header bg-white py-3">
@@ -182,4 +213,123 @@
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // معالجة نافذة التقييم
+        const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+
+        // تحديد زر التقييم وإضافة حدث النقر عليه
+        document.querySelectorAll('.add-review').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const serviceId = this.getAttribute('data-service-id');
+                document.getElementById('modal_service_id').value = serviceId;
+                reviewModal.show();
+            });
+        });
+
+        // معالجة تقييم النجوم
+        const stars = document.querySelectorAll('.star-rating');
+        const ratingInput = document.getElementById('rating_input');
+
+        // إضافة الاستماع إلى حدث النقر لكل نجمة
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                ratingInput.value = value;
+
+                // تحديث شكل النجوم
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
+            });
+
+            // إضافة تأثير التحويم
+            star.addEventListener('mouseover', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
+            });
+        });
+
+        // استعادة حالة النجوم عند الخروج من منطقة التقييم
+        const ratingContainer = document.querySelector('.rating-input-container');
+        if (ratingContainer) {
+            ratingContainer.addEventListener('mouseleave', function() {
+                const value = parseInt(ratingInput.value) || 0;
+
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
+            });
+        }
+
+        // التحقق من صحة النموذج عند الإرسال
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', function(e) {
+                const rating = parseInt(ratingInput.value) || 0;
+                const comment = document.getElementById('comment').value.trim();
+
+                if (rating === 0 || rating > 5) {
+                    e.preventDefault();
+                    alert('يرجى تحديد تقييم بين 1 و 5 نجوم');
+                    return false;
+                }
+
+                if (comment.length < 10) {
+                    e.preventDefault();
+                    alert('يرجى كتابة تعليق مناسب (10 أحرف على الأقل)');
+                    return false;
+                }
+
+                return true;
+            });
+        }
+    });
+</script>
+
+<style>
+/* أنماط نافذة التقييم */
+.rating-input-container {
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.stars {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    font-size: 1.8rem;
+}
+
+.star-rating {
+    cursor: pointer;
+    padding: 5px;
+    transition: all 0.2s ease;
+}
+
+.star-rating:hover {
+    transform: scale(1.2);
+}
+</style>
 {% endblock %}
