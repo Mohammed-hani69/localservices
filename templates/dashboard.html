@@ -543,17 +543,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // تحديد زر التقييم وإضافة حدث النقر عليه
         document.querySelectorAll('.review-button').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', async function() {
                 const serviceId = this.getAttribute('data-service-id');
-                document.getElementById('modal_service_id').value = serviceId;
-                reviewModal.show();
-
-                // تأكيد أن النافذة مرئية من خلال إضافة فئة CSS
-                reviewModalElement.classList.add('show');
-                reviewModalElement.style.display = 'block';
-                document.body.classList.add('modal-open');
-
-                console.log('تم النقر على زر التقييم للخدمة: ' + serviceId);
+                
+                // التحقق من إمكانية التقييم عبر API
+                try {
+                    const response = await fetch(`/api/check_completed_booking/${serviceId}`);
+                    const data = await response.json();
+                    
+                    if (!data.has_completed) {
+                        alert('لا يمكنك تقييم هذه الخدمة حتى تكتمل عملية الحجز.');
+                        return;
+                    }
+                    
+                    if (data.has_review) {
+                        alert('لقد قمت بتقييم هذه الخدمة بالفعل.');
+                        return;
+                    }
+                    
+                    // تعيين معرف الخدمة في النموذج
+                    document.getElementById('modal_service_id').value = serviceId;
+                    
+                    // عرض النافذة
+                    reviewModal.show();
+                    
+                    console.log('تم النقر على زر التقييم للخدمة: ' + serviceId);
+                } catch (error) {
+                    console.error('خطأ في التحقق من إمكانية التقييم:', error);
+                    alert('حدث خطأ أثناء التحقق من إمكانية التقييم. الرجاء المحاولة مرة أخرى.');
+                }
             });
         });
 

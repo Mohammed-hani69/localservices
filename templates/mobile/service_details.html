@@ -94,6 +94,18 @@
         </a>
     </div>
     {% endif %}
+    {% if review_form %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-star me-1"></i> أضف تقييمك
+        </div>
+        <div class="card-body">
+            <button class="btn btn-primary w-100 review-button" data-service-id="{{ service.id }}">
+                <i class="fas fa-star me-1"></i> إضافة تقييم
+            </button>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
 
@@ -141,11 +153,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize rating displays
     initRatingDisplays();
-    
+
     // إضافة زر التقييم إذا كان المستخدم قد استخدم الخدمة واكتملت
     {% if current_user.is_authenticated and not current_user.is_provider() %}
     const serviceId = {{ service.id }};
-    
+
     // التحقق مما إذا كان المستخدم لديه حجز مكتمل لهذه الخدمة
     fetch('/api/check_completed_booking/' + serviceId)
         .then(response => response.json())
@@ -169,17 +181,17 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error checking booking status:', error));
     {% endif %}
-    
+
     // معالجة تقييم النجوم
     const stars = document.querySelectorAll('.star-rating');
     const ratingInput = document.getElementById('rating_input');
-    
+
     // إضافة الاستماع إلى حدث النقر لكل نجمة
     stars.forEach(star => {
         star.addEventListener('click', function() {
             const value = parseInt(this.getAttribute('data-value'));
             ratingInput.value = value;
-            
+
             // تحديث شكل النجوم
             stars.forEach(s => {
                 const starValue = parseInt(s.getAttribute('data-value'));
@@ -190,11 +202,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-        
+
         // إضافة تأثير التحويم
         star.addEventListener('mouseover', function() {
             const value = parseInt(this.getAttribute('data-value'));
-            
+
             stars.forEach(s => {
                 const starValue = parseInt(s.getAttribute('data-value'));
                 if (starValue <= value) {
@@ -205,13 +217,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-    
+
     // استعادة حالة النجوم عند الخروج من منطقة التقييم
     const ratingContainer = document.querySelector('.rating-input-container');
     if (ratingContainer) {
         ratingContainer.addEventListener('mouseleave', function() {
             const value = parseInt(ratingInput.value) || 0;
-            
+
             stars.forEach(s => {
                 const starValue = parseInt(s.getAttribute('data-value'));
                 if (starValue <= value) {
@@ -222,26 +234,26 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     // التحقق من صحة النموذج عند الإرسال
     const reviewForm = document.getElementById('reviewForm');
     if (reviewForm) {
         reviewForm.addEventListener('submit', function(e) {
             const rating = parseInt(ratingInput.value) || 0;
             const comment = document.getElementById('comment').value.trim();
-            
+
             if (rating === 0 || rating > 5) {
                 e.preventDefault();
                 alert('يرجى تحديد تقييم بين 1 و 5 نجوم');
                 return false;
             }
-            
+
             if (comment.length < 10) {
                 e.preventDefault();
                 alert('يرجى كتابة تعليق مناسب (10 أحرف على الأقل)');
                 return false;
             }
-            
+
             return true;
         });
     }

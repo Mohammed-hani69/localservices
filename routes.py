@@ -809,10 +809,15 @@ def add_review():
     if form.validate_on_submit():
         service_id = form.service_id.data
 
-        # Check if user has booked this service before
-        user_bookings = Booking.query.filter_by(client_id=current_user.id, service_id=service_id).first()
+        # Check if user has booked this service before with completed status
+        user_bookings = Booking.query.filter_by(
+            client_id=current_user.id, 
+            service_id=service_id,
+            status='completed'
+        ).first()
+        
         if not user_bookings:
-            flash('يمكنك فقط تقييم الخدمات التي قمت بحجزها.', 'warning')
+            flash('يمكنك فقط تقييم الخدمات التي قمت بحجزها وتم إكمالها.', 'warning')
             return redirect(url_for('service_details', service_id=service_id))
 
         # Check if user has already reviewed this service
@@ -821,26 +826,63 @@ def add_review():
             flash('لقد قمت بتقييم هذه الخدمة بالفعل.', 'warning')
             return redirect(url_for('service_details', service_id=service_id))
 
+        # Ensure rating is valid
+        try:
+            rating = int(form.rating.data)
+            if rating < 1 or rating > 5:
+                flash('التقييم يجب أن يكون بين 1 و 5 نجوم.', 'warning')
+                return redirect(url_for('service_details', service_id=service_id))
+        except:
+            flash('التقييم يجب أن يكون رقماً صحيحاً.', 'warning')
+            return redirect(url_for('service_details', service_id=service_id))
+
         review = Review(
             service_id=service_id,
             user_id=current_user.id,
-            rating=form.rating.data,
+            rating=rating,
             comment=form.comment.data
         )
         db.session.add(review)
 
         # Update service rating
         service = Service.query.get(service_id)
-        all_reviews = Review.query.filter_by(service_id=service_id).all()
-        total_rating = sum(r.rating for r in all_reviews) + form.rating.data
-        new_rating = total_rating / (len(all_reviews) + 1)
-
+        
+        # Update provider rating (all reviews for all services)
         provider = ServiceProvider.query.get(service.provider_id)
-        provider.rating = new_rating
+        provider_services = Service.query.filter_by(provider_id=provider.id).all()
+        all_provider_reviews = []
+        
+        for srv in provider_services:
+            all_provider_reviews.extend(Review.query.filter_by(service_id=srv.id).all())
+            
+        if all_provider_reviews:
+            provider.rating = sum(r.rating for r in all_provider_reviews) / len(all_provider_reviews)
+        
+        # Create notification for service provider
+        create_notification(
+            provider.user_id,
+            "تقييم جديد",
+            f"قام {current_user.username} بتقييم خدمة {service.name} بتقييم {rating} نجوم",
+            "info",
+            service_id,
+            "review"
+        )
 
         db.session.commit()
         flash('شكراً على تقييمك!', 'success')
+        
+        # Redirect to the appropriate page based on where the request came from
+        referer = request.headers.get('Referer', '')
+        if 'mobile' in referer:
+            return redirect(url_for('mobile_dashboard'))
+        else:
+            return redirect(url_for('dashboard'))
 
+    else:
+        # Handle form validation errors
+        flash('حدث خطأ في التقييم. تأكد من إدخال تقييم وتعليق.', 'warning')
+        return redirect(url_for('service_details', service_id=form.service_id.data))
+        
     return redirect(url_for('service_details', service_id=form.service_id.data))
 
 # إضافة وجبة جديدة (لمقدمي خدمات الطعام)
