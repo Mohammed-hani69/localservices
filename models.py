@@ -114,7 +114,8 @@ class Booking(db.Model):
     dietary_restrictions = db.Column(db.String(200))
     delivery_time = db.Column(db.DateTime)
 
-    client = db.relationship('User', backref='bookings')
+    # إزالة تعريف العلاقة المكررة مع User لأنها معرفة بالفعل في نموذج User
+    user = db.relationship('User', foreign_keys=[client_id])
     service = db.relationship('Service', backref='bookings')
     payments = db.relationship('Payment', backref='booking', lazy=True)
 
