@@ -63,20 +63,21 @@
     <section class="reviews-section mt-4">
         <div class="section-header d-flex justify-content-between align-items-center mb-3">
             <h3 class="section-title mb-0">التقييمات</h3>
-            {% if service.reviews %}
-                <span class="rating-badge">{{ service.reviews|length }} تقييم</span>
+            {% if service.reviews.count() > 0 %}
+                <span class="rating-badge">{{ service.reviews.count() }} تقييم</span>
             {% endif %}
         </div>
 
-        {% if service.reviews %}
+        {% if service.reviews.count() > 0 %}
+            {% set avg_rating = (service.reviews|map(attribute='rating')|sum / service.reviews.count())|round(1) %}
             <div class="reviews-summary mb-3">
                 <div class="rating-large">
-                    {{ "%.1f"|format(service.reviews|sum(attribute='rating') / service.reviews|length) }}
+                    {{ "%.1f"|format(avg_rating) }}
                 </div>
-                <div class="rating-display large-stars mb-2" data-rating="{{ service.reviews|sum(attribute='rating') / service.reviews|length }}">
+                <div class="rating-display large-stars mb-2" data-rating="{{ avg_rating }}">
                     <!-- سيتم ملؤها بواسطة JavaScript -->
                 </div>
-                <p class="reviews-count text-muted">بناءً على {{ service.reviews|length }} تقييم</p>
+                <p class="reviews-count text-muted">بناءً على {{ service.reviews.count() }} تقييم</p>
             </div>
 
             <div class="reviews-list">

@@ -428,13 +428,53 @@
                                     </button>
                                 {% endif %}
                                 {% if booking.status == 'completed' and not has_review(booking.service_id, current_user.id) %}
-                                    <button class="btn btn-sm btn-outline-primary add-review" data-service-id="{{ booking.service_id }}">
+                                    <button class="btn btn-sm btn-outline-primary review-button" data-service-id="{{ booking.service_id }}">
                                         <i class="fas fa-star"></i> إضافة تقييم
                                     </button>
                                 {% endif %}
                             </div>
                         </div>
                     {% endfor %}
+                    {% if loop.last and review_form %}
+                        <!-- Modal for adding review -->
+                        <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="reviewModalLabel">تقييم الخدمة</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
+                                            {{ review_form.csrf_token }}
+                                            <input type="hidden" name="service_id" id="modal_service_id" value="">
+                                            <div class="mb-3">
+                                                <label class="form-label">التقييم:</label>
+                                                <div class="rating-input-container">
+                                                    <div class="stars">
+                                                        <i class="far fa-star star-rating" data-value="1"></i>
+                                                        <i class="far fa-star star-rating" data-value="2"></i>
+                                                        <i class="far fa-star star-rating" data-value="3"></i>
+                                                        <i class="far fa-star star-rating" data-value="4"></i>
+                                                        <i class="far fa-star star-rating" data-value="5"></i>
+                                                    </div>
+                                                    <input type="hidden" name="rating" id="rating_input" value="">
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="comment" class="form-label">تعليقك:</label>
+                                                <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="يرجى كتابة تعليقك على الخدمة..."></textarea>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                                <button type="submit" class="btn btn-primary">إرسال التقييم</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             {% else %}
                 <div class="empty-state">
@@ -468,50 +508,6 @@
 {% endblock %}
 
 {% block modals %}
-<!-- Modal for adding review -->
-<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="reviewModalLabel">تقييم الخدمة</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body px-4 py-3">
-                <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
-                    {{ review_form.csrf_token }}
-                    {{ review_form.service_id(id="modal_service_id") }}
-                    
-                    <div class="text-center mb-4">
-                        <p class="rating-caption mb-2">كيف كانت تجربتك مع هذه الخدمة؟</p>
-                        <div class="rating-input-container">
-                            <div class="stars">
-                                <i class="far fa-star star-rating" data-value="1"></i>
-                                <i class="far fa-star star-rating" data-value="2"></i>
-                                <i class="far fa-star star-rating" data-value="3"></i>
-                                <i class="far fa-star star-rating" data-value="4"></i>
-                                <i class="far fa-star star-rating" data-value="5"></i>
-                            </div>
-                            {{ review_form.rating(type="hidden", id="rating_input") }}
-                        </div>
-                        <div class="rating-text mt-2">انقر لاختيار التقييم</div>
-                    </div>
-                    
-                    <div class="comment-section mb-4">
-                        <label for="comment" class="form-label fw-medium mb-2">شاركنا رأيك:</label>
-                        {{ review_form.comment(class="form-control", rows="4", placeholder="أخبرنا عن تجربتك مع هذه الخدمة...") }}
-                        <div class="form-text small">مشاركتك تساعد الآخرين في اتخاذ قرارات أفضل</div>
-                    </div>
-                    
-                    <div class="action-buttons d-flex justify-content-between mt-4">
-                        <button type="button" class="btn btn-outline-secondary flex-grow-1 me-2" data-bs-dismiss="modal">إلغاء</button>
-                        <button type="submit" class="btn btn-primary flex-grow-1">إرسال التقييم</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
 /* تنسيقات نافذة التقييم المحسنة للجوال */
 #reviewModal .modal-content {
@@ -731,10 +727,10 @@ document.addEventListener('DOMContentLoaded', function() {
     addTouchEffect(document.querySelectorAll('.service-item'));
     addTouchEffect(document.querySelectorAll('.booking-item'));
     addTouchEffect(document.querySelectorAll('.action-buttons .btn'));
-    
+
     // تهيئة عرض التقييمات
     initRatingDisplays();
-    
+
     // تهيئة نظام التقييم
     initReviewSystem();
 });
@@ -765,7 +761,7 @@ function initReviewSystem() {
         console.error('لم يتم العثور على نافذة التقييم في الصفحة');
         return;
     }
-    
+
     let reviewModal;
     try {
         reviewModal = new bootstrap.Modal(reviewModalElement);
@@ -775,32 +771,32 @@ function initReviewSystem() {
     }
 
     // تحديد زر التقييم وإضافة حدث النقر عليه
-    document.querySelectorAll('.add-review').forEach(btn => {
+    document.querySelectorAll('.review-button').forEach(btn => {
         btn.addEventListener('click', async function() {
             const serviceId = this.getAttribute('data-service-id');
             console.log('تم النقر على زر التقييم للخدمة:', serviceId);
-            
+
             // التحقق من إمكانية التقييم عبر API
             try {
                 const response = await fetch(`/api/check_completed_booking/${serviceId}`);
                 const data = await response.json();
-                
+
                 if (!data.has_completed) {
                     alert('لا يمكنك تقييم هذه الخدمة حتى تكتمل عملية الحجز.');
                     return;
                 }
-                
+
                 if (data.has_review) {
                     alert('لقد قمت بتقييم هذه الخدمة بالفعل.');
                     return;
                 }
-                
+
                 // تعيين معرف الخدمة في النموذج
                 document.getElementById('modal_service_id').value = serviceId;
-                
+
                 // عرض النافذة
                 reviewModal.show();
-                
+
                 // تأكيد أن النافذة مرئية
                 document.querySelector('.modal-backdrop').classList.add('show');
                 document.body.classList.add('modal-open');
@@ -821,7 +817,7 @@ function initReviewSystem() {
             star.addEventListener('click', function() {
                 const value = parseInt(this.getAttribute('data-value'));
                 ratingInput.value = value;
-                
+
                 console.log('تم اختيار تقييم: ' + value);
 
                 // تحديث شكل النجوم
@@ -847,8 +843,7 @@ function initReviewSystem() {
                         s.className = 'far fa-star star-rating';
                     }
                 });
-            });
-        });
+            });        });
 
         // استعادة حالة النجوم عند الخروج من منطقة التقييم
         const ratingContainer = document.querySelector('.rating-input-container');

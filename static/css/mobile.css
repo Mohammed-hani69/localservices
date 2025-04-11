@@ -1153,22 +1153,33 @@ body {
 
 /* تأكد من ظهور النافذة المنبثقة بشكل صحيح */
 .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
 }
 
 .modal-open {
     overflow: hidden;
 }
 
+.modal.show {
+    display: block !important;
+}
+
 .modal.show .modal-dialog {
     transform: none !important;
     margin: 1.75rem auto;
+    z-index: 1050;
 }
 
 @media (max-width: 576px) {
     .modal.show .modal-dialog {
         margin: 0.5rem;
-        max-width: calc(100% - 1rem);
+        max-width: calc(100% - 1rem); 1rem);
     }
     
     .stars {
