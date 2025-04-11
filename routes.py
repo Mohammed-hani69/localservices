@@ -476,6 +476,20 @@ def add_service():
 
     provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
     if not provider:
+        flash('يجب إنشاء ملف مقدم الخدمة أولاً.', 'warning')
+        return redirect(url_for('create_provider_profile'))
+
+    form = ServiceForm()
+    
+    # تثبيت التصنيف بناءً على تخصص مقدم الخدمة
+    form.category.data = provider.specialization
+    form.category.render_kw = {'readonly': True, 'disabled': 'disabled'}
+    
+    if form.validate_on_submit():دمات فقط.', 'warning')
+        return redirect(url_for('index'))
+
+    provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
+    if not provider:
         flash('الرجاء إكمال ملف مقدم الخدمة أولاً.', 'warning')
         return redirect(url_for('create_provider_profile'))
 

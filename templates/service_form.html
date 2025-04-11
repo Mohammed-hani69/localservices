@@ -25,7 +25,12 @@
 
                             <div class="mb-3">
                                 <label for="category" class="form-label">{{ form.category.label }}</label>
-                                {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else ""), id="category-select") }}
+                                {% if current_user.provider_profile %}
+                                    <input type="text" class="form-control" value="{{ current_user.provider_profile.specialization }}" readonly disabled>
+                                    <input type="hidden" name="category" value="{{ current_user.provider_profile.specialization }}">
+                                {% else %}
+                                    {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else ""), id="category-select") }}
+                                {% endif %}
                                 {% for error in form.category.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
                                 {% endfor %}
@@ -124,6 +129,37 @@
         const categorySelect = document.getElementById('category-select');
         const serviceTypeSelect = document.getElementById('service-type-select');
         const additionalInfoHint = document.getElementById('additional-info-hint');
+        
+        // تحميل أنواع الخدمة بناءً على تخصص مقدم الخدمة عند تحميل الصفحة
+        {% if current_user.provider_profile %}
+            const specialization = "{{ current_user.provider_profile.specialization }}";
+            if (specialization) {
+                fetch(`/api/service-types/${specialization}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // تفريغ القائمة الحالية
+                        serviceTypeSelect.innerHTML = '';
+                        
+                        // إضافة خيار افتراضي
+                        const defaultOption = document.createElement('option');
+                        defaultOption.value = '';
+                        defaultOption.textContent = 'اختر نوع الخدمة';
+                        serviceTypeSelect.appendChild(defaultOption);
+                        
+                        // إضافة الخيارات الجديدة
+                        data.forEach(option => {
+                            const optElement = document.createElement('option');
+                            optElement.value = option[0];
+                            optElement.textContent = option[1];
+                            if ({% if service %}option[0] === "{{ service.service_type }}"{% else %}false{% endif %}) {
+                                optElement.selected = true;
+                            }
+                            serviceTypeSelect.appendChild(optElement);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching service types:', error));
+            }
+        {% endif %}
         
         // تكوين الخصائص الإضافية حسب نوع الخدمة
         const additionalInfoHints = {
