@@ -340,6 +340,60 @@
                     <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
                 </a>
             </div>
+
+            <!-- قسم الحجوزات لمزود الخدمة -->
+            <div class="bookings-section mt-4">
+                <h5 class="section-title mb-3">حجوزاتي</h5>
+                {% if bookings %}
+                    <div class="bookings-list">
+                        {% for booking in bookings %}
+                            <div class="booking-card" data-status="{{ booking.status }}">
+                                <div class="booking-header">
+                                    <h6>{{ booking.service.name }}</h6>
+                                    <span class="status-badge status-{{ booking.status }}">
+                                        {% if booking.status == 'pending' %}
+                                            قيد الانتظار
+                                        {% elif booking.status == 'confirmed' %}
+                                            مؤكد
+                                        {% elif booking.status == 'completed' %}
+                                            مكتمل
+                                        {% elif booking.status == 'cancelled' %}
+                                            ملغي
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="booking-details">
+                                    <p><i class="fas fa-user me-2"></i>{{ booking.client.username }}</p>
+                                    <p><i class="fas fa-calendar me-2"></i>{{ booking.booking_date.strftime('%Y-%m-%d') }}</p>
+                                    <p><i class="fas fa-clock me-2"></i>{{ booking.booking_date.strftime('%H:%M') }}</p>
+                                    <p><i class="fas fa-money-bill me-2"></i>{{ "%.2f"|format(booking.service.price) }} ر.س</p>
+                                </div>
+                                <div class="booking-actions">
+                                    
+                                    {% if booking.status == 'confirmed' %}
+                                        <button class="btn btn-sm btn-outline-primary complete-booking" data-booking-id="{{ booking.id }}">
+                                            <i class="fas fa-check-double"></i> إكمال الخدمة
+                                        </button>
+                                    {% endif %}
+                                    {% if booking.status in ['pending', 'confirmed'] %}
+                                        <button class="btn btn-sm btn-outline-danger cancel-booking" data-booking-id="{{ booking.id }}">
+                                            <i class="fas fa-times"></i> إلغاء الحجز
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <h6>لا توجد حجوزات</h6>
+                        <p>لم تتلق أي حجوزات بعد</p>
+                    </div>
+                {% endif %}
+            </div>
         {% else %}
             <div class="user-card">
                 <div class="user-info">
@@ -362,27 +416,7 @@
             </div>
         </div>
 
-        <!-- أزرار الإجراءات للمدير -->
-        <div class="action-buttons">
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-admin-dashboard">
-                <i class="fas fa-tachometer-alt"></i> لوحة تحكم المدير
-            </a>
-            <a href="{{ url_for('edit_user_profile') }}?mobile=true" class="btn btn-outline-primary">
-                <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
-            </a>
-        </div>
-    {% else %}
-        <!-- معلومات المستخدم العادي -->
-        <div class="user-card">
-            <div class="user-info">
-                <h4>معلومات إضافية</h4>
-                <p><i class="fas fa-phone"></i> الهاتف: {{ user.phone or 'غير محدد' }}</p>
-                <p><i class="fas fa-map-marker-alt"></i> العنوان: {{ user.address or 'غير محدد' }}</p>
-                <p><i class="fas fa-calendar-alt"></i> تاريخ التسجيل: {{ user.created_at.strftime('%Y-%m-%d') }}</p>
-            </div>
-        </div>
-
-        <!-- الإحصائيات للمستخدم العادي -->
+        <!-- الإحصائيات للمدير -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value">{{ bookings|length }}</div>
@@ -394,7 +428,7 @@
             </div>
         </div>
 
-        <!-- قسم الحجوزات -->
+        <!-- قسم الحجوزات للمدير -->
         <div class="bookings-section mt-4">
             <h5 class="section-title mb-3">حجوزاتي</h5>
             {% if bookings %}
@@ -435,47 +469,92 @@
                             </div>
                         </div>
                     {% endfor %}
-                
-                {% if review_form %}
-                    <!-- Modal for adding review -->
-                    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="reviewModalLabel">تقييم الخدمة</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
-                                        {{ review_form.csrf_token }}
-                                        <input type="hidden" name="service_id" id="modal_service_id" value="">
-                                        <div class="mb-3">
-                                            <label class="form-label">التقييم:</label>
-                                            <div class="rating-input-container">
-                                                <div class="stars">
-                                                    <i class="far fa-star star-rating" data-value="1"></i>
-                                                    <i class="far fa-star star-rating" data-value="2"></i>
-                                                    <i class="far fa-star star-rating" data-value="3"></i>
-                                                    <i class="far fa-star star-rating" data-value="4"></i>
-                                                    <i class="far fa-star star-rating" data-value="5"></i>
-                                                </div>
-                                                <input type="hidden" name="rating" id="rating_input" value="">
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="comment" class="form-label">تعليقك:</label>
-                                            <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="يرجى كتابة تعليقك على الخدمة..."></textarea>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                            <button type="submit" class="btn btn-primary">إرسال التقييم</button>
-                                        </div>
-                                    </form>
-                                </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <h6>لا توجد حجوزات</h6>
+                    <p>لم تقم بأي حجوزات بعد</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- أزرار الإجراءات للمدير -->
+        <div class="action-buttons">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-admin-dashboard">
+                <i class="fas fa-tachometer-alt"></i> لوحة تحكم المدير
+            </a>
+            <a href="{{ url_for('edit_user_profile') }}?mobile=true" class="btn btn-outline-primary">
+                <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
+            </a>
+        </div>
+    {% else %}
+        <!-- معلومات المستخدم العادي -->
+        <div class="user-card">
+            <div class="user-info">
+                <h4>معلومات إضافية</h4>
+                <p><i class="fas fa-phone"></i> الهاتف: {{ user.phone or 'غير محدد' }}</p>
+                <p><i class="fas fa-map-marker-alt"></i> العنوان: {{ user.address or 'غير محدد' }}</p>
+                <p><i class="fas fa-calendar-alt"></i> تاريخ التسجيل: {{ user.created_at.strftime('%Y-%m-%d') }}</p>
+            </div>
+        </div>
+
+        <!-- الإحصائيات للمستخدم العادي -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ bookings|length }}</div>
+                <div class="stat-label">مجموع الحجوزات</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ completed_bookings|length }}</div>
+                <div class="stat-label">حجوزات مكتملة</div>
+            </div>
+        </div>
+
+        <!-- قسم الحجوزات -->
+        <div class="bookings-section mt-4">
+            <h5 class="section-title mb-3">حجوزاتي الشخصية</h5>
+            {% set my_bookings = bookings|selectattr("client_id", "equalto", current_user.id)|list %}
+            {% if my_bookings %}
+                <div class="bookings-list">
+                    {% for booking in my_bookings %}
+                        <div class="booking-card" data-status="{{ booking.status }}">
+                            <div class="booking-header">
+                                <h6>{{ booking.service.name }}</h6>
+                                <span class="status-badge status-{{ booking.status }}">
+                                    {% if booking.status == 'pending' %}
+                                        قيد الانتظار
+                                    {% elif booking.status == 'confirmed' %}
+                                        مؤكد
+                                    {% elif booking.status == 'completed' %}
+                                        مكتمل
+                                    {% elif booking.status == 'cancelled' %}
+                                        ملغي
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="booking-details">
+                                <p><i class="fas fa-building me-2"></i>{{ booking.service.provider.company_name }}</p>
+                                <p><i class="fas fa-calendar me-2"></i>{{ booking.booking_date.strftime('%Y-%m-%d') }}</p>
+                                <p><i class="fas fa-clock me-2"></i>{{ booking.booking_date.strftime('%H:%M') }}</p>
+                                <p><i class="fas fa-money-bill me-2"></i>{{ "%.2f"|format(booking.service.price) }} ر.س</p>
+                            </div>
+                            <div class="booking-actions">
+                                {% if booking.status in ['pending', 'confirmed'] %}
+                                    <button class="btn btn-sm btn-outline-danger cancel-booking" data-booking-id="{{ booking.id }}">
+                                        <i class="fas fa-times"></i> إلغاء الحجز
+                                    </button>
+                                {% endif %}
+                                {% if booking.status == 'completed' and not has_review(booking.service_id, current_user.id) %}
+                                    <button class="btn btn-sm btn-outline-primary review-button" data-service-id="{{ booking.service_id }}">
+                                        <i class="fas fa-star"></i> إضافة تقييم
+                                    </button>
+                                {% endif %}
                             </div>
                         </div>
-                    </div>
-                {% endif %}
+                    {% endfor %}
                 </div>
             {% else %}
                 <div class="empty-state">

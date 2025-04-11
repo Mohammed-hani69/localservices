@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/rtl.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -83,6 +85,7 @@
                                 <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-user me-2"></i> الملف الشخصي</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i> لوحة التحكم</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('notifications') }}"><i class="fas fa-bell me-2"></i> الإشعارات {% if unread_notifications_count > 0 %}<span class="badge bg-danger">{{ unread_notifications_count }}</span>{% endif %}</a></li>
                                 <li><hr class="dropdown-divider"></li>

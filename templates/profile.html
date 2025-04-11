@@ -1,61 +1,231 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}الملف الشخصي{% endblock %}
 
 {% block content %}
-<section class="section pt-5 pb-5">
+<section class="py-5">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">{{ title }}</h3>
+        <!-- بطاقة معلومات المستخدم -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="welcome-message mb-3">مرحباً بك في ملفك الشخصي</div>
+                        <h4>{{ user.username }}</h4>
+                        <p class="text-muted">{{ user.email }}</p>
+                        {% if current_user.is_provider() %}
+                            <span class="badge bg-info">مزود خدمة</span>
+                        {% elif current_user.is_admin() %}
+                            <span class="badge bg-primary">مدير النظام</span>
+                        {% else %}
+                            <span class="badge bg-secondary">مستخدم</span>
+                        {% endif %}
                     </div>
-                    <div class="card-body">
-                        <form method="POST" action="" class="needs-validation" novalidate>
-                            {{ form.hidden_tag() }}
-
-                            <div class="mb-3">
-                                {{ form.company_name.label(class="form-label") }}
-                                {{ form.company_name(class="form-control" + (" is-invalid" if form.company_name.errors else ""), placeholder="أدخل اسم الشركة أو المؤسسة") }}
-                                {% for error in form.company_name.errors %}
-                                    <div class="invalid-feedback">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-
-                            <div class="mb-3">
-                                {{ form.description.label(class="form-label") }}
-                                {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="5", placeholder="أدخل وصفاً مفصلاً للخدمات التي تقدمها") }}
-                                {% for error in form.description.errors %}
-                                    <div class="invalid-feedback">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-
-                            <div class="mb-3">
-                                {{ form.specialization.label(class="form-label") }}
-                                {{ form.specialization(class="form-select" + (" is-invalid" if form.specialization.errors else "")) }}
-                                {% for error in form.specialization.errors %}
-                                    <div class="invalid-feedback">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-
-                            <div class="mb-3">
-                                {{ form.website.label(class="form-label") }}
-                                {{ form.website(class="form-control" + (" is-invalid" if form.website.errors else ""), placeholder="أدخل رابط الموقع الإلكتروني (اختياري)") }}
-                                {% for error in form.website.errors %}
-                                    <div class="invalid-feedback">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                {{ form.submit(class="btn btn-primary btn-lg") }}
-                                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">إلغاء</a>
-                            </div>
-                        </form>
+                    <div class="col-md-4 text-end">
+                        <a href="{{ url_for('edit_user_profile') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- قسم الحجوزات الشخصية للمستخدم -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">حجوزاتي الشخصية</h5>
+                <p class="text-muted small mb-0">الخدمات التي قمت بحجزها كعميل</p>
+            </div>
+            <div class="card-body">
+                {% set my_bookings = bookings|selectattr("client_id", "equalto", current_user.id)|list %}
+                {% if my_bookings %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>الخدمة</th>
+                                    <th>مقدم الخدمة</th>
+                                    <th>التاريخ والوقت</th>
+                                    <th>الحالة</th>
+                                    <th>السعر</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in my_bookings %}
+                                    <tr>
+                                        <td>{{ booking.service.name }}</td>
+                                        <td>{{ booking.service.provider.company_name }}</td>
+                                        <td>{{ booking.booking_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ get_status_color(booking.status) }}">
+                                                {% if booking.status == 'pending' %}
+                                                    قيد الانتظار
+                                                {% elif booking.status == 'confirmed' %}
+                                                    مؤكد
+                                                {% elif booking.status == 'completed' %}
+                                                    مكتمل
+                                                {% elif booking.status == 'cancelled' %}
+                                                    ملغي
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td>{{ "%.2f"|format(booking.service.price) }} ر.س</td>
+                                        <td>
+                                            {% if booking.status in ['pending', 'confirmed'] %}
+                                                <button class="btn btn-sm btn-outline-danger cancel-booking" data-booking-id="{{ booking.id }}">
+                                                    <i class="fas fa-times"></i> إلغاء
+                                                </button>
+                                            {% endif %}
+                                            {% if booking.status == 'completed' and not has_review(booking.service_id, current_user.id) %}
+                                                <button class="btn btn-sm btn-outline-primary review-button" data-service-id="{{ booking.service_id }}">
+                                                    <i class="fas fa-star"></i> تقييم
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h6>لا توجد حجوزات شخصية</h6>
+                        <p class="text-muted">لم تقم بحجز أي خدمات بعد</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </section>
+
+<!-- نافذة إضافة التقييم -->
+{% if review_form %}
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تقييم الخدمة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="reviewForm" method="post" action="{{ url_for('add_review') }}">
+                <div class="modal-body">
+                    {{ review_form.csrf_token }}
+                    {{ review_form.service_id(id="modal_service_id") }}
+                    <div class="mb-4 text-center">
+                        <label class="form-label fw-bold">كيف تقيم تجربتك؟</label>
+                        <div class="rating-input">
+                            <div class="stars">
+                                {% for i in range(5, 0, -1) %}
+                                    <i class="far fa-star" data-value="{{ i }}"></i>
+                                {% endfor %}
+                            </div>
+                            {{ review_form.rating(type="hidden") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">تعليقك</label>
+                        {{ review_form.comment(class="form-control", rows=3) }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">إرسال التقييم</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // معالجة زر إلغاء الحجز
+    document.querySelectorAll('.cancel-booking').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            if (confirm('هل أنت متأكد من إلغاء هذا الحجز؟')) {
+                const bookingId = this.getAttribute('data-booking-id');
+                try {
+                    const response = await fetch(`/booking/${bookingId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء إلغاء الحجز');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('حدث خطأ في الاتصال بالخادم');
+                }
+            }
+        });
+    });
+
+    // معالجة زر التقييم
+    document.querySelectorAll('.review-button').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const serviceId = this.getAttribute('data-service-id');
+            document.getElementById('modal_service_id').value = serviceId;
+            new bootstrap.Modal(document.getElementById('reviewModal')).show();
+        });
+    });
+
+    // معالجة نجوم التقييم
+    const stars = document.querySelectorAll('.stars i');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            document.querySelector('#rating_input').value = value;
+            stars.forEach(s => s.className = 'far fa-star');
+            for (let i = 0; i < value; i++) {
+                stars[4 - i].className = 'fas fa-star text-warning';
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.rating-input {
+    margin: 15px 0;
+}
+
+.stars {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.stars i {
+    margin: 0 2px;
+    color: #ddd;
+    transition: all 0.2s;
+}
+
+.stars i.fas {
+    color: #ffc107;
+}
+
+.provider-details p {
+    margin-bottom: 10px;
+}
+
+.provider-details i {
+    width: 25px;
+    color: #3498db;
+}
+
+.welcome-message {
+    color: #3498db;
+    font-size: 1.2rem;
+}
+</style>
 {% endblock %}

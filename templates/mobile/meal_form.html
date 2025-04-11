@@ -1,0 +1,115 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}{% if meal %}تعديل الوجبة{% else %}إضافة وجبة جديدة{% endif %}{% endblock %}
+
+{% block header_title %}{% if meal %}تعديل الوجبة{% else %}إضافة وجبة جديدة{% endif %}{% endblock %}
+
+{% block content %}
+<div class="mobile-service-form-page">
+    <form method="POST" action="{{ url_for('add_meal' if not meal else 'edit_meal', meal_id=meal.id if meal else None) }}" enctype="multipart/form-data" class="mobile-form" novalidate>
+        {{ form.hidden_tag() }}
+
+        <!-- اسم الوجبة -->
+        <div class="form-group mb-3">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+            {% for error in form.name.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- السعر ووقت التحضير -->
+        <div class="row mb-3">
+            <div class="col-6">
+                <div class="form-group">
+                    {{ form.price.label(class="form-label") }}
+                    {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else ""), type="number", step="0.01") }}
+                    {% for error in form.price.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    {{ form.preparation_time.label(class="form-label") }}
+                    {{ form.preparation_time(class="form-control" + (" is-invalid" if form.preparation_time.errors else ""), type="number") }}
+                    {% for error in form.preparation_time.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- نوع الوجبة -->
+        <div class="form-group mb-3">
+            {{ form.meal_type.label(class="form-label") }}
+            {{ form.meal_type(class="form-select" + (" is-invalid" if form.meal_type.errors else "")) }}
+            {% for error in form.meal_type.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- الوصف -->
+        <div class="form-group mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4) }}
+            {% for error in form.description.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- السعرات الحرارية -->
+        <div class="form-group mb-3">
+            {{ form.calories.label(class="form-label") }}
+            {{ form.calories(class="form-control" + (" is-invalid" if form.calories.errors else ""), type="number") }}
+            {% for error in form.calories.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- الصورة -->
+        <div class="form-group mb-3">
+            {{ form.image.label(class="form-label") }}
+            {{ form.image(class="form-control" + (" is-invalid" if form.image.errors else "")) }}
+            {% for error in form.image.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+            {% if meal and meal.image %}
+            <div class="mt-2">
+                <p class="text-muted">الصورة الحالية:</p>
+                <img src="{{ url_for('static', filename=meal.image) }}" alt="{{ meal.name }}" class="img-fluid rounded" style="max-height: 150px;">
+            </div>
+            {% endif %}
+            <div class="form-text text-muted">اختر صورة للوجبة (jpg, jpeg, png, gif)</div>
+        </div>
+
+        <!-- خيارات الطعام -->
+        <div class="form-group mb-3">
+            <div class="form-check mb-2">
+                {{ form.is_vegetarian(class="form-check-input") }}
+                {{ form.is_vegetarian.label(class="form-check-label") }}
+            </div>
+            <div class="form-check mb-2">
+                {{ form.is_vegan(class="form-check-input") }}
+                {{ form.is_vegan.label(class="form-check-label") }}
+            </div>
+            <div class="form-check mb-2">
+                {{ form.is_gluten_free(class="form-check-input") }}
+                {{ form.is_gluten_free.label(class="form-check-label") }}
+            </div>
+        </div>
+
+        <!-- متوفر -->
+        <div class="form-check form-switch mb-3">
+            {{ form.is_available(class="form-check-input") }}
+            {{ form.is_available.label(class="form-check-label") }}
+        </div>
+
+        <!-- أزرار الإجراءات -->
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary w-100") }}
+            <a href="{{ url_for('mobile_dashboard') }}" class="btn btn-outline-secondary w-100 mt-2">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

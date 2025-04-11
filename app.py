@@ -9,6 +9,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from database import db
+from flask_wtf.csrf import CSRFProtect
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -42,6 +43,9 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'الرجاء تسجيل الدخول للوصول إلى هذه الصفحة'
 login_manager.login_message_category = 'info'
+
+# Initialize CSRF protection
+csrf = CSRFProtect(app)
 
 # مرشح Jinja2 لتحويل أسطر النص إلى HTML
 @app.template_filter('nl2br')

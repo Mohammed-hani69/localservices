@@ -64,7 +64,7 @@ git add .
 
 4. Commit your changes:
 ```bash
-git commit -m "Initial commit"
+git commit -m "version 1.0.5"
 ```
 
 5. Push to GitHub:

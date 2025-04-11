@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}لوحة التحكم - مقدم خدمات تعليمية{% endblock %}
@@ -626,5 +625,64 @@
             });
         }
     });
+</script>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle booking actions
+    const handleBookingAction = async (action, bookingId) => {
+        if (!confirm(`هل أنت متأكد من ${action === 'confirm' ? 'تأكيد' : action === 'complete' ? 'إكمال' : 'إلغاء'} هذا الحجز؟`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/booking/${bookingId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert(data.message || 'حدث خطأ أثناء تنفيذ العملية');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('حدث خطأ في الاتصال بالخادم');
+        }
+    };
+
+    // Confirm booking
+    document.querySelectorAll('.confirm-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('confirm', bookingId);
+        });
+    });
+
+    // Complete booking
+    document.querySelectorAll('.complete-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('complete', bookingId);
+        });
+    });
+
+    // Cancel booking 
+    document.querySelectorAll('.cancel-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('cancel', bookingId);
+        });
+    });
+});
 </script>
 {% endblock %}

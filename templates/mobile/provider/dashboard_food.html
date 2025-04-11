@@ -1,4 +1,3 @@
-
 {% extends "mobile/base_mobile.html" %}
 
 {% block title %}لوحة التحكم - مقدم خدمات الطعام{% endblock %}
@@ -59,6 +58,12 @@
         margin-top: 5px;
     }
 
+    .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
     .mobile-tabs {
         display: flex;
         background: white;
@@ -91,25 +96,40 @@
         margin-bottom: 15px;
     }
 
-    .meal-item {
-        display: flex;
-        align-items: center;
-        padding: 15px;
-        background: white;
+    .filters-panel {
+        background: #f9f9f9;
         border-radius: 12px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        padding: 10px;
+        margin-bottom: 15px;
+        display: none;
     }
 
-    .meal-icon, .meal-item img {
-        width: 70px;
-        height: 70px;
-        border-radius: 10px;
+    .meal-item {
+        margin-bottom: 15px;
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .meal-image-container {
+        position: relative;
+        text-align: center;
+    }
+
+    .meal-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
         object-fit: cover;
-        margin-left: 15px;
     }
 
     .meal-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
         background: #f8f9fa;
         display: flex;
         align-items: center;
@@ -118,8 +138,28 @@
         font-size: 1.5rem;
     }
 
-    .meal-details {
-        flex: 1;
+    .status-badge {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+    }
+
+    .status-badge.available {
+        background: #e8f5e9;
+        color: #27ae60;
+    }
+
+    .status-badge.unavailable {
+        background: #ffebee;
+        color: #e74c3c;
+    }
+
+    .meal-content {
+        margin-top: 10px;
     }
 
     .meal-details h6 {
@@ -140,123 +180,41 @@
         margin: 0 0 5px 0;
     }
 
-    .status-badge {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 15px;
-        font-size: 0.8rem;
+    .meal-info {
+        display: flex;
+        gap: 10px;
+        margin: 5px 0;
     }
 
-    .status-badge.available {
-        background: #e8f5e9;
-        color: #27ae60;
+    .info-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #666;
     }
 
-    .status-badge.unavailable {
-        background: #ffebee;
-        color: #e74c3c;
+    .info-item i {
+        margin-right: 5px;
+    }
+
+    .meal-badges {
+        margin: 8px 0;
+    }
+
+    .meal-badges .badge {
+        margin-left: 5px;
+        font-size: 0.75rem;
     }
 
     .meal-actions {
-        margin-right: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
     }
 
     .meal-actions .btn {
         padding: 8px 12px;
         border-radius: 8px;
-    }
-
-    .reservation-item {
-        background: white;
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .reservation-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
-    .reservation-header h6 {
-        margin: 0;
-        font-size: 1.1rem;
-        color: #2c3e50;
-    }
-
-    .reservation-details {
-        margin-bottom: 10px;
-    }
-
-    .reservation-details p {
-        margin: 5px 0;
-        font-size: 0.9rem;
-        color: #7f8c8d;
-    }
-
-    .reservation-actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    .reservation-actions .btn {
-        flex: 1;
-        font-size: 0.9rem;
-    }
-
-    .order-item {
-        background: white;
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .order-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
-    .order-header h6 {
-        margin: 0;
-        font-size: 1.1rem;
-        color: #2c3e50;
-    }
-
-    .order-details {
-        margin-bottom: 10px;
-    }
-
-    .order-details p {
-        margin: 5px 0;
-        font-size: 0.9rem;
-        color: #7f8c8d;
-    }
-
-    .order-actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    .order-actions .btn {
-        flex: 1;
-        font-size: 0.9rem;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 30px;
-    }
-
-    .empty-state-icon {
-        font-size: 3rem;
-        color: #bdc3c7;
-        margin-bottom: 15px;
     }
 </style>
 {% endblock %}
@@ -286,11 +244,19 @@
         </div>
     </div>
 
-    <!-- إحصائيات -->
+    <!-- قسم الإحصائيات -->
     <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ meals|length }}</div>
+            <div class="stat-label">إجمالي الوجبات</div>
+        </div>
         <div class="stat-card">
             <div class="stat-value">{{ meals|selectattr('is_available', 'equalto', true)|list|length }}</div>
             <div class="stat-label">وجبات متاحة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ meal_orders|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+            <div class="stat-label">طلبات معلقة</div>
         </div>
         <div class="stat-card">
             <div class="stat-value">{{ table_reservations|selectattr('status', 'equalto', 'pending')|list|length }}</div>
@@ -302,12 +268,25 @@
         </div>
     </div>
 
+    <!-- أزرار الإجراءات السريعة -->
+    <div class="quick-actions mb-4">
+        <a href="{{ url_for('mobile_meal_form') }}" class="btn btn-primary btn-block mb-2">
+            <i class="fas fa-plus"></i> إضافة وجبة جديدة
+        </a>
+        <a href="{{ url_for('add_service') }}" class="btn btn-outline-primary btn-block">
+            <i class="fas fa-plus-circle"></i> إضافة خدمة
+        </a>
+    </div>
+
     <!-- التبويبات -->
     <div class="mobile-tabs">
         <button class="mobile-tab active" data-target="meals">
             <i class="fas fa-utensils"></i> الوجبات
         </button>
-        <button class="mobile-tab" data-target="reservations">
+        <button class="mobile-tab" data-target="services">
+            <i class="fas fa-concierge-bell"></i> الخدمات
+        </button>
+        <button class="mobile-tab" data-target="bookings">
             <i class="fas fa-calendar-alt"></i> الحجوزات
         </button>
         <button class="mobile-tab" data-target="orders">
@@ -320,33 +299,79 @@
         <div class="mobile-card">
             <div class="section-header">
                 <h5>قائمة الوجبات</h5>
-                <a href="{{ url_for('add_meal') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> إضافة وجبة
-                </a>
+                <div class="header-actions">
+                    <button class="btn btn-sm btn-outline-primary filter-toggle">
+                        <i class="fas fa-filter"></i> تصفية
+                    </button>
+                </div>
+            </div>
+            <div class="filters-panel">
+                <div class="mb-3">
+                    <label>فلتر الحالة:</label>
+                    <div class="btn-group btn-group-sm w-100">
+                        <button type="button" class="btn btn-outline-primary active" data-filter="all">الكل</button>
+                        <button type="button" class="btn btn-outline-success" data-filter="available">متاح</button>
+                        <button type="button" class="btn btn-outline-danger" data-filter="unavailable">غير متاح</button>
+                    </div>
+                </div>
             </div>
             {% if meals %}
             <div class="meals-list">
                 {% for meal in meals %}
-                <div class="meal-item">
-                    {% if meal.image %}
-                    <img src="{{ url_for('static', filename=meal.image) }}" alt="{{ meal.name }}">
-                    {% else %}
-                    <div class="meal-icon">
-                        <i class="fas fa-utensils"></i>
-                    </div>
-                    {% endif %}
-                    <div class="meal-details">
-                        <h6>{{ meal.name }}</h6>
-                        <p class="price">{{ "%.2f"|format(meal.price) }} ر.س</p>
-                        <p class="type">{{ meal.meal_type }}</p>
+                <div class="meal-item" data-status="{{ 'available' if meal.is_available else 'unavailable' }}">
+                    <div class="meal-image-container">
+                        {% if meal.image %}
+                        <img src="{{ url_for('static', filename=meal.image) }}" alt="{{ meal.name }}" class="meal-image">
+                        {% else %}
+                        <div class="meal-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        {% endif %}
                         <div class="status-badge {{ 'available' if meal.is_available else 'unavailable' }}">
                             {{ 'متاحة' if meal.is_available else 'غير متاحة' }}
                         </div>
                     </div>
-                    <div class="meal-actions">
-                        <a href="{{ url_for('edit_meal', meal_id=meal.id) }}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-edit"></i>
-                        </a>
+                    <div class="meal-content">
+                        <div class="meal-details">
+                            <h6>{{ meal.name }}</h6>
+                            <p class="price">{{ "%.2f"|format(meal.price) }} ر.س</p>
+                            <p class="type">{{ meal.meal_type }}</p>
+                            
+                            <div class="meal-info">
+                                <div class="info-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>{{ meal.preparation_time }} دقيقة</span>
+                                </div>
+                                {% if meal.calories %}
+                                <div class="info-item">
+                                    <i class="fas fa-fire"></i>
+                                    <span>{{ meal.calories }} كالوري</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="meal-badges">
+                                {% if meal.is_vegetarian %}
+                                <span class="badge bg-success"><i class="fas fa-leaf"></i> نباتي</span>
+                                {% endif %}
+                                {% if meal.is_vegan %}
+                                <span class="badge bg-info"><i class="fas fa-seedling"></i> فيجان</span>
+                                {% endif %}
+                                {% if meal.is_gluten_free %}
+                                <span class="badge bg-warning"><i class="fas fa-wheat-alt"></i> خالي من الغلوتين</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="meal-actions">
+                            <a href="{{ url_for('mobile_edit_meal', meal_id=meal.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> تعديل
+                            </a>
+                            <button class="btn btn-sm btn-outline-secondary toggle-availability" data-meal-id="{{ meal.id }}">
+                                <i class="fas {{ 'fa-toggle-on' if meal.is_available else 'fa-toggle-off' }}"></i>
+                                {{ 'إخفاء' if meal.is_available else 'إظهار' }}
+                            </button>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -358,7 +383,7 @@
                 </div>
                 <h4>لا توجد وجبات</h4>
                 <p>لم تقم بإضافة أي وجبات بعد</p>
-                <a href="{{ url_for('add_meal') }}" class="btn btn-primary">
+                <a href="{{ url_for('mobile_meal_form') }}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> إضافة وجبة جديدة
                 </a>
             </div>
@@ -366,44 +391,101 @@
         </div>
     </div>
 
-    <!-- محتوى الحجوزات -->
-    <div class="tab-content" id="reservations" style="display: none;">
+    <!-- محتوى الخدمات -->
+    <div class="tab-content" id="services" style="display: none;">
         <div class="mobile-card">
             <div class="section-header">
-                <h5>حجوزات الطاولات</h5>
+                <h5>خدمات الطعام</h5>
+                <a href="{{ url_for('add_service') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> إضافة خدمة
+                </a>
             </div>
-            {% if table_reservations %}
-            <div class="reservations-list">
-                {% for reservation in table_reservations %}
-                <div class="reservation-item" data-status="{{ reservation.status }}">
-                    <div class="reservation-header">
-                        <h6>حجز #{{ reservation.id }}</h6>
-                        <span class="badge bg-{{ get_status_color(reservation.status) }}">
-                            {{ reservation.status }}
+            {% if services %}
+            <div class="services-list">
+                {% for service in services %}
+                <div class="service-item">
+                    <div class="service-info">
+                        <h6>{{ service.name }}</h6>
+                        <p class="price">{{ "%.2f"|format(service.price) }} ر.س</p>
+                        <p class="description">{{ service.description|truncate(100) }}</p>
+                        <span class="badge {% if service.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ 'متاحة' if service.is_active else 'غير متاحة' }}
                         </span>
                     </div>
-                    <div class="reservation-details">
-                        <p><i class="fas fa-user"></i> {{ reservation.user.username }}</p>
-                        <p><i class="fas fa-calendar"></i> {{ reservation.reservation_date.strftime('%Y-%m-%d') }}</p>
-                        <p><i class="fas fa-clock"></i> {{ reservation.reservation_date.strftime('%H:%M') }}</p>
-                        <p><i class="fas fa-users"></i> {{ reservation.guests_number }} أشخاص</p>
-                        <p><i class="fas fa-phone"></i> {{ reservation.contact_phone }}</p>
-                        {% if reservation.special_requests %}
-                        <p><i class="fas fa-comment"></i> {{ reservation.special_requests }}</p>
+                    <div class="service-actions">
+                        <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i> تعديل
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-concierge-bell"></i>
+                </div>
+                <h4>لا توجد خدمات</h4>
+                <p>لم تقم بإضافة أي خدمات بعد</p>
+                <a href="{{ url_for('add_service') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إضافة خدمة جديدة
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- محتوى الحجوزات -->
+    <div class="tab-content" id="bookings" style="display: none;">
+        <div class="mobile-card">
+            <div class="section-header">
+                <h5>الحجوزات والطلبات</h5>
+                <div class="header-actions">
+                    <button class="btn btn-sm btn-outline-primary filter-toggle">
+                        <i class="fas fa-filter"></i> تصفية
+                    </button>
+                </div>
+            </div>
+            <div class="filters-panel mb-3">
+                <div class="btn-group btn-group-sm w-100">
+                    <button type="button" class="btn btn-outline-primary active" data-filter="all">الكل</button>
+                    <button type="button" class="btn btn-outline-warning" data-filter="pending">معلق</button>
+                    <button type="button" class="btn btn-outline-info" data-filter="confirmed">مؤكد</button>
+                    <button type="button" class="btn btn-outline-success" data-filter="completed">مكتمل</button>
+                </div>
+            </div>
+            {% if bookings %}
+            <div class="bookings-list">
+                {% for booking in bookings %}
+                <div class="booking-item" data-status="{{ booking.status }}">
+                    <div class="booking-header">
+                        <h6>حجز #{{ booking.id }}</h6>
+                        <span class="badge bg-{{ get_status_color(booking.status) }}">
+                            {{ booking.status }}
+                        </span>
+                    </div>
+                    <div class="booking-details">
+                        <p><i class="fas fa-user"></i> {{ booking.client.username }}</p>
+                        <p><i class="fas fa-concierge-bell"></i> {{ booking.service.name }}</p>
+                        <p><i class="fas fa-calendar"></i> {{ booking.booking_date.strftime('%Y-%m-%d') }}</p>
+                        <p><i class="fas fa-clock"></i> {{ booking.booking_date.strftime('%H:%M') }}</p>
+                        {% if booking.notes %}
+                        <p><i class="fas fa-comment"></i> {{ booking.notes }}</p>
                         {% endif %}
                     </div>
-                    <div class="reservation-actions">
-                        {% if reservation.status == 'pending' %}
-                        <button class="btn btn-sm btn-success confirm-reservation" data-reservation-id="{{ reservation.id }}">
+                    <div class="booking-actions">
+                        {% if booking.status == 'pending' %}
+                        <button class="btn btn-sm btn-success confirm-booking" data-booking-id="{{ booking.id }}">
                             <i class="fas fa-check"></i> تأكيد
                         </button>
-                        {% elif reservation.status == 'confirmed' %}
-                        <button class="btn btn-sm btn-info complete-reservation" data-reservation-id="{{ reservation.id }}">
+                        {% endif %}
+                        {% if booking.status == 'confirmed' %}
+                        <button class="btn btn-sm btn-info complete-booking" data-booking-id="{{ booking.id }}">
                             <i class="fas fa-check-double"></i> إكمال
                         </button>
                         {% endif %}
-                        {% if reservation.status in ['pending', 'confirmed'] %}
-                        <button class="btn btn-sm btn-danger cancel-reservation" data-reservation-id="{{ reservation.id }}">
+                        {% if booking.status in ['pending', 'confirmed'] %}
+                        <button class="btn btn-sm btn-danger cancel-booking" data-booking-id="{{ booking.id }}">
                             <i class="fas fa-times"></i> إلغاء
                         </button>
                         {% endif %}
@@ -417,7 +499,7 @@
                     <i class="fas fa-calendar-times"></i>
                 </div>
                 <h4>لا توجد حجوزات</h4>
-                <p>لم يتم تسجيل أي حجوزات طاولات حتى الآن</p>
+                <p>لم يتم تسجيل أي حجوزات حتى الآن</p>
             </div>
             {% endif %}
         </div>
@@ -436,7 +518,7 @@
                     <div class="order-header">
                         <h6>طلب #{{ order.id }}</h6>
                         <span class="badge bg-{{ get_status_color(order.status) }}">
-                            {{ order.status }}
+                            {{ get_order_status_text(order.status) }}
                         </span>
                     </div>
                     <div class="order-details">
@@ -514,7 +596,6 @@ document.addEventListener('DOMContentLoaded', function() {
     ratingElements.forEach(function(element) {
         const rating = parseFloat(element.getAttribute('data-rating'));
         let starsHtml = '';
-        
         for (let i = 1; i <= 5; i++) {
             if (i <= rating) {
                 starsHtml += '<i class="fas fa-star text-warning"></i>';
@@ -524,56 +605,94 @@ document.addEventListener('DOMContentLoaded', function() {
                 starsHtml += '<i class="far fa-star text-warning"></i>';
             }
         }
-        
         element.innerHTML = starsHtml;
     });
 
     // معالجة أزرار الحجوزات
-    const handleReservationAction = async (action, reservationId) => {
-        try {
-            const response = await fetch(`/reservation/${reservationId}/${action}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+    document.querySelectorAll('.confirm-booking').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const bookingId = this.getAttribute('data-booking-id');
+            if (confirm('هل أنت متأكد من رغبتك في تأكيد هذا الحجز؟')) {
+                try {
+                    const response = await fetch(`/booking/${bookingId}/confirm`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        const bookingItem = this.closest('.booking-item');
+                        const statusBadge = bookingItem.querySelector('.badge');
+                        statusBadge.className = 'badge bg-info';
+                        statusBadge.textContent = 'مؤكد';
+                        this.style.display = 'none';
+                        const completeBtn = bookingItem.querySelector('.complete-booking');
+                        if (completeBtn) {
+                            completeBtn.style.display = 'block';
+                        }
+                        showMobileToast('تم تأكيد الحجز بنجاح', 'success');
+                    } else {
+                        showMobileToast(data.message || 'حدث خطأ أثناء تأكيد الحجز', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showMobileToast('حدث خطأ في الاتصال بالخادم', 'error');
                 }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                showMobileToast(data.message, 'success');
-                setTimeout(() => window.location.reload(), 1500);
-            } else {
-                showMobileToast(data.message || 'حدث خطأ أثناء تنفيذ العملية', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showMobileToast('حدث خطأ في الاتصال بالخادم', 'error');
-        }
-    };
-
-    document.querySelectorAll('.confirm-reservation').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const reservationId = btn.getAttribute('data-reservation-id');
-            handleReservationAction('confirm', reservationId);
-        });
-    });
-
-    document.querySelectorAll('.complete-reservation').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const reservationId = btn.getAttribute('data-reservation-id');
-            handleReservationAction('complete', reservationId);
-        });
-    });
-
-    document.querySelectorAll('.cancel-reservation').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const reservationId = btn.getAttribute('data-reservation-id');
-            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
-                handleReservationAction('cancel', reservationId);
             }
         });
     });
+
+    document.querySelectorAll('.complete-booking').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const bookingId = this.getAttribute('data-booking-id');
+            if (confirm('هل أنت متأكد من رغبتك في إكمال هذا الحجز؟')) {
+                try {
+                    const response = await fetch(`/booking/${bookingId}/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        const bookingItem = this.closest('.booking-item');
+                        const statusBadge = bookingItem.querySelector('.badge');
+                        statusBadge.className = 'badge bg-success';
+                        statusBadge.textContent = 'مكتمل';
+                        
+                        // إخفاء أزرار الإجراءات
+                        const actionsDiv = bookingItem.querySelector('.booking-actions');
+                        actionsDiv.innerHTML = '';
+
+                        showMobileToast('تم إكمال الحجز بنجاح', 'success');
+                    } else {
+                        showMobileToast(data.message || 'حدث خطأ أثناء إكمال الحجز', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showMobileToast('حدث خطأ في الاتصال بالخادم', 'error');
+                }
+            }
+        });
+    });
+
+    // دالة عرض رسائل الإشعارات
+    function showMobileToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `mobile-toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
 
     // معالجة أزرار الطلبات
     const handleOrderAction = async (action, orderId) => {
@@ -584,9 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json'
                 }
             });
-            
             const data = await response.json();
-            
             if (data.success) {
                 showMobileToast(data.message, 'success');
                 setTimeout(() => window.location.reload(), 1500);
@@ -628,26 +745,87 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
 
-// دالة لعرض رسائل الإشعارات
-function showMobileToast(message, type) {
-    const toast = document.createElement('div');
-    toast.className = `mobile-toast ${type}`;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.classList.add('show');
-    }, 100);
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => {
-            document.body.removeChild(toast);
-        }, 300);
-    }, 3000);
-}
+    // تحديث وظيفة تبديل حالة الوجبة
+    const toggleMealAvailability = async (mealId, button) => {
+        try {
+            const response = await fetch(`/meal/${mealId}/toggle-availability`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                // تحديث حالة الزر والشارة
+                const mealItem = button.closest('.meal-item');
+                const statusBadge = mealItem.querySelector('.status-badge');
+                
+                // تحديث classes الشارة
+                statusBadge.classList.toggle('available');
+                statusBadge.classList.toggle('unavailable');
+                statusBadge.textContent = data.is_available ? 'متاحة' : 'غير متاحة';
+                
+                // تحديث أيقونة الزر ونصه
+                const buttonIcon = button.querySelector('i');
+                buttonIcon.classList.toggle('fa-toggle-on');
+                buttonIcon.classList.toggle('fa-toggle-off');
+                button.querySelector('span') ? button.querySelector('span').textContent = 
+                    data.is_available ? 'إخفاء' : 'إظهار' : 
+                    button.textContent = data.is_available ? 'إخفاء' : 'إظهار';
+                
+                // تحديث حالة data-status للـ meal-item
+                mealItem.setAttribute('data-status', data.is_available ? 'available' : 'unavailable');
+                
+                // تحديث عداد الوجبات المتاحة
+                const availableMealsElement = document.querySelector('.stat-value');
+                let currentCount = parseInt(availableMealsElement.textContent);
+                availableMealsElement.textContent = data.is_available ? currentCount + 1 : currentCount - 1;
+                
+                showMobileToast(data.message, 'success');
+            } else {
+                showMobileToast(data.message || 'حدث خطأ أثناء تنفيذ العملية', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMobileToast('حدث خطأ في الاتصال بالخادم', 'error');
+        }
+    };
+
+    // تحديث event listeners لأزرار التبديل
+    document.querySelectorAll('.toggle-availability').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const mealId = button.getAttribute('data-meal-id');
+            toggleMealAvailability(mealId, button);
+        });
+    });
+
+    // إضافة وظائف التصفية
+    document.querySelectorAll('.filter-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const filtersPanel = this.closest('.mobile-card').querySelector('.filters-panel');
+            filtersPanel.style.display = filtersPanel.style.display === 'none' ? 'block' : 'none';
+        });
+    });
+
+    document.querySelectorAll('.filters-panel .btn-group button').forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            const cardBody = this.closest('.mobile-card');
+            const items = cardBody.querySelectorAll('.meal-item, .reservation-item, .order-item, .booking-item');
+            this.parentNode.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            items.forEach(item => {
+                if (filter === 'all') {
+                    item.style.display = '';
+                } else {
+                    const status = item.getAttribute('data-status');
+                    item.style.display = status === filter ? '' : 'none';
+                }
+            });
+        });
+    });
+});
 </script>
 {% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}خطأ في التحقق من الأمان{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">خطأ في التحقق من الأمان</h4>
+        <p>{{ reason }}</p>
+        <hr>
+        <p class="mb-0">
+            <a href="javascript:history.back()" class="btn btn-outline-danger">عودة</a>
+            <a href="{{ url_for('index') }}" class="btn btn-danger">الصفحة الرئيسية</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

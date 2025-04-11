@@ -1,8 +1,8 @@
-
 import logging
 import os
 import secrets
 import uuid
+import json
 from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request, jsonify, abort, g, send_file
 from flask_login import login_user, logout_user, current_user, login_required
@@ -14,9 +14,13 @@ from database import db
 from export_db import export_database
 from notifications import send_review_notification, check_completed_bookings, create_notification
 from models import User, ServiceProvider, Service, Booking, Payment, Review, Notification, Meal, MealOrder, TableReservation, ROLE_USER, ROLE_SERVICE_PROVIDER, ROLE_ADMIN
-from forms import LoginForm, RegistrationForm, ServiceProviderForm, ServiceForm, BookingForm, PaymentForm, ReviewForm, SearchForm, MealForm, TableReservationForm
+from forms import (LoginForm, RegistrationForm, ServiceProviderForm, ServiceForm, BookingForm, PaymentForm, ReviewForm, 
+                  SearchForm, MealForm, TableReservationForm, MaintenanceServiceForm, CleaningServiceForm, EducationServiceForm,
+                  HealthServiceForm, FoodServiceForm, OtherServiceForm, MaintenanceBookingForm, CleaningBookingForm,
+                  EducationBookingForm, HealthBookingForm, FoodBookingForm)
 from stripe_payment import create_checkout_session, verify_payment_session, get_payment_status, cancel_payment
 from auth import require_role
+from flask_wtf.csrf import CSRFError
 
 # Set up date context for all requests
 @app.before_request
@@ -171,113 +175,129 @@ def dashboard():
     user_agent = request.headers.get('User-Agent', '').lower()
     is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
 
-    # Get provider profile if exists
+    # Get provider profile if exists 
     provider = None
     if current_user.is_provider():
         provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
-
+        
         if provider:
+            # Basic provider data
             services = Service.query.filter_by(provider_id=provider.id).all()
             bookings = []
             for service in services:
                 service_bookings = Booking.query.filter_by(service_id=service.id).all()
                 bookings.extend(service_bookings)
 
+            # Services stats
             active_services_count = sum(1 for s in services if s.is_active)
-            pending_bookings_count = sum(1 for b in bookings if b.status == 'pending')
+            inactive_services_count = len(services) - active_services_count
+            
+            # Bookings stats
+            pending_bookings = [b for b in bookings if b.status == 'pending']
+            confirmed_bookings = [b for b in bookings if b.status == 'confirmed'] 
+            completed_bookings = [b for b in bookings if b.status == 'completed']
+            cancelled_bookings = [b for b in bookings if b.status == 'cancelled']
+            
+            pending_bookings_count = len(pending_bookings)
+            confirmed_bookings_count = len(confirmed_bookings)
+            completed_bookings_count = len(completed_bookings)
+            cancelled_bookings_count = len(cancelled_bookings)
+            total_bookings_count = len(bookings)
 
-            # توجيه مقدم الخدمة إلى لوحة التحكم المخصصة حسب تخصصه
+            # Reviews data
+            reviews = []
+            for service in services:
+                service_reviews = Review.query.filter_by(service_id=service.id).all()
+                reviews.extend(service_reviews)
+
+            avg_rating = provider.rating
+            review_count = len(reviews)
+            
+            # Revenue data
+            payments = Payment.query.join(Booking).join(Service).filter(
+                Service.provider_id == provider.id,
+                Payment.status == 'completed'
+            ).all()
+            total_revenue = sum(p.amount for p in payments)
+            recent_payments = sorted(payments, key=lambda x: x.payment_date or x.created_at, reverse=True)[:5]
+
+            # Recent activity 
+            recent_bookings = sorted(bookings, key=lambda x: x.created_at, reverse=True)[:5]
+            recent_reviews = sorted(reviews, key=lambda x: x.created_at, reverse=True)[:5]
+
+            # Special data for food providers
+            meals = []
+            table_reservations = []
+            meal_orders = []
+            if provider.specialization == 'طعام':
+                meals = provider.meals.all()
+                table_reservations = provider.table_reservations.all()
+                meal_orders = MealOrder.query.join(Meal).filter(Meal.provider_id == provider.id).all()
+
+            # Common template vars
+            template_vars = {
+                'provider': provider,
+                'services': services,
+                'bookings': bookings,
+                'active_services_count': active_services_count,
+                'inactive_services_count': inactive_services_count,
+                'pending_bookings': pending_bookings,
+                'confirmed_bookings': confirmed_bookings,
+                'completed_bookings': completed_bookings,
+                'cancelled_bookings': cancelled_bookings,
+                'pending_bookings_count': pending_bookings_count,
+                'confirmed_bookings_count': confirmed_bookings_count,
+                'completed_bookings_count': completed_bookings_count,  
+                'cancelled_bookings_count': cancelled_bookings_count,
+                'total_bookings_count': total_bookings_count,
+                'reviews': reviews,
+                'avg_rating': avg_rating,
+                'review_count': review_count,
+                'total_revenue': total_revenue,
+                'recent_payments': recent_payments,
+                'recent_bookings': recent_bookings,
+                'recent_reviews': recent_reviews,
+            }
+
             if is_mobile:
-                if provider.specialization == 'صحة':
-                    return render_template('mobile/provider/dashboard_health.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count)
-                elif provider.specialization == 'تعليم':
-                    return render_template('mobile/provider/dashboard_education.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count)
-                elif provider.specialization == 'صيانة':
-                    return render_template('mobile/provider/dashboard_maintenance.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count)
-                elif provider.specialization == 'تنظيف':
-                    return render_template('mobile/provider/dashboard_cleaning.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count)
-                elif provider.specialization == 'طعام':
-                    return render_template('mobile/provider/dashboard_food.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count,
-                                        meals=provider.meals.all(),
-                                        table_reservations=provider.table_reservations.all())
-                else:
-                    return render_template('mobile/provider/dashboard.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count)
+                mobile_templates = {
+                    'صحة': 'mobile/provider/dashboard_health.html',
+                    'تعليم': 'mobile/provider/dashboard_education.html', 
+                    'صيانة': 'mobile/provider/dashboard_maintenance.html',
+                    'تنظيف': 'mobile/provider/dashboard_cleaning.html',
+                    'طعام': 'mobile/provider/dashboard_food.html'
+                }
+
+                template = mobile_templates.get(provider.specialization, 'mobile/provider/dashboard.html')
+                
+                # Add food-specific data if needed
+                if provider.specialization == 'طعام':
+                    template_vars.update({
+                        'meals': meals,
+                        'table_reservations': table_reservations,
+                        'meal_orders': meal_orders
+                    })
+
+                return render_template(template, **template_vars)
+
+            # For desktop version...
+            if provider.specialization == 'صحة':
+                return render_template('provider/dashboard_health.html', **template_vars)
+            elif provider.specialization == 'تعليم':
+                return render_template('provider/dashboard_education.html', **template_vars)
+            elif provider.specialization == 'صيانة':
+                return render_template('provider/dashboard_maintenance.html', **template_vars)
+            elif provider.specialization == 'تنظيف':
+                return render_template('provider/dashboard_cleaning.html', **template_vars)
+            elif provider.specialization == 'طعام':
+                template_vars.update({
+                    'meals': meals,
+                    'meal_orders': meal_orders,
+                    'table_reservations': table_reservations
+                })
+                return render_template('provider/dashboard_food.html', **template_vars)
             else:
-                if provider.specialization == 'صحة':
-                    return render_template('provider/dashboard_health.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count)
-                elif provider.specialization == 'تعليم':
-                    return render_template('provider/dashboard_education.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count)
-                elif provider.specialization == 'صيانة':
-                    return render_template('provider/dashboard_maintenance.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count)
-                elif provider.specialization == 'تنظيف':
-                    return render_template('provider/dashboard_cleaning.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count)
-                elif provider.specialization == 'طعام':
-                    return render_template('provider/dashboard_food.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count,
-                                        meals=provider.meals.all(),
-                                        meal_orders=MealOrder.query.join(Meal).filter(Meal.provider_id == provider.id).all(),
-                                        table_reservations=provider.table_reservations.all())
-                else:
-                    return render_template('provider/dashboard.html',
-                                        provider=provider,
-                                        services=services,
-                                        bookings=bookings,
-                                        active_services_count=active_services_count,
-                                        pending_bookings_count=pending_bookings_count)
+                return render_template('provider/dashboard.html', **template_vars)
         else:
             return redirect(url_for('create_provider_profile'))
 
@@ -480,7 +500,6 @@ def add_service():
         flash('يجب إنشاء ملف مقدم الخدمة أولاً.', 'warning')
         return redirect(url_for('create_provider_profile'))
 
-    # اختيار النموذج المناسب بناءً على تخصص مقدم الخدمة
     category = provider.specialization
     form = None
     
@@ -496,123 +515,64 @@ def add_service():
         form = FoodServiceForm()
     else:
         form = OtherServiceForm()
-    
+
     if form.validate_on_submit():
-        # معالجة تحميل الصورة إن وجدت
-        image_path = None
-        if form.image.data:
-            image_path = save_image(form.image.data)
+        try:
+            # معالجة تحميل الصورة إن وجدت
+            image_path = None
+            if form.image.data:
+                image_path = save_image(form.image.data)
 
-        # إنشاء كائن الخدمة بالحقول المشتركة
-        service = Service(
-            provider_id=provider.id,
-            name=form.name.data,
-            description=form.description.data,
-            price=form.price.data,
-            duration=form.duration.data,
-            category=category,
-            service_type=form.service_type.data,
-            additional_info=form.additional_info.data,
-            image=image_path,
-            is_active=form.is_active.data
-        )
-        
-        # إضافة البيانات المتخصصة حسب نوع الخدمة إلى حقل additional_info
-        specialized_data = {}
-        
-        if category == 'صيانة':
-            specialized_data = {
-                'tools_provided': form.tools_provided.data,
-                'has_warranty': form.has_warranty.data,
-                'warranty_period': form.warranty_period.data,
-                'emergency_service': form.emergency_service.data,
-                'experience_years': form.experience_years.data
-            }
-        elif category == 'تنظيف':
-            specialized_data = {
-                'materials_included': form.materials_included.data,
-                'equipment_provided': form.equipment_provided.data,
-                'eco_friendly': form.eco_friendly.data,
-                'min_area': form.min_area.data,
-                'max_area': form.max_area.data
-            }
-        elif category == 'تعليم':
-            specialized_data = {
-                'education_level': form.education_level.data,
-                'teaching_method': form.teaching_method.data,
-                'group_class': form.group_class.data,
-                'max_students': form.max_students.data,
-                'has_certificate': form.has_certificate.data
-            }
-        elif category == 'صحة':
-            specialized_data = {
-                'consultation_type': form.consultation_type.data,
-                'medical_specialty': form.medical_specialty.data,
-                'years_experience': form.years_experience.data,
-                'home_visit': form.home_visit.data,
-                'accepts_insurance': form.accepts_insurance.data,
-                'medical_license': form.medical_license.data
-            }
-        elif category == 'طعام':
-            specialized_data = {
-                'delivery_available': form.delivery_available.data,
-                'min_order_quantity': form.min_order_quantity.data,
-                'preparation_time': form.preparation_time.data,
-                'vegetarian_options': form.vegetarian_options.data,
-                'vegan_options': form.vegan_options.data,
-                'catering_service': form.catering_service.data,
-                'dietary_info': form.dietary_info.data
-            }
-        elif category == 'أخرى':
-            specialized_data = {
-                'service_mode': form.service_mode.data,
-                'custom_fields': form.custom_fields.data
-            }
-        
-        # تحويل البيانات المتخصصة إلى نص JSON وإضافتها إلى حقل additional_info
-        import json
-        if service.additional_info:
-            # دمج البيانات المدخلة من المستخدم مع البيانات المتخصصة
-            try:
-                existing_data = json.loads(service.additional_info)
-                if isinstance(existing_data, dict):
-                    existing_data.update(specialized_data)
-                    service.additional_info = json.dumps(existing_data)
-                else:
-                    service.additional_info = json.dumps(specialized_data)
-            except:
+            # إنشاء كائن الخدمة
+            service = Service(
+                provider_id=provider.id,
+                name=form.name.data,
+                description=form.description.data,
+                price=form.price.data,
+                duration=form.duration.data,
+                category=category,
+                service_type=form.service_type.data,
+                image=image_path,
+                is_active=form.is_active.data
+            )
+
+            # إضافة البيانات المتخصصة للتعليم
+            if category == 'تعليم':
+                specialized_data = {
+                    'education_level': form.education_level.data,
+                    'teaching_method': form.teaching_method.data,
+                    'group_class': form.group_class.data,
+                    'max_students': form.max_students.data,
+                    'has_certificate': form.has_certificate.data
+                }
                 service.additional_info = json.dumps(specialized_data)
-        else:
-            service.additional_info = json.dumps(specialized_data)
-        
-        db.session.add(service)
-        db.session.commit()
-        flash('تمت إضافة الخدمة بنجاح!', 'success')
-        return redirect(url_for('dashboard'))
 
-    # التحقق من نوع الجهاز
-    user_agent = request.headers.get('User-Agent', '').lower()
-    is_mobile = 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent or request.args.get('mobile')
+            db.session.add(service)
+            db.session.commit()
 
-    # اختيار القالب المناسب حسب نوع الخدمة ونوع الجهاز
-    if is_mobile:
-        template = f'mobile/service_forms/{category}_form.html'
-        # التحقق من وجود القالب المتخصص
-        try:
-            render_template(template, form=form)
-        except:
-            # استخدام القالب العام في حالة عدم وجود قالب متخصص
-            template = 'mobile/service_form.html'
-    else:
-        template = f'service_forms/{category}_form.html'
-        # التحقق من وجود القالب المتخصص
-        try:
-            render_template(template, form=form)
-        except:
-            # استخدام القالب العام في حالة عدم وجود قالب متخصص
-            template = 'service_form.html'
+            flash('تمت إضافة الخدمة بنجاح!', 'success')
+            
+            # التوجيه حسب نوع الجهاز
+            if request.args.get('mobile'):
+                return redirect(url_for('mobile_dashboard'))
+            return redirect(url_for('dashboard'))
+
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f'Error adding service: {str(e)}')
+            flash(f'حدث خطأ أثناء إضافة الخدمة: {str(e)}', 'danger')
+
+    # اختيار القالب المناسب
+    if request.args.get('mobile'):
+        return render_template('mobile/service_forms/education_form.html', 
+                             form=form, 
+                             title='إضافة خدمة تعليمية جديدة',
+                             category=category)
     
-    return render_template(template, form=form, category=category)
+    return render_template('service_forms/education_form.html', 
+                         form=form, 
+                         title='إضافة خدمة تعليمية جديدة',
+                         category=category)
 
 # Edit Service
 @app.route('/services/edit/<int:service_id>', methods=['GET', 'POST'])
@@ -879,11 +839,6 @@ def service_details(service_id):
 @login_required
 def book_service(service_id):
     service = Service.query.get_or_404(service_id)
-
-    # Check if user is eligible to book
-    if current_user.id == service.provider.user_id or current_user.is_admin() or not service.is_active:
-        flash('عذراً، لا يمكنك حجز هذه الخدمة.', 'warning')
-        return redirect(url_for('service_details', service_id=service_id))
 
     # اختيار النموذج المناسب حسب نوع الخدمة
     form = None
@@ -1186,38 +1141,44 @@ def add_meal():
 
     form = MealForm()
     if form.validate_on_submit():
-        # معالجة تحميل الصورة إن وجدت
-        image_path = None
-        if form.image.data:
-            image_path = save_image(form.image.data)
+        try:
+            # معالجة تحميل الصورة إن وجدت
+            image_path = None
+            if form.image.data:
+                image_path = save_image(form.image.data)
 
-        meal = Meal(
-            provider_id=provider.id,
-            name=form.name.data,
-            description=form.description.data,
-            price=form.price.data,
-            meal_type=form.meal_type.data,
-            preparation_time=form.preparation_time.data,
-            calories=form.calories.data,
-            is_vegetarian=form.is_vegetarian.data,
-            is_vegan=form.is_vegan.data,
-            is_gluten_free=form.is_gluten_free.data,
-            image=image_path,
-            is_available=form.is_available.data
-        )
-        db.session.add(meal)
-        db.session.commit()
+            meal = Meal(
+                provider_id=provider.id,
+                name=form.name.data,
+                description=form.description.data,
+                price=form.price.data,
+                meal_type=form.meal_type.data,
+                preparation_time=form.preparation_time.data,
+                calories=form.calories.data,
+                is_vegetarian=form.is_vegetarian.data,
+                is_vegan=form.is_vegan.data,
+                is_gluten_free=form.is_gluten_free.data,
+                image=image_path,
+                is_available=form.is_available.data
+            )
+            db.session.add(meal)
+            db.session.commit()
 
-        # تسجيل الإجراء
-        log_action(
-            user_id=current_user.id,
-            action_type='add_meal',
-            action_details=f'تمت إضافة وجبة جديدة: {meal.name}'
-        )
+            flash('تمت إضافة الوجبة بنجاح!', 'success')
+            
+            # التوجيه حسب نوع الجهاز
+            if 'mobile' in request.headers.get('User-Agent', '').lower():
+                return redirect(url_for('mobile_dashboard'))
+            return redirect(url_for('dashboard'))
 
-        flash('تمت إضافة الوجبة بنجاح!', 'success')
-        return redirect(url_for('dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'حدث خطأ أثناء إضافة الوجبة: {str(e)}', 'danger')
+            app.logger.error(f'Error adding meal: {str(e)}')
 
+    # اختيار القالب المناسب حسب نوع الجهاز
+    if 'mobile' in request.headers.get('User-Agent', '').lower():
+        return render_template('mobile/meal_form.html', form=form, title='إضافة وجبة جديدة')
     return render_template('meal_form.html', form=form, title='إضافة وجبة جديدة')
 
 # تعديل وجبة
@@ -1262,6 +1223,39 @@ def edit_meal(meal_id):
         return redirect(url_for('dashboard'))
 
     return render_template('meal_form.html', form=form, meal=meal, title='تعديل وجبة')
+
+@app.route('/mobile/meals/edit/<int:meal_id>', methods=['GET', 'POST'])
+@login_required
+def mobile_edit_meal(meal_id):
+    meal = Meal.query.get_or_404(meal_id)
+    provider = ServiceProvider.query.get(meal.provider_id)
+
+    # التحقق من ملكية الوجبة
+    if provider.user_id != current_user.id and not current_user.is_admin():
+        flash('ليس لديك صلاحية تعديل هذه الوجبة.', 'danger')
+        return redirect(url_for('mobile_dashboard'))
+
+    form = MealForm(obj=meal)
+    if form.validate_on_submit():
+        meal.name = form.name.data
+        meal.description = form.description.data
+        meal.price = form.price.data
+        meal.meal_type = form.meal_type.data
+        meal.preparation_time = form.preparation_time.data
+        meal.calories = form.calories.data
+        meal.is_vegetarian = form.is_vegetarian.data
+        meal.is_vegan = form.is_vegan.data
+        meal.is_gluten_free = form.is_gluten_free.data
+        meal.is_available = form.is_available.data
+
+        if form.image.data:
+            meal.image = save_image(form.image.data)
+
+        db.session.commit()
+        flash('تم تحديث الوجبة بنجاح!', 'success')
+        return redirect(url_for('mobile_dashboard'))
+
+    return render_template('mobile/meal_form.html', form=form, meal=meal, title='تعديل وجبة')
 
 # حجز طاولة فيالمطعم
 @app.route('/restaurant/<int:provider_id>/reserve-table', methods=['GET', 'POST'])
@@ -1617,123 +1611,66 @@ def toggle_service_active(service_id):
 @app.route('/booking/<int:booking_id>/<action>', methods=['POST'])
 @login_required
 def manage_booking(booking_id, action):
-    # التحقق من الحجز
-    booking = Booking.query.get_or_404(booking_id)
-    service = Service.query.get(booking.service_id)
-    provider = ServiceProvider.query.get(service.provider_id)
+    try:
+        booking = Booking.query.get_or_404(booking_id)
+        service = Service.query.get(booking.service_id)
+        provider = ServiceProvider.query.get(service.provider_id)
 
-    # التحقق من الصلاحيات - السماح للعميل ومزود الخدمة والمشرف
-    is_authorized = (booking.client_id == current_user.id or 
-                    provider.user_id == current_user.id or 
-                    current_user.is_admin())
-    
-    if not is_authorized:
-        return jsonify({
-            'success': False,
-            'message': 'ليس لديك صلاحية إدارة هذا الحجز'
-        })
-
-    # تنفيذ الإجراء المطلوب
-    if action == 'confirm':
         if provider.user_id != current_user.id and not current_user.is_admin():
             return jsonify({
                 'success': False,
-                'message': 'فقط مزود الخدمة يمكنه تأكيد الحجز'
+                'message': 'ليس لديك صلاحية إدارة هذا الحجز'
             })
-            
-        booking.status = 'confirmed'
-        message = 'تم تأكيد الحجز بنجاح'
 
-        # إنشاء إشعار للعميل
-        create_notification(
-            booking.client_id,
-            "تم تأكيد الحجز",
-            f"تم تأكيد حجزك للخدمة {service.name}",
-            "success",
-            booking.id,
-            "booking"
-        )
-
-    elif action == 'cancel':
-        # التحقق من حالة الحجز
-        if booking.status not in ['pending', 'confirmed']:
+        if action == 'confirm':
+            booking.status = 'confirmed'
+            booking.confirmation_date = datetime.utcnow()
+            message = 'تم تأكيد الحجز بنجاح'
+        elif action == 'complete':
+            booking.status = 'completed'
+            booking.completion_date = datetime.utcnow()
+            message = 'تم إكمال الحجز بنجاح'
+        elif action == 'cancel':
+            booking.status = 'cancelled'
+            booking.cancellation_date = datetime.utcnow()
+            message = 'تم إلغاء الحجز'
+        else:
             return jsonify({
                 'success': False,
-                'message': 'لا يمكن إلغاء هذا الحجز في حالته الحالية'
+                'message': 'إجراء غير صالح'
             })
 
-        # حذف الدفع المرتبط إن وجد
-        if booking.payment:
-            db.session.delete(booking.payment)
+        # تحديث إحصائيات مزود الخدمة
+        if action == 'confirm':
+            provider.total_confirmed_bookings = (provider.total_confirmed_bookings or 0) + 1
+        elif action == 'complete':
+            provider.total_completed_bookings = (provider.total_completed_bookings or 0) + 1
+            provider.total_earnings = (provider.total_earnings or 0) + service.price
 
-        # إلغاء الحجز
-        booking.status = 'cancelled'
-        message = 'تم إلغاء الحجز بنجاح'
-
-        # تحديد من سيتلقى الإشعار
-        notify_user_id = provider.user_id if current_user.id == booking.client_id else booking.client_id
-        notifier_name = "العميل" if current_user.id == booking.client_id else "مزود الخدمة"
-        
-        create_notification(
-            notify_user_id,
-            "تم إلغاء الحجز",
-            f"قام {notifier_name} بإلغاء الحجز للخدمة {service.name}",
-            "danger",
-            None,
-            "booking"
-        )
-
-    elif action == 'complete':
-        if provider.user_id != current_user.id and not current_user.is_admin():
-            return jsonify({
-                'success': False,
-                'message': 'فقط مزود الخدمة يمكنه إكمال الحجز'
-            })
-            
-        booking.status = 'completed'
-        message = 'تم إكمال الحجز بنجاح'
-
-        # إنشاء إشعار للعميل
+        # إرسال إشعار للعميل
         create_notification(
             booking.client_id,
-            "تم إكمال الخدمة",
-            f"تم إكمال تقديم الخدمة {service.name}. يمكنك الآن تقييم الخدمة",
+            f"تم {message}",
+            f"تم {message} للخدمة {service.name}",
             "info",
             booking.id,
             "booking"
         )
 
-        # إرسال إشعار للتقييم
-        send_review_notification(booking.id)
-
-    else:
-        return jsonify({
-            'success': False,
-            'message': 'إجراء غير صالح'
-        })
-
-    try:
         db.session.commit()
-        # تسجيل الإجراء
-        log_action(
-            current_user.id,
-            f'{action}_booking',
-            f'تم {message} رقم {booking_id}',
-            booking_id=booking_id
-        )
-        
+
         return jsonify({
             'success': True,
             'message': message,
             'status': booking.status
         })
-        
+
     except Exception as e:
         db.session.rollback()
-        logging.error(f"Error in {action} booking {booking_id}: {str(e)}")
+        app.logger.error(f"Error in booking action: {str(e)}")
         return jsonify({
             'success': False,
-            'message': f'حدث خطأ أثناء {message}'
+            'message': 'حدث خطأ أثناء معالجة الطلب'
         })
 
 # تغيير حالة الدفع (للمزودين)
@@ -2025,50 +1962,29 @@ def mobile_service_details(service_id):
                           review_form=review_form,
                           similar_services=similar_services)
 
-# Mobile Dashboard
 @app.route('/mobile/dashboard')
 @login_required
 def mobile_dashboard():
-    # الحصول على بيانات المستخدم الحالي
+    # Get current user data
     current_user_data = User.query.get(current_user.id)
-
-    # الحصول على حجوزات المستخدم
-    bookings = Booking.query.filter_by(client_id=current_user.id)\
-        .order_by(Booking.booking_date.desc()).all()
-
-    # مقدم خدمة؟
     provider = None
-    active_services_count = 0
-    pending_bookings_count = 0
-    services_offered = None
-
+    
+    # Get only bookings where the user is the client
+    bookings = Booking.query.filter_by(client_id=current_user.id).order_by(Booking.booking_date.desc()).all()
+    
+    # Get provider info if user is a provider
     if current_user.is_provider():
         provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
-        if provider:
-            services = Service.query.filter_by(provider_id=provider.id).all()
-            active_services_count = sum(1 for s in services if s.is_active)
-
-            # الحصول على حجوزات الخدمات الخاصة بالمزود
-            provider_bookings = []
-            for service in services:
-                service_bookings = Booking.query.filter_by(service_id=service.id, status='pending').all()
-                provider_bookings.extend(service_bookings)
-
-            pending_bookings_count = len(provider_bookings)
-            services_offered = ", ".join([service.name for service in services])
-
+    
     completed_bookings = [b for b in bookings if b.status == 'completed']
     review_form = ReviewForm()
 
-    return render_template('mobile/dashboard.html', 
-                          user=current_user_data, 
-                          bookings=bookings,
-                          completed_bookings=completed_bookings,
-                          active_services_count=active_services_count,
-                          pending_bookings_count=pending_bookings_count,
-                          review_form=review_form,
-                          provider=provider,
-                          services_offered=services_offered)
+    return render_template('mobile/dashboard.html',
+                         user=current_user_data,
+                         provider=provider,
+                         bookings=bookings,
+                         completed_bookings=completed_bookings,
+                         review_form=review_form)
 
 @app.route('/mobile/about')
 def mobile_about():
@@ -2078,10 +1994,6 @@ def mobile_about():
 @app.route('/mobile/booking/<int:service_id>')
 @login_required
 def mobile_booking(service_id):
-    if current_user.is_provider():
-        flash('لا يمكن لمقدمي الخدمات حجز خدمات أخرى', 'warning')
-        return redirect(url_for('mobile_dashboard'))
-
     service = Service.query.get_or_404(service_id)
     booking_form = BookingForm()
     booking_form.service_id.data = service_id
@@ -2090,6 +2002,16 @@ def mobile_booking(service_id):
     min_date = datetime.now().strftime('%Y-%m-%dT%H:%M')
 
     return render_template('mobile/booking.html', service=service, booking_form=booking_form, min_date=min_date)
+
+# Mobile Meal Form
+@app.route('/mobile/meal/add', methods=['GET', 'POST'])
+@login_required
+def mobile_meal_form():
+    form = MealForm()
+    if form.validate_on_submit():
+        # ... logic for saving meal ...
+        return redirect(url_for('mobile_dashboard'))
+    return render_template('mobile/meal_form.html', form=form, title='إضافة وجبة جديدة')
 
 # Helper functions for mobile templates
 @app.template_filter('get_status_color')
@@ -2219,6 +2141,15 @@ def page_not_found(e):
 def internal_server_error(e):
     return render_template('500.html'), 500
 
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    if request.is_xhr:
+        return jsonify({
+            'success': False,
+            'message': 'CSRF token has expired or is invalid'
+        }), 400
+    return render_template('csrf_error.html', reason=e.description), 400
+
 def log_action(user_id, action_type, action_details, booking_id=None, payment_id=None):
     """تسجيل إجراء في قاعدة البيانات"""
     from models import ActionLog
@@ -2286,3 +2217,57 @@ def check_completed_booking(service_id):
         'has_review': has_review,
         'booking_details': booking_details
     })
+
+@app.route('/meal/<int:meal_id>/toggle-availability', methods=['POST'])
+@login_required
+def toggle_meal_availability(meal_id):
+    meal = Meal.query.get_or_404(meal_id)
+    provider = ServiceProvider.query.filter_by(id=meal.provider_id).first()
+    
+    # التحقق من الصلاحيات
+    if provider.user_id != current_user.id and not current_user.is_admin():
+        return jsonify({
+            'success': False,
+            'message': 'ليس لديك صلاحية تعديل هذه الوجبة'
+        })
+    
+    try:
+        meal.is_available = not meal.is_available
+        db.session.commit()
+        
+        status_message = 'متاحة' if meal.is_available else 'غير متاحة'
+        return jsonify({
+            'success': True,
+            'message': f'تم تغيير حالة الوجبة إلى {status_message}',
+            'is_available': meal.is_available
+        })
+    except:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': 'حدث خطأ أثناء تحديث حالة الوجبة'
+        })
+
+@app.route('/profile')
+@login_required
+def profile():
+    # Get current user data
+    current_user_data = User.query.get(current_user.id)
+    provider = None
+    
+    # Get only bookings where the user is the client
+    bookings = Booking.query.filter_by(client_id=current_user.id).order_by(Booking.booking_date.desc()).all()
+    
+    # Get provider info if user is a provider
+    if current_user.is_provider():
+        provider = ServiceProvider.query.filter_by(user_id=current_user.id).first()
+    
+    completed_bookings = [b for b in bookings if b.status == 'completed']
+    review_form = ReviewForm()
+
+    return render_template('profile.html',
+                         user=current_user_data,
+                         provider=provider,
+                         bookings=bookings,
+                         completed_bookings=completed_bookings,
+                         review_form=review_form)

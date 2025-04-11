@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}لوحة التحكم - مزود خدمات طعام{% endblock %}
@@ -554,77 +553,145 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // تفعيل فلتر الحجوزات
-    document.querySelectorAll('.booking-filters .btn-group button').forEach(button => {
-        button.addEventListener('click', function() {
-            // إزالة الحالة النشطة من جميع الأزرار
-            this.parentNode.querySelectorAll('button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // إضافة الحالة النشطة للزر المحدد
-            this.classList.add('active');
-            
-            // تطبيق الفلتر
-            const filter = this.getAttribute('data-filter');
-            const tableRows = this.closest('.card-body').querySelectorAll('table tbody tr');
-            
-            tableRows.forEach(row => {
-                if (filter === 'all' || row.getAttribute('data-status') === filter) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+    // تفعيل معالجات الأحداث للأزرار
+    const initBookingButtons = () => {
+        document.querySelectorAll('.confirm-booking, .complete-booking, .cancel-booking').forEach(button => {
+            button.addEventListener('click', async function(e) {
+                e.preventDefault();
+                
+                const action = this.classList.contains('confirm-booking') ? 'confirm' :
+                              this.classList.contains('complete-booking') ? 'complete' : 'cancel';
+                
+                if (action === 'cancel' && !confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
+                    return;
+                }
+
+                const bookingId = this.dataset.bookingId;
+                const originalContent = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> جاري التنفيذ...';
+                this.disabled = true;
+
+                try {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                    const response = await fetch(`/booking/${bookingId}/${action}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // تحديث حالة الحجز في الواجهة
+                        const row = this.closest('tr');
+                        row.setAttribute('data-status', data.status);
+                        
+                        // تحديث شارة الحالة
+                        const statusBadge = row.querySelector('.badge');
+                        statusBadge.className = `badge bg-${getStatusColor(data.status)}`;
+                        statusBadge.textContent = getStatusText(data.status);
+                        
+                        // تحديث أزرار الإجراءات
+                        const actionsCell = row.querySelector('td:last-child');
+                        actionsCell.innerHTML = getActionButtons(data.status, bookingId);
+                        
+                        // تحديث الإحصائيات
+                        updateBookingStats();
+                        
+                        // إظهار رسالة نجاح
+                        showAlert('success', data.message);
+                        
+                        // إعادة تهيئة الأزرار للصف المحدث
+                        initBookingButtons();
+                    } else {
+                        // إظهار رسالة الخطأ
+                        showAlert('danger', data.message || 'حدث خطأ في معالجة الطلب');
+                        this.innerHTML = originalContent;
+                        this.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showAlert('danger', 'حدث خطأ في الاتصال بالخادم');
+                    this.innerHTML = originalContent;
+                    this.disabled = false;
                 }
             });
         });
-    });
-    
-    // معالجة أزرار الحجوزات
-    const handleBookingAction = async (action, bookingId) => {
-        try {
-            const response = await fetch(`/booking/${bookingId}/${action}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                alert(data.message);
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                alert(data.message || 'حدث خطأ أثناء تنفيذ العملية');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('حدث خطأ في الاتصال بالخادم');
-        }
     };
 
-    document.querySelectorAll('.confirm-booking').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const bookingId = btn.getAttribute('data-booking-id');
-            handleBookingAction('confirm', bookingId);
-        });
-    });
+    // تهيئة الأزرار عند تحميل الصفحة
+    initBookingButtons();
 
-    document.querySelectorAll('.complete-booking').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const bookingId = btn.getAttribute('data-booking-id');
-            handleBookingAction('complete', bookingId);
-        });
-    });
+    // Helper function to show alerts
+    const showAlert = (type, message) => {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            ${message}
+        `;
+        document.querySelector('.container').insertAdjacentElement('afterbegin', alertDiv);
+        setTimeout(() => alertDiv.remove(), 3000);
+    };
 
-    document.querySelectorAll('.cancel-booking').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const bookingId = btn.getAttribute('data-booking-id');
-            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
-                handleBookingAction('cancel', bookingId);
-            }
-        });
-    });
+    // Helper functions for status colors and text
+    const getStatusColor = status => ({
+        'pending': 'warning',
+        'confirmed': 'info',
+        'completed': 'success',
+        'cancelled': 'danger'
+    })[status] || 'secondary';
+
+    const getStatusText = status => ({
+        'pending': 'معلق',
+        'confirmed': 'مؤكد',
+        'completed': 'مكتمل',
+        'cancelled': 'ملغي'
+    })[status] || status;
+
+    const getActionButtons = (status, bookingId) => {
+        let buttons = '';
+        
+        if (status === 'pending') {
+            buttons += `
+                <button class="btn btn-sm btn-success confirm-booking" data-booking-id="${bookingId}">
+                    <i class="fas fa-check"></i> تأكيد
+                </button>
+            `;
+        } else if (status === 'confirmed') {
+            buttons += `
+                <button class="btn btn-sm btn-info complete-booking" data-booking-id="${bookingId}">
+                    <i class="fas fa-check-double"></i> إكمال
+                </button>
+            `;
+        }
+        
+        if (['pending', 'confirmed'].includes(status)) {
+            buttons += `
+                <button class="btn btn-sm btn-danger cancel-booking" data-booking-id="${bookingId}">
+                    <i class="fas fa-times"></i> إلغاء
+                </button>
+            `;
+        }
+        
+        return buttons;
+    };
+
+    const updateBookingStats = () => {
+        // تحديث عداد الحجوزات في الإحصائيات
+        const pendingCount = document.querySelectorAll('tr[data-status="pending"]').length;
+        const pendingStats = document.querySelector('.col-6.mb-3 .p-3.bg-light.text-center h2');
+        if (pendingStats) {
+            pendingStats.textContent = pendingCount;
+        }
+    };
 });
 </script>
 {% endblock %}

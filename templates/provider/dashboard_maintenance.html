@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}لوحة التحكم - مقدم خدمات الصيانة{% endblock %}
@@ -453,154 +452,95 @@
     </div>
 </section>
 
+{% block scripts %}
+{{ super() }}
 <script>
-    // تنسيق عرض التقييمات
-    document.addEventListener('DOMContentLoaded', function() {
-        const ratingElements = document.querySelectorAll('.rating-display');
-        ratingElements.forEach(function(element) {
-            const rating = parseFloat(element.getAttribute('data-rating'));
-            let starsHtml = '';
-            
-            for (let i = 1; i <= 5; i++) {
-                if (i <= rating) {
-                    starsHtml += '<i class="fas fa-star text-warning"></i>';
-                } else if (i - 0.5 <= rating) {
-                    starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
-                } else {
-                    starsHtml += '<i class="far fa-star text-warning"></i>';
-                }
-            }
-            
-            element.innerHTML = starsHtml;
-        });
-        
-        // تفعيل tooltips لبيانات الاتصال
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
-        
-        // البحث وتصفية الخدمات
-        document.getElementById('serviceSearch').addEventListener('keyup', function() {
-            filterServices();
-        });
-        
-        document.getElementById('serviceTypeFilter').addEventListener('change', function() {
-            filterServices();
-        });
-        
-        function filterServices() {
-            const searchText = document.getElementById('serviceSearch').value.toLowerCase();
-            const serviceType = document.getElementById('serviceTypeFilter').value;
-            const rows = document.querySelectorAll('#servicesTable tbody tr');
-            
-            rows.forEach(row => {
-                const serviceName = row.cells[0].textContent.toLowerCase();
-                const rowServiceType = row.getAttribute('data-service-type');
-                
-                const nameMatch = serviceName.includes(searchText);
-                const typeMatch = serviceType === '' || rowServiceType === serviceType;
-                
-                if (nameMatch && typeMatch) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    const handleBookingAction = async (action, bookingId) => {
+        if (!confirm(`هل أنت متأكد من ${action === 'confirm' ? 'تأكيد' : action === 'complete' ? 'إكمال' : 'إلغاء'} هذا الطلب؟`)) {
+            return;
         }
-        
-        // معالجة أزرار الحجوزات
-        document.querySelectorAll('.confirm-booking').forEach(button => {
-            button.addEventListener('click', function() {
-                const bookingId = this.getAttribute('data-booking-id');
-                if (confirm('هل أنت متأكد من تأكيد هذا الطلب؟')) {
-                    fetch(`/booking/${bookingId}/confirm`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            window.location.reload();
-                        } else {
-                            alert('حدث خطأ أثناء تأكيد الطلب');
-                        }
-                    });
+
+        try {
+            const response = await fetch(`/booking/${bookingId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             });
-        });
-        
-        document.querySelectorAll('.start-maintenance').forEach(button => {
-            button.addEventListener('click', function() {
-                const bookingId = this.getAttribute('data-booking-id');
-                if (confirm('هل أنت متأكد من بدء تنفيذ الصيانة الآن؟')) {
-                    fetch(`/booking/${bookingId}/start`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            window.location.reload();
-                        } else {
-                            alert('حدث خطأ أثناء بدء تنفيذ الصيانة');
-                        }
-                    });
-                }
-            });
-        });
-        
-        document.querySelectorAll('.complete-booking').forEach(button => {
-            button.addEventListener('click', function() {
-                const bookingId = this.getAttribute('data-booking-id');
-                if (confirm('هل أنت متأكد من إكمال الصيانة؟')) {
-                    fetch(`/booking/${bookingId}/complete`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            window.location.reload();
-                        } else {
-                            alert('حدث خطأ أثناء إكمال الصيانة');
-                        }
-                    });
-                }
-            });
-        });
-        
-        document.querySelectorAll('.cancel-booking').forEach(button => {
-            button.addEventListener('click', function() {
-                const bookingId = this.getAttribute('data-booking-id');
-                if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
-                    fetch(`/booking/${bookingId}/cancel`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            window.location.reload();
-                        } else {
-                            alert('حدث خطأ أثناء إلغاء الطلب');
-                        }
-                    });
-                }
-            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert(data.message || 'حدث خطأ أثناء تنفيذ العملية');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('حدث خطأ في الاتصال بالخادم');
+        }
+    };
+
+    // Confirm booking
+    document.querySelectorAll('.confirm-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('confirm', bookingId);
         });
     });
+
+    // Complete booking
+    document.querySelectorAll('.complete-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('complete', bookingId);
+        });
+    });
+
+    // Cancel booking
+    document.querySelectorAll('.cancel-booking').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction('cancel', bookingId);
+        });
+    });
+
+    // البحث وتصفية الخدمات
+    document.getElementById('serviceSearch').addEventListener('keyup', function() {
+        filterServices();
+    });
+    
+    document.getElementById('serviceTypeFilter').addEventListener('change', function() {
+        filterServices();
+    });
+    
+    function filterServices() {
+        const searchText = document.getElementById('serviceSearch').value.toLowerCase();
+        const serviceType = document.getElementById('serviceTypeFilter').value;
+        const rows = document.querySelectorAll('#servicesTable tbody tr');
+        
+        rows.forEach(row => {
+            const serviceName = row.cells[0].textContent.toLowerCase();
+            const rowServiceType = row.getAttribute('data-service-type');
+            
+            const nameMatch = serviceName.includes(searchText);
+            const typeMatch = serviceType === '' || rowServiceType === serviceType;
+            
+            if (nameMatch && typeMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

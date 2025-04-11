@@ -283,6 +283,132 @@ body {
     box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
 }
 
+/* تصميم كارت الوجبة */
+.meal-item {
+    background: var(--card-bg-color);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    padding: 12px;
+}
+
+.meal-item:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.meal-image, .meal-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-left: 12px;
+    flex-shrink: 0;
+}
+
+.meal-icon {
+    background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.meal-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.meal-details h6 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: var(--text-color);
+}
+
+.meal-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 4px 0;
+}
+
+.meal-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0;
+}
+
+.meal-badges .badge {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.available {
+    background-color: rgba(46, 196, 182, 0.1);
+    color: #2ec4b6;
+}
+
+.status-badge.unavailable {
+    background-color: rgba(231, 29, 54, 0.1);
+    color: #e71d36;
+}
+
+.meal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-right: 12px;
+}
+
+.meal-actions .btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.meal-details .type {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+}
+
+.preparation-time, .calories {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.preparation-time i, .calories i {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+}
+
 /* نماذج مخصصة */
 .form-group {
     margin-bottom: 1.5rem;
@@ -1221,7 +1347,7 @@ body {
 @media (max-width: 576px) {
     .modal.show .modal-dialog {
         margin: 0.5rem;
-        max-width: calc(100% - 1rem); 1rem);
+        max-width: calc(100% - 1rem);
     }
     
     .stars {

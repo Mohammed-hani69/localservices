@@ -1,4 +1,3 @@
-
 {% extends "mobile/base_mobile.html" %}
 
 {% block title %}لوحة التحكم - مقدم خدمات تعليمية{% endblock %}
@@ -286,6 +285,47 @@
         color: #bdc3c7;
         margin-bottom: 15px;
     }
+
+    /* إضافة أنماط جديدة */
+    .schedule-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .calendar-container {
+        margin-top: 15px;
+    }
+
+    .students-list {
+        margin-top: 15px;
+    }
+
+    .student-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .student-info {
+        flex: 1;
+    }
+
+    .student-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .attendance-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        background: #e8f5e9;
+        color: #27ae60;
+    }
 </style>
 {% endblock %}
 
@@ -341,6 +381,12 @@
         <button class="mobile-tab" data-target="qualifications">
             <i class="fas fa-certificate"></i> المؤهلات
         </button>
+        <button class="mobile-tab" data-target="schedule">
+            <i class="fas fa-calendar"></i> الجدول
+        </button>
+        <button class="mobile-tab" data-target="students">
+            <i class="fas fa-users"></i> الطلاب
+        </button>
     </div>
 
     <!-- محتوى الدورات -->
@@ -348,7 +394,7 @@
         <div class="mobile-card">
             <div class="section-header">
                 <h5>الدورات والخدمات التعليمية</h5>
-                <a href="{{ url_for('add_service') }}" class="btn btn-primary btn-sm">
+                <a href="{{ url_for('add_service', mobile=1) }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> إضافة خدمة
                 </a>
             </div>
@@ -407,7 +453,7 @@
             {% if bookings %}
             <div class="bookings-list">
                 {% for booking in bookings %}
-                <div class="booking-item" data-status="{{ booking.status }}">
+                <div class="booking-item" data-booking-id="{{ booking.id }}" data-status="{{ booking.status }}">
                     <div class="booking-header">
                         <h6>{{ booking.service.name }}</h6>
                         <span class="badge bg-{{ get_status_color(booking.status) }}">
@@ -424,16 +470,19 @@
                     </div>
                     <div class="booking-actions">
                         {% if booking.status == 'pending' %}
-                        <button class="btn btn-success confirm-booking" data-booking-id="{{ booking.id }}">
+                        <button class="btn btn-success confirm-booking">
                             <i class="fas fa-check"></i> تأكيد
                         </button>
-                        {% elif booking.status == 'confirmed' %}
-                        <button class="btn btn-info complete-booking" data-booking-id="{{ booking.id }}">
+                        {% endif %}
+                        
+                        {% if booking.status == 'confirmed' %}
+                        <button class="btn btn-info complete-booking">
                             <i class="fas fa-check-double"></i> إكمال
                         </button>
                         {% endif %}
+                        
                         {% if booking.status in ['pending', 'confirmed'] %}
-                        <button class="btn btn-danger cancel-booking" data-booking-id="{{ booking.id }}">
+                        <button class="btn btn-danger cancel-booking">
                             <i class="fas fa-times"></i> إلغاء
                         </button>
                         {% endif %}
@@ -502,6 +551,82 @@
             </div>
         </div>
     </div>
+
+    <!-- جدول الدورات -->
+    <div class="tab-content" id="schedule" style="display: none;">
+        <div class="schedule-card">
+            <h5 class="mb-3">جدول الدورات اليومي</h5>
+            <div class="calendar-container">
+                <div id="mobileCalendar"></div>
+            </div>
+            
+            <div class="today-sessions mt-4">
+                <h6>دورات اليوم</h6>
+                {% set today_bookings = bookings|selectattr('status', 'equalto', 'confirmed')|selectattr('booking_date', 'ge', now.replace(hour=0, minute=0, second=0))|selectattr('booking_date', 'le', now.replace(hour=23, minute=59, second=59))|list %}
+                {% if today_bookings %}
+                    {% for booking in today_bookings %}
+                    <div class="service-item">
+                        <div class="service-details">
+                            <h6>{{ booking.service.name }}</h6>
+                            <p class="type">{{ booking.booking_date.strftime('%H:%M') }}</p>
+                            <span class="badge bg-primary">{{ booking.service.bookings|selectattr('status', 'equalto', 'confirmed')|list|length }} طالب</span>
+                        </div>
+                        <div class="service-actions">
+                            <button class="btn btn-sm btn-outline-primary send-reminder" data-booking-id="{{ booking.id }}">
+                                <i class="fas fa-bell"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        لا توجد دورات مجدولة لليوم
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- إدارة الطلاب -->
+    <div class="tab-content" id="students" style="display: none;">
+        <div class="mobile-tabs">
+            <button class="mobile-tab active" data-students-target="active">النشطين</button>
+            <button class="mobile-tab" data-students-target="pending">قيد الانتظار</button>
+            <button class="mobile-tab" data-students-target="completed">المكتملين</button>
+        </div>
+
+        <div class="students-content active" id="active-students">
+            {% set active_students = bookings|selectattr('status', 'equalto', 'confirmed')|list %}
+            {% if active_students %}
+                {% for booking in active_students %}
+                <div class="student-item">
+                    <div class="student-info">
+                        <h6>{{ booking.client.username }}</h6>
+                        <p class="text-muted">{{ booking.service.name }}</p>
+                        <span class="attendance-badge">الحضور: 85%</span>
+                    </div>
+                    <div class="student-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="sendMessage('{{ booking.client.id }}')">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="completeBooking('{{ booking.id }}')">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <p>لا يوجد طلاب نشطين حالياً</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Similar sections for pending and completed students -->
+    </div>
 </div>
 {% endblock %}
 
@@ -529,32 +654,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // تنسيق عرض التقييمات
-    const ratingElements = document.querySelectorAll('.rating-display');
-    ratingElements.forEach(function(element) {
-        const rating = parseFloat(element.getAttribute('data-rating'));
-        let starsHtml = '';
-        
-        for (let i = 1; i <= 5; i++) {
-            if (i <= rating) {
-                starsHtml += '<i class="fas fa-star text-warning"></i>';
-            } else if (i - 0.5 <= rating) {
-                starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
-            } else {
-                starsHtml += '<i class="far fa-star text-warning"></i>';
-            }
-        }
-        
-        element.innerHTML = starsHtml;
-    });
-
     // معالجة أزرار الحجوزات
     const handleBookingAction = async (action, bookingId) => {
+        if (!confirm(`هل أنت متأكد من ${action === 'confirm' ? 'تأكيد' : action === 'complete' ? 'إكمال' : 'إلغاء'} هذا الحجز؟`)) {
+            return;
+        }
+
         try {
             const response = await fetch(`/booking/${bookingId}/${action}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             });
             
@@ -562,6 +673,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 showMobileToast(data.message, 'success');
+                // تحديث حالة الحجز في الواجهة
+                const bookingElement = document.querySelector(`[data-booking-id="${bookingId}"]`).closest('.booking-item');
+                if (bookingElement) {
+                    bookingElement.setAttribute('data-status', data.status);
+                    // تحديث عرض الأزرار
+                    updateBookingButtons(bookingElement, data.status);
+                }
                 setTimeout(() => window.location.reload(), 1500);
             } else {
                 showMobileToast(data.message || 'حدث خطأ أثناء تنفيذ العملية', 'error');
@@ -572,53 +690,59 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    document.querySelectorAll('.confirm-booking').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const bookingId = btn.getAttribute('data-booking-id');
-            handleBookingAction('confirm', bookingId);
-        });
+    // دالة لتحديث أزرار الحجز
+    function updateBookingButtons(bookingElement, status) {
+        const actionsDiv = bookingElement.querySelector('.booking-actions');
+        if (!actionsDiv) return;
+
+        let buttonsHtml = '';
+        switch (status) {
+            case 'pending':
+                buttonsHtml = `
+                    <button class="btn btn-success confirm-booking" onclick="handleBookingAction('confirm', '${bookingElement.dataset.bookingId}')">
+                        <i class="fas fa-check"></i> تأكيد
+                    </button>
+                    <button class="btn btn-danger cancel-booking" onclick="handleBookingAction('cancel', '${bookingElement.dataset.bookingId}')">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                `;
+                break;
+            case 'confirmed':
+                buttonsHtml = `
+                    <button class="btn btn-info complete-booking" onclick="handleBookingAction('complete', '${bookingElement.dataset.bookingId}')">
+                        <i class="fas fa-check-double"></i> إكمال
+                    </button>
+                    <button class="btn btn-danger cancel-booking" onclick="handleBookingAction('cancel', '${bookingElement.dataset.bookingId}')">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                `;
+                break;
+            case 'completed':
+                buttonsHtml = `<span class="badge bg-success">تم الإكمال</span>`;
+                break;
+            case 'cancelled':
+                buttonsHtml = `<span class="badge bg-danger">تم الإلغاء</span>`;
+                break;
+        }
+        actionsDiv.innerHTML = buttonsHtml;
+    }
+
+    // ربط الأحداث بالأزرار
+    document.querySelectorAll('.booking-actions button').forEach(btn => {
+        const action = btn.classList.contains('confirm-booking') ? 'confirm' :
+                      btn.classList.contains('complete-booking') ? 'complete' :
+                      btn.classList.contains('cancel-booking') ? 'cancel' : null;
+        
+        if (action) {
+            btn.addEventListener('click', () => {
+                const bookingId = btn.closest('.booking-item').dataset.bookingId;
+                handleBookingAction(action, bookingId);
+            });
+        }
     });
 
-    document.querySelectorAll('.complete-booking').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const bookingId = btn.getAttribute('data-booking-id');
-            handleBookingAction('complete', bookingId);
-        });
-    });
-
-    document.querySelectorAll('.cancel-booking').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const bookingId = btn.getAttribute('data-booking-id');
-            if (confirm('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟')) {
-                handleBookingAction('cancel', bookingId);
-            }
-        });
-    });
-
-    // إضافة مؤهل جديد (زر إنشاء)
-    document.getElementById('add-qualification-btn').addEventListener('click', () => {
-        showMobileToast('سيتم توفير هذه الميزة قريباً', 'info');
-    });
+    // تعريف handleBookingAction في النطاق العام للاستخدام في onclick
+    window.handleBookingAction = handleBookingAction;
 });
-
-// دالة لعرض رسائل الإشعارات
-function showMobileToast(message, type) {
-    const toast = document.createElement('div');
-    toast.className = `mobile-toast ${type}`;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.classList.add('show');
-    }, 100);
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => {
-            document.body.removeChild(toast);
-        }, 300);
-    }, 3000);
-}
 </script>
 {% endblock %}

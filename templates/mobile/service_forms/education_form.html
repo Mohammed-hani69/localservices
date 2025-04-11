@@ -1,0 +1,139 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}إضافة خدمة تعليمية{% endblock %}
+
+{% block content %}
+<div class="mobile-form-container">
+    <form method="POST" enctype="multipart/form-data" class="service-form">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group mb-3">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+            {% for error in form.name.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="4") }}
+            {% for error in form.description.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.service_type.label(class="form-label") }}
+            {{ form.service_type(class="form-select" + (" is-invalid" if form.service_type.errors else "")) }}
+            {% for error in form.service_type.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.price.label(class="form-label") }}
+            {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else ""), type="number", step="0.01") }}
+            {% for error in form.price.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.duration.label(class="form-label") }}
+            {{ form.duration(class="form-control" + (" is-invalid" if form.duration.errors else ""), type="number") }}
+            {% for error in form.duration.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.education_level.label(class="form-label") }}
+            {{ form.education_level(class="form-select" + (" is-invalid" if form.education_level.errors else "")) }}
+            {% for error in form.education_level.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.teaching_method.label(class="form-label") }}
+            {{ form.teaching_method(class="form-select" + (" is-invalid" if form.teaching_method.errors else "")) }}
+            {% for error in form.teaching_method.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-check mb-3">
+            {{ form.group_class(class="form-check-input" + (" is-invalid" if form.group_class.errors else "")) }}
+            {{ form.group_class.label(class="form-check-label") }}
+            {% for error in form.group_class.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.max_students.label(class="form-label") }}
+            {{ form.max_students(class="form-control" + (" is-invalid" if form.max_students.errors else ""), type="number") }}
+            {% for error in form.max_students.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-check mb-3">
+            {{ form.has_certificate(class="form-check-input" + (" is-invalid" if form.has_certificate.errors else "")) }}
+            {{ form.has_certificate.label(class="form-check-label") }}
+            {% for error in form.has_certificate.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.image.label(class="form-label") }}
+            {{ form.image(class="form-control" + (" is-invalid" if form.image.errors else "")) }}
+            {% for error in form.image.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-check mb-3">
+            {{ form.is_active(class="form-check-input" + (" is-invalid" if form.is_active.errors else "")) }}
+            {{ form.is_active.label(class="form-check-label") }}
+            {% for error in form.is_active.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group mt-4">
+            <button type="submit" class="btn btn-primary w-100">إضافة الخدمة</button>
+            <a href="{{ url_for('mobile_dashboard') }}" class="btn btn-secondary w-100 mt-2">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .mobile-form-container {
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 10px;
+        margin: 15px;
+    }
+
+    .form-label {
+        font-weight: bold;
+        color: #333;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .form-check-label {
+        color: #666;
+    }
+
+    .invalid-feedback {
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}

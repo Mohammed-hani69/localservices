@@ -120,7 +120,7 @@
 
     <!-- Booking and Review Buttons Section -->
     <div class="mobile-action-buttons mb-4">
-        {% if current_user.is_authenticated and not current_user.is_provider() %}
+        {% if current_user.is_authenticated and not service.provider.id == current_user.id %}
             {% if service.is_active %}
             <!-- Booking Button -->
             <div class="d-grid gap-2 mb-3">
