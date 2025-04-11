@@ -808,8 +808,9 @@ def add_review():
     form = ReviewForm()
     if form.validate_on_submit():
         service_id = form.service_id.data
+        service = Service.query.get_or_404(service_id)
 
-        # Check if user has booked this service before with completed status
+        # التحقق من وجود حجز مكتمل للخدمة
         user_bookings = Booking.query.filter_by(
             client_id=current_user.id, 
             service_id=service_id,
@@ -820,13 +821,13 @@ def add_review():
             flash('يمكنك فقط تقييم الخدمات التي قمت بحجزها وتم إكمالها.', 'warning')
             return redirect(url_for('service_details', service_id=service_id))
 
-        # Check if user has already reviewed this service
+        # التحقق من عدم وجود تقييم سابق
         existing_review = Review.query.filter_by(user_id=current_user.id, service_id=service_id).first()
         if existing_review:
             flash('لقد قمت بتقييم هذه الخدمة بالفعل.', 'warning')
             return redirect(url_for('service_details', service_id=service_id))
 
-        # Ensure rating is valid
+        # التحقق من صحة التقييم
         try:
             rating = int(form.rating.data)
             if rating < 1 or rating > 5:
@@ -836,29 +837,40 @@ def add_review():
             flash('التقييم يجب أن يكون رقماً صحيحاً.', 'warning')
             return redirect(url_for('service_details', service_id=service_id))
 
+        # التحقق من صحة التعليق
+        comment = form.comment.data.strip()
+        if len(comment) < 10:
+            flash('يرجى كتابة تعليق أطول (10 أحرف على الأقل).', 'warning')
+            return redirect(url_for('service_details', service_id=service_id))
+
+        # إنشاء التقييم الجديد
         review = Review(
             service_id=service_id,
             user_id=current_user.id,
             rating=rating,
-            comment=form.comment.data
+            comment=comment
         )
         db.session.add(review)
 
-        # Update service rating
-        service = Service.query.get(service_id)
+        # تحديث متوسط تقييم الخدمة
+        service_reviews = Review.query.filter_by(service_id=service_id).all()
+        if service_reviews:
+            service_avg_rating = sum(r.rating for r in service_reviews) / len(service_reviews)
+            # يمكن إضافة حقل متوسط التقييم إلى جدول الخدمات إذا لزم الأمر
         
-        # Update provider rating (all reviews for all services)
+        # تحديث متوسط تقييم مزود الخدمة
         provider = ServiceProvider.query.get(service.provider_id)
         provider_services = Service.query.filter_by(provider_id=provider.id).all()
         all_provider_reviews = []
         
         for srv in provider_services:
-            all_provider_reviews.extend(Review.query.filter_by(service_id=srv.id).all())
+            service_reviews = Review.query.filter_by(service_id=srv.id).all()
+            all_provider_reviews.extend(service_reviews)
             
         if all_provider_reviews:
             provider.rating = sum(r.rating for r in all_provider_reviews) / len(all_provider_reviews)
         
-        # Create notification for service provider
+        # إنشاء إشعار لمزود الخدمة
         create_notification(
             provider.user_id,
             "تقييم جديد",
@@ -868,19 +880,43 @@ def add_review():
             "review"
         )
 
+        # حفظ التغييرات
         db.session.commit()
-        flash('شكراً على تقييمك!', 'success')
         
-        # Redirect to the appropriate page based on where the request came from
+        # إظهار رسالة نجاح
+        flash('شكراً على مشاركة تقييمك! سيساعد ذلك الآخرين في اختيار الخدمة المناسبة.', 'success')
+        
+        # التوجيه إلى الصفحة المناسبة
         referer = request.headers.get('Referer', '')
-        if 'mobile' in referer:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': True,
+                'message': 'تم إضافة التقييم بنجاح',
+                'redirect': url_for('mobile_dashboard' if 'mobile' in referer else 'dashboard')
+            })
+        elif 'mobile' in referer:
             return redirect(url_for('mobile_dashboard'))
+        elif 'service_details' in referer:
+            return redirect(url_for('service_details', service_id=service_id))
         else:
             return redirect(url_for('dashboard'))
 
     else:
-        # Handle form validation errors
-        flash('حدث خطأ في التقييم. تأكد من إدخال تقييم وتعليق.', 'warning')
+        # معالجة أخطاء التحقق من النموذج
+        errors = []
+        for field, error_messages in form.errors.items():
+            for error in error_messages:
+                errors.append(f"خطأ في حقل {field}: {error}")
+        
+        error_message = "حدث خطأ في تقديم التقييم. " + " ".join(errors)
+        flash(error_message, 'warning')
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': False,
+                'message': error_message
+            })
+        
         return redirect(url_for('service_details', service_id=form.service_id.data))
         
     return redirect(url_for('service_details', service_id=form.service_id.data))
@@ -1965,10 +2001,10 @@ def delete_service(service_id):
             'message': 'حدث خطأ أثناء حذف الخدمة'
         })
 
-# أضف هذه النقطة API في المكان المناسب في routes.py
 @app.route('/api/check_completed_booking/<int:service_id>')
 @login_required
 def check_completed_booking(service_id):
+    """التحقق من إمكانية تقييم خدمة معينة"""
     # التحقق مما إذا كان المستخدم لديه حجز مكتمل لهذه الخدمة
     completed_booking = Booking.query.filter_by(
         client_id=current_user.id, 
@@ -1982,7 +2018,18 @@ def check_completed_booking(service_id):
         service_id=service_id
     ).first() is not None
     
+    # التحقق من التفاصيل الإضافية للحجز
+    booking_details = {}
+    if completed_booking:
+        service = Service.query.get(service_id)
+        booking_details = {
+            'service_name': service.name,
+            'booking_date': completed_booking.booking_date.strftime('%Y-%m-%d %H:%M'),
+            'completion_date': completed_booking.updated_at.strftime('%Y-%m-%d') if completed_booking.updated_at else None
+        }
+    
     return jsonify({
         'has_completed': completed_booking is not None,
-        'has_review': has_review
+        'has_review': has_review,
+        'booking_details': booking_details
     })

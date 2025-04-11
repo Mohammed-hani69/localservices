@@ -60,31 +60,63 @@
     {% endif %}
 
     <!-- Service Reviews -->
-    <div class="mobile-card">
-        <h5 class="mb-3">التقييمات والمراجعات</h5>
-        {% if service.reviews.count() > 0 %}
+    <section class="reviews-section mt-4">
+        <div class="section-header d-flex justify-content-between align-items-center mb-3">
+            <h3 class="section-title mb-0">التقييمات</h3>
+            {% if service.reviews %}
+                <span class="rating-badge">{{ service.reviews|length }} تقييم</span>
+            {% endif %}
+        </div>
+
+        {% if service.reviews %}
+            <div class="reviews-summary mb-3">
+                <div class="rating-large">
+                    {{ "%.1f"|format(service.reviews|sum(attribute='rating') / service.reviews|length) }}
+                </div>
+                <div class="rating-display large-stars mb-2" data-rating="{{ service.reviews|sum(attribute='rating') / service.reviews|length }}">
+                    <!-- سيتم ملؤها بواسطة JavaScript -->
+                </div>
+                <p class="reviews-count text-muted">بناءً على {{ service.reviews|length }} تقييم</p>
+            </div>
+
             <div class="reviews-list">
                 {% for review in service.reviews %}
-                <div class="review-item mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h6 class="mb-0">{{ review.user.username }}</h6>
-                            <div class="rating-display" data-rating="{{ review.rating }}"></div>
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">
+                                    {{ review.user.username[0].upper() }}
+                                </div>
+                                <div>
+                                    <h6 class="reviewer-name">{{ review.user.username }}</h6>
+                                    <div class="rating-display" data-rating="{{ review.rating }}"></div>
+                                </div>
+                            </div>
+                            <div class="review-date">{{ review.created_at.strftime('%Y-%m-%d') }}</div>
                         </div>
-                        <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                        <div class="review-content">
+                            <p class="review-text">{{ review.comment }}</p>
+                        </div>
                     </div>
-                    <p class="mb-0">{{ review.comment }}</p>
-                </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="empty-reviews py-4 text-center">
+            <div class="empty-reviews text-center py-4 bg-light rounded">
                 <i class="far fa-star fa-3x text-muted mb-3"></i>
-                <p class="text-muted mb-0">لا توجد تقييمات بعد لهذه الخدمة.</p>
+                <h6>لا توجد تقييمات حتى الآن</h6>
+                <p class="text-muted">كن أول من يشارك تقييمه لهذه الخدمة</p>
             </div>
         {% endif %}
-    </div>
-    
+
+        {% if review_form %}
+            <div class="add-review-section mt-4">
+                <button class="btn btn-primary w-100 add-review" data-service-id="{{ service.id }}">
+                    <i class="fas fa-star me-2"></i> أضف تقييمك للخدمة
+                </button>
+            </div>
+        {% endif %}
+    </section>
+
     <!-- Review Button (if eligible) -->
     {% if current_user.is_authenticated and not current_user.is_provider() %}
         <div class="d-grid gap-2 mb-4 mt-3">
@@ -169,7 +201,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // تهيئة عرض التقييمات
     initRatingDisplays();
-    
+
     // تهيئة نظام التقييم
     initReviewSystem();
 
@@ -204,7 +236,7 @@ function initRatingDisplays() {
 // التحقق من إمكانية التقييم وإظهار النافذة
 function checkAndShowReviewModal(serviceId) {
     console.log('التحقق من إمكانية التقييم للخدمة:', serviceId);
-    
+
     fetch('/api/check_completed_booking/' + serviceId)
         .then(response => response.json())
         .then(data => {
@@ -212,22 +244,22 @@ function checkAndShowReviewModal(serviceId) {
                 showAlert('warning', 'لا يمكنك تقييم هذه الخدمة حتى تكتمل عملية الحجز.');
                 return;
             }
-            
+
             if (data.has_review) {
                 showAlert('info', 'لقد قمت بتقييم هذه الخدمة بالفعل.');
                 return;
             }
-            
+
             // إظهار نافذة التقييم
             const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
             reviewModal.show();
-            
+
             // تأكيد من ظهور النافذة
             const modalElement = document.getElementById('reviewModal');
             modalElement.classList.add('show');
             modalElement.style.display = 'block';
             document.body.classList.add('modal-open');
-            
+
             // إضافة backdrop إذا لم يتم إنشاؤه
             if (!document.querySelector('.modal-backdrop')) {
                 const backdrop = document.createElement('div');
@@ -251,7 +283,7 @@ function showAlert(type, message) {
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
     document.body.appendChild(alertBox);
-    
+
     setTimeout(() => {
         alertBox.classList.remove('show');
         setTimeout(() => alertBox.remove(), 300);
@@ -265,7 +297,7 @@ function initReviewSystem() {
         console.error('لم يتم العثور على نافذة التقييم في الصفحة');
         return;
     }
-    
+
     let reviewModal;
     try {
         reviewModal = new bootstrap.Modal(reviewModalElement);
@@ -284,7 +316,7 @@ function initReviewSystem() {
             star.addEventListener('click', function() {
                 const value = parseInt(this.getAttribute('data-value'));
                 ratingInput.value = value;
-                
+
                 console.log('تم اختيار تقييم: ' + value);
 
                 // تحديث شكل النجوم
@@ -336,7 +368,7 @@ function initReviewSystem() {
     if (reviewForm) {
         reviewForm.addEventListener('submit', function(e) {
             e.preventDefault(); // منع الإرسال الافتراضي
-            
+
             const rating = parseInt(ratingInput.value) || 0;
             const comment = document.getElementById('comment').value.trim();
 
@@ -352,7 +384,7 @@ function initReviewSystem() {
 
             // إرسال النموذج باستخدام AJAX
             const formData = new FormData(reviewForm);
-            
+
             fetch(reviewForm.getAttribute('action'), {
                 method: 'POST',
                 body: formData
@@ -368,7 +400,7 @@ function initReviewSystem() {
                 if (data && data.success) {
                     showAlert('success', 'تم إرسال التقييم بنجاح!');
                     reviewModal.hide();
-                    
+
                     // إعادة تحميل الصفحة بعد ثانيتين
                     setTimeout(() => {
                         window.location.reload();
@@ -381,7 +413,7 @@ function initReviewSystem() {
                 console.error('Error submitting review:', error);
                 showAlert('danger', 'حدث خطأ أثناء إرسال التقييم');
             });
-            
+
             return false;
         });
     }
@@ -504,6 +536,110 @@ function initReviewSystem() {
 
 .empty-reviews i {
     opacity: 0.3;
+}
+
+/* New Styles from the changes */
+.reviews-section {
+    margin-bottom: 30px;
+}
+
+.rating-badge {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.reviews-summary {
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.rating-large {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #2c3e50;
+    line-height: 1;
+}
+
+.large-stars {
+    font-size: 1.5rem;
+}
+
+.reviews-count {
+    font-size: 0.9rem;
+    margin-top: 5px;
+    color: #7f8c8d;
+}
+
+.review-card {
+    background-color: white;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+}
+
+.reviewer-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.reviewer-name {
+    margin: 0 0 2px 0;
+    font-size: 0.95rem;
+}
+
+.review-date {
+    font-size: 0.75rem;
+    color: #95a5a6;
+}
+
+.review-content {
+    margin-top: 10px;
+}
+
+.review-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+    color: #34495e;
+}
+
+.empty-reviews {
+    padding: 30px;
+    border-radius: 15px;
+}
+
+.add-review-section .btn {
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 500;
 }
 </style>
 {% endblock %}

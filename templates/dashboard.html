@@ -411,8 +411,8 @@
                 <form id="reviewForm" action="{{ url_for('add_review') }}" method="post">
                     {{ review_form.csrf_token }}
                     {{ review_form.service_id(id="modal_service_id") }}
-                    <div class="mb-3">
-                        <label class="form-label">التقييم:</label>
+                    <div class="mb-4 text-center">
+                        <label class="form-label fw-bold mb-3">كيف تقيم تجربتك؟</label>
                         <div class="rating-input-container">
                             <div class="stars">
                                 <i class="far fa-star star-rating" data-value="1"></i>
@@ -425,18 +425,58 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="comment" class="form-label">تعليقك:</label>
-                        {{ review_form.comment(class="form-control", rows="4", placeholder="يرجى كتابة تعليقك على الخدمة...") }}
+                        <label for="comment" class="form-label fw-bold">أخبرنا المزيد عن تجربتك:</label>
+                        {{ review_form.comment(class="form-control", rows="4", placeholder="يرجى مشاركة رأيك حول الخدمة...") }}
+                        <div class="form-text text-muted">سيساعد تعليقك الآخرين على اتخاذ قرار أفضل</div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                        <button type="submit" class="btn btn-primary">إرسال التقييم</button>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary px-4">إرسال التقييم</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<!-- CSS لنافذة التقييم -->
+<style>
+.rating-input-container {
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.stars {
+    display: inline-flex;
+    gap: 10px;
+    font-size: 2rem;
+}
+
+.star-rating {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    color: #ddd;
+}
+
+.star-rating:hover {
+    transform: scale(1.2);
+}
+
+.star-rating.text-warning {
+    color: #ffc107;
+}
+
+#reviewForm .form-control {
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 12px;
+}
+
+#reviewForm .form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+    border-color: #3498db;
+}
+</style>
 
 {% block scripts %}
 <script>
@@ -545,28 +585,28 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.review-button').forEach(btn => {
             btn.addEventListener('click', async function() {
                 const serviceId = this.getAttribute('data-service-id');
-                
+
                 // التحقق من إمكانية التقييم عبر API
                 try {
                     const response = await fetch(`/api/check_completed_booking/${serviceId}`);
                     const data = await response.json();
-                    
+
                     if (!data.has_completed) {
                         alert('لا يمكنك تقييم هذه الخدمة حتى تكتمل عملية الحجز.');
                         return;
                     }
-                    
+
                     if (data.has_review) {
                         alert('لقد قمت بتقييم هذه الخدمة بالفعل.');
                         return;
                     }
-                    
+
                     // تعيين معرف الخدمة في النموذج
                     document.getElementById('modal_service_id').value = serviceId;
-                    
+
                     // عرض النافذة
                     reviewModal.show();
-                    
+
                     console.log('تم النقر على زر التقييم للخدمة: ' + serviceId);
                 } catch (error) {
                     console.error('خطأ في التحقق من إمكانية التقييم:', error);

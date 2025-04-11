@@ -25,7 +25,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Service rating display
+    // تهيئة عناصر التقييم في الصفحة
+    initRatingSystem();
+
+    // تهيئة نوافذ التقييم المنبثقة
+    initReviewModals();
+});
+
+// دالة لعرض تقييمات النجوم في الصفحة
+function initRatingSystem() {
     const ratingElements = document.querySelectorAll('.rating-display');
     if (ratingElements.length > 0) {
         ratingElements.forEach(element => {
@@ -40,6 +48,158 @@ document.addEventListener('DOMContentLoaded', function() {
                     starsHtml += '<i class="fas fa-star-half-alt rating-star"></i>';
                 } else {
                     starsHtml += '<i class="far fa-star rating-star"></i>';
+                }
+            }
+            element.innerHTML = starsHtml;
+        });
+    }
+}
+
+// دالة لتهيئة نوافذ التقييم المنبثقة
+function initReviewModals() {
+    // البحث عن زر إضافة تقييم
+    const reviewButtons = document.querySelectorAll('.add-review');
+    if (!reviewButtons.length) return;
+
+    // البحث عن نافذة التقييم
+    const reviewModalElement = document.getElementById('reviewModal');
+    if (!reviewModalElement) {
+        console.log("لم يتم العثور على نافذة التقييم في الصفحة الحالية");
+        return;
+    }
+    
+    // تهيئة نافذة التقييم
+    let reviewModal;
+    try {
+        reviewModal = new bootstrap.Modal(reviewModalElement);
+    } catch (e) {
+        console.error('خطأ في تهيئة نافذة التقييم:', e);
+        return;
+    }
+
+    // إضافة حدث النقر على زر إضافة تقييم
+    reviewButtons.forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const serviceId = this.getAttribute('data-service-id');
+            
+            // التحقق من إمكانية التقييم عبر API
+            try {
+                const response = await fetch(`/api/check_completed_booking/${serviceId}`);
+                const data = await response.json();
+                
+                if (!data.has_completed) {
+                    alert('لا يمكنك تقييم هذه الخدمة حتى تكتمل عملية الحجز.');
+                    return;
+                }
+                
+                if (data.has_review) {
+                    alert('لقد قمت بتقييم هذه الخدمة بالفعل.');
+                    return;
+                }
+                
+                // تعيين معرف الخدمة في النموذج
+                document.getElementById('modal_service_id').value = serviceId;
+                
+                // إعادة تعيين التقييم
+                const ratingInput = document.getElementById('rating_input');
+                if (ratingInput) ratingInput.value = 0;
+                
+                // إعادة تعيين النجوم
+                const stars = document.querySelectorAll('.star-rating');
+                if (stars.length) {
+                    stars.forEach(s => {
+                        s.className = 'far fa-star star-rating';
+                    });
+                }
+                
+                // عرض النافذة
+                reviewModal.show();
+                
+            } catch (error) {
+                console.error('خطأ في التحقق من إمكانية التقييم:', error);
+                alert('حدث خطأ أثناء التحقق من إمكانية التقييم. الرجاء المحاولة مرة أخرى.');
+            }
+        });
+    });
+
+    // معالجة تقييم النجوم
+    const stars = document.querySelectorAll('.star-rating');
+    const ratingInput = document.getElementById('rating_input');
+
+    if (stars.length && ratingInput) {
+        // إضافة الاستماع إلى حدث النقر لكل نجمة
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                ratingInput.value = value;
+
+                // تحديث شكل النجوم
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
+            });
+
+            // إضافة تأثير التحويم
+            star.addEventListener('mouseover', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
+            });
+        });
+
+        // استعادة حالة النجوم عند الخروج من منطقة التقييم
+        const ratingContainer = document.querySelector('.rating-input-container');
+        if (ratingContainer) {
+            ratingContainer.addEventListener('mouseleave', function() {
+                const value = parseInt(ratingInput.value) || 0;
+
+                stars.forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.className = 'fas fa-star star-rating text-warning';
+                    } else {
+                        s.className = 'far fa-star star-rating';
+                    }
+                });
+            });
+        }
+    }
+
+    // التحقق من صحة نموذج التقييم عند الإرسال
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            const rating = parseInt(ratingInput.value) || 0;
+            const comment = document.querySelector('#reviewForm textarea[name="comment"]').value.trim();
+
+            if (rating === 0 || rating > 5) {
+                e.preventDefault();
+                alert('يرجى تحديد تقييم بين 1 و 5 نجوم');
+                return false;
+            }
+
+            if (comment.length < 10) {
+                e.preventDefault();
+                alert('يرجى كتابة تعليق مناسب (10 أحرف على الأقل)');
+                return false;
+            }
+
+            return true;
+        });
+    }
+}rsHtml += '<i class="far fa-star rating-star"></i>';
                 }
             }
 

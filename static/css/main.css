@@ -354,3 +354,73 @@ a:hover {
         font-size: 1.2rem;
     }
 }
+
+/* أنماط التقييمات */
+.rating-star {
+    color: #ffc107;
+}
+
+.rating-display {
+    display: inline-flex;
+    gap: 3px;
+}
+
+.review-box {
+    transition: all 0.3s ease;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.review-box:hover {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+/* الأنماط العامة لنوافذ التقييم */
+.modal-review .modal-content {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.rating-input-container {
+    padding: 15px;
+    text-align: center;
+}
+
+.stars {
+    display: inline-flex;
+    gap: 8px;
+    font-size: 24px;
+}
+
+.star-rating {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.star-rating:hover {
+    transform: scale(1.2);
+}
+
+/* تحسينات زر إضافة تقييم */
+.add-review-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.add-review-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.add-review-btn i {
+    font-size: 14px;
+}
