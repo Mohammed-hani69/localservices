@@ -1166,6 +1166,48 @@ body {
     overflow: hidden;
 }
 
+/* تنسيق لقسم أزرار التقييم والحجز */
+.mobile-action-buttons {
+    padding: 15px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+    margin-top: 20px;
+}
+
+.mobile-action-buttons .btn {
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.mobile-action-buttons .btn-outline-primary {
+    border: 2px solid #3498db;
+}
+
+.mobile-action-buttons .btn-outline-primary:hover {
+    background-color: #3498db;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.mobile-action-buttons .btn-primary {
+    box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
+}
+
+.mobile-action-buttons .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(52, 152, 219, 0.3);
+}
+
+/* تحسين ظهور أيقونات الأزرار */
+.mobile-action-buttons .btn i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
 .modal.show {
     display: block !important;
 }

@@ -118,41 +118,35 @@
         {% endif %}
     </section>
 
-    <!-- Review Button (if eligible) -->
-    {% if current_user.is_authenticated and not current_user.is_provider() %}
-        <div class="d-grid gap-2 mb-4 mt-3">
-            <button class="btn btn-outline-primary review-button" data-service-id="{{ service.id }}">
-                <i class="fas fa-star me-1"></i> تقييم الخدمة
-            </button>
-        </div>
-    {% endif %}
-
-    <!-- Booking Button -->
-    {% if current_user.is_authenticated and not current_user.is_provider() and service.is_active %}
-    <div class="d-grid gap-2 mb-4">
-        <a href="{{ url_for('mobile_booking', service_id=service.id) }}" class="btn btn-primary btn-lg">
-            <i class="fas fa-calendar-plus me-1"></i> حجز موعد
-        </a>
+    <!-- Booking and Review Buttons Section -->
+    <div class="mobile-action-buttons mb-4">
+        {% if current_user.is_authenticated and not current_user.is_provider() %}
+            {% if service.is_active %}
+            <!-- Booking Button -->
+            <div class="d-grid gap-2 mb-3">
+                <a href="{{ url_for('mobile_booking', service_id=service.id) }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-calendar-plus me-1"></i> حجز موعد
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- Single Review Button -->
+            {% if review_form %}
+            <div class="d-grid gap-2">
+                <button class="btn btn-outline-primary review-button" data-service-id="{{ service.id }}">
+                    <i class="fas fa-star me-1"></i> إضافة تقييم
+                </button>
+            </div>
+            {% endif %}
+        {% elif not current_user.is_authenticated %}
+            <!-- Login Button -->
+            <div class="d-grid gap-2 mb-4">
+                <a href="{{ url_for('login', next=url_for('mobile_service_details', service_id=service.id)) }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-sign-in-alt me-1"></i> تسجيل الدخول للحجز
+                </a>
+            </div>
+        {% endif %}
     </div>
-    {% elif not current_user.is_authenticated %}
-    <div class="d-grid gap-2 mb-4">
-        <a href="{{ url_for('login', next=url_for('mobile_service_details', service_id=service.id)) }}" class="btn btn-primary btn-lg">
-            <i class="fas fa-sign-in-alt me-1"></i> تسجيل الدخول للحجز
-        </a>
-    </div>
-    {% endif %}
-    {% if review_form %}
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-star me-1"></i> أضف تقييمك
-        </div>
-        <div class="card-body">
-            <button class="btn btn-primary w-100 review-button" data-service-id="{{ service.id }}">
-                <i class="fas fa-star me-1"></i> إضافة تقييم
-            </button>
-        </div>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}
 
